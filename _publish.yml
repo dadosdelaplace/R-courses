@@ -1,0 +1,6 @@
+- source: prueba2.qmd
+  quarto-pub:
+    - id: 923484fc-2b87-4f7f-a9e2-5c32ed627583
+      url: 'https://javier-alvarez-liebana.quarto.pub/prueba2'
+    - id: 57efee81-ea64-4199-8680-a45778cdea55
+      url: 'https://javieralvarezliebana.quarto.pub/prueba2'
