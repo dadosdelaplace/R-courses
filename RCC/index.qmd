@@ -89,6 +89,7 @@ Currently, [**Assistant Professor at Technical University of Madrid (UPM)**]{.hl
 |:------:|:--------:|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
 | [1-1](#clase-0-1) | S1 | 17 feb | First steps: R base programming | [💻](#tu-turno-0-1-1) [💻](#tu-turno-0-1-2)  |  |  | 
 | [1-2](#clase-0-2) | S1 | 19 feb | First data: concatenate values and databases | [💻](#tu-turno-0-2-1) [💻](#tu-turno-0-2-2) [💻](#tu-turno-0-2-3) |  [🐣](#caso-practico-0-2-1) [🐣](#caso-practico-0-2-2) [🐣](#caso-practico-0-2-3) |  |
+| [1-3](#clase-0-3) | S2 | 24 feb | Welcome to tidyverse! |  [💻](#tu-turno-3-1) [💻](#tu-turno-3-2) |   |  |
 :::
 :::
 
@@ -2512,98 +2513,6 @@ table
 
 ---
 
-## Last attempt: tibble
-
-Tables in `data.frame` format have some [**limitations**]{.hl-red}. The main one is that [**does not allow recursion**]{.hl-red}: imagine that we define a database with heights and weights, and we want a third variable with the BMI.
-
-
-```{r}
-#| error: true
-data.frame("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70),
-           "BMI" = weight / (height^2))
-```
-
-. . .
-
-
-Hereafter we will use the `tibble` ([**enhanced data.frame**]{.hl-yellow}) format from the `{tibble}` package.
-
-```{r}
-library(tibble)
-data_tb <- 
-  tibble("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70), "BMI" = weight / (height^2))
-class(data_tb)
-data_tb
-```
-
----
-
-## Last attempt: tibble
-
-```{r}
-data_tb <- 
-  tibble("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70), "BMI" = weight / (height^2))
-class(data_tb)
-data_tb
-```
-
-Las tablas en formato `tibble` nos permitirá una [**gestión más ágil, eficiente y coherente**]{.hl-yellow} de los data, con 4 ventajas principales:
-
-. . .
-
-- [**Metainformation**]{.hl-yellow}: if you look at the header, it automatically tells us the number of rows and columns, and the type of each variable
-
-. . .
-
-- [**Recursivity**]{.hl-yellow}: allows you to define the variables sequentially (as we have seen)
-
-
-
----
-
-## Last attempt: tibble {#data-pasta}
-
-- [**Consistency**]{.hl-yellow}: if you access a column that does not exist, it warns you with a warning
-
-```{r}
-#| warning: true
-data_tb$invent
-```
-
-. . .
-
-- [**By rows**]{.hl-yellow}: create by rows (copy and paste from a table) with `tribble()`.
-
-```{r}
-tribble(~colA, ~colB,
-        "a",   1,
-        "b",   2)
-```
-
-. . .
-
-::: callout-tip
-The `{datapasta}` package allows us to [**copy and paste**]{.hl-green} tables from web pages and simple documents as a tribble. See more in <https://milesmcbain.github.io/datapasta/articles/how-to-datapasta.html#pasting-a-table-as-a-formatted-tibble-definition-with-tribble_paste>
-:::
-
-
----
-
-
-## In summary...
-
-- Each [**cell can be of a different type**]{.hl-yellow}: numbers, text, dates, logical values, etc. A [**vector is a concatenation of cells**]{.hl-yellow} (the future columns of our tables) --> In `R` by default operations are done [**element to element**]{.hl-yellow}.
-
-. . .
-
-- A [**matrix**]{.hl-yellow} allows us to concatenate [**variables of the SAME type and SAME length**]{.hl-yellow} --> tabular data.
-
-. . .
-
-- A [**data.frame**]{.hl-yellow} allows us to concatenate [**variables of DIFFERENT type and SAME length**]{.hl-yellow} --> we will use [**tibble**]{.hl-yellow} as an enhanced database option.
-
----
-
 ## 💻 It's your turn {#tu-turno-0-2-3}
 
 [**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
@@ -2747,6 +2656,7 @@ Try to answer the questions posed in the **workbook `intro-R`**
 We will consider the `surveys.RData` file in which we have all poll surveys for Spain from 1982 to 2019.
 
 ```{r}
+#| eval: false
 load(file = "./data/surveys.RData")
 survey_data
 ```
@@ -2756,4 +2666,1662 @@ Try to answer the questions posed in the **workbook `intro-R`**
 
 
 
+
+
+
+# L3 : [welcome to tidyverse]{.flow} {#clase-0-3}
+
+[**Welcome to tidyverse. First actions against databases**]{style="color:#444442;"}
+
+* [💻 Solved exercises: vectors](#tu-turno-0-2-1) 
+
+* [💻 Solved exercises: data.frame and tibble](#tu-turno-0-2-3) 
+
+* [🐣 Workbook/case study I-II](#caso-practico-0-2-1)
+
+* [📆 Planning](#planificacion)
+
+---
+
+
+## Last attempt: tibble
+
+Tables in `data.frame` format have some [**limitations**]{.hl-red}. The main one is that [**does not allow recursion**]{.hl-red}: imagine that we define a database with heights and weights, and we want a third variable with the BMI.
+
+
+```{r}
+#| error: true
+data.frame("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70),
+           "BMI" = weight / (height^2))
+```
+
+. . .
+
+
+Hereafter we will use the `tibble` ([**enhanced data.frame**]{.hl-yellow}) format from the `{tibble}` package.
+
+```{r}
+library(tibble)
+data_tb <- 
+  tibble("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70), "BMI" = weight / (height^2))
+class(data_tb)
+data_tb
+```
+
+---
+
+## Last attempt: tibble
+
+```{r}
+data_tb <- 
+  tibble("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70), "BMI" = weight / (height^2))
+class(data_tb)
+data_tb
+```
+
+Las tablas en formato `tibble` nos permitirá una [**gestión más ágil, eficiente y coherente**]{.hl-yellow} de los data, con 4 ventajas principales:
+
+. . .
+
+- [**Metainformation**]{.hl-yellow}: if you look at the header, it automatically tells us the number of rows and columns, and the type of each variable
+
+. . .
+
+- [**Recursivity**]{.hl-yellow}: allows you to define the variables sequentially (as we have seen)
+
+
+
+---
+
+## Last attempt: tibble {#data-pasta}
+
+- [**Consistency**]{.hl-yellow}: if you access a column that does not exist, it warns
+
+```{r}
+#| warning: true
+data_tb$invent
+```
+
+. . .
+
+- [**By rows**]{.hl-yellow}: create by rows (copy and paste from a table) with `tribble()`.
+
+```{r}
+tribble(~colA, ~colB,
+        "a",   1,
+        "b",   2)
+```
+
+. . .
+
+::: callout-tip
+The `{datapasta}` package allows us to [**copy and paste**]{.hl-green} tables from web pages and simple documents as a tribble. See more in <https://milesmcbain.github.io/datapasta/articles/how-to-datapasta.html#pasting-a-table-as-a-formatted-tibble-definition-with-tribble_paste>
+:::
+
+
+---
+
+
+## In summary...
+
+- Each [**cell can be of a different type**]{.hl-yellow}: numbers, text, dates, logical values, etc. A [**vector is a concatenation of cells**]{.hl-yellow} (the future columns of our tables) --> In `R` by default operations are done [**element to element**]{.hl-yellow}.
+
+. . .
+
+- A [**matrix**]{.hl-yellow} allows us to concatenate [**variables of the SAME type and SAME length**]{.hl-yellow} --> tabular data.
+
+. . .
+
+- A [**data.frame**]{.hl-yellow} allows us to concatenate [**variables of DIFFERENT type and SAME length**]{.hl-yellow} --> we will use [**tibble**]{.hl-yellow} as an enhanced database option.
+
+---
+
+## Previously, in Breaking Bad...
+
+
+- Almost all «data objects» in `R` are vectors: a concatenation of values of the SAME TYPE
+
+```{r}
+vec_num <- c(1, 3, NA, 6)
+vec_string <- c("a", "b", "a", "d", "a", "e") # string = character
+vec_logical <- vec_string == "a"
+
+# dates ALWAYS as a character to conver to date (by default "yyyy-mm-dd" format)
+vec_dates <- c(as_date("1989-09-10"), as_date("1994-04-13"), as_date("1960-05-10"))
+```
+
+. . .
+
+- What happens if we try to combine different types of data?
+
+```{r}
+c(1, "a", 2)
+c("a", TRUE, FALSE, 1)
+c(as_date("1989-09-10"), "b", "a")
+```
+
+---
+
+## Previously, in Breaking Bad...
+
+- What happens if we try to use variables that they don't exist?
+
+```{r}
+#| error: true
+x <- -1
+y <- 0
+
+X + y
+```
+
+. . .
+
+- Why does the lower code not produce an error?
+
+```{r}
+#| error: true
+"TRUE" + 1
+```
+
+---
+
+## Previously, in Breaking Bad...
+
+- How to access to elements in a vector? Using `()` or `[]`?
+
+. . .
+
+- Which is the properly output?
+
+```{r}
+#| eval: false
+x <- seq(-1, 10, by = 2)
+x[c(3:4, 6)]
+```
+
+---
+
+## Previously, in Breaking Bad...
+
+- How to combine logical operators to filter elements in a vector by conditions?
+
+
+```{r}
+#| eval: false
+x <- c(-1, 2, 3, 7, 0, 4)
+y <- c(-5, -2, 4, -5, 4, 2)
+z <- c(1, 2, 3, 4, 5, 6)
+y[x > 2 | z < 3] # result?
+y[x > 2 & z < 3] # result?
+```
+
+
+---
+
+## Previously, in Breaking Bad...
+
+
+- What happens if we try to do arithmetic operations to a vector? Is the output a single number? A vector of length...?
+
+```{r}
+#| eval: false
+x <- c(-1, 0, NA, 2, 10, -7)
+x * 5 # result?
+x + 1
+```
+
+. . .
+
+- What happens if we try to sum vectors? Why does fail the second code?
+
+```{r}
+#| eval: false
+x <- c(-1, 0, NA, 2, 10, -7)
+y <- c(0, 3, 5, NA, 7, 3)
+z <- c(0, 1, -4, 2, 6)
+  
+# ok (output?)
+x + y
+x + z
+```
+
+## Previously, in Breaking Bad...
+
+
+- What happens if you ask to a vector if its elements verify a condition?
+
+```{r}
+#| eval: false
+x <- c(0, 1, -4, 2, -6)
+x <= 0
+```
+
+. . .
+
+Reminder that...
+
+- Ask which elements verify conditions: `x <= 0`
+- Access to elements in the same position that that ones that verify conditions: `x[x <= 0]` or `y[x <= 0]` 
+- How many elements verify conditions?: `sum(x <= 0)`
+- Which proportion verify conditions?: `mean(x <= 0)`
+- All of them verify conditions? Any?: `all(x <= 0)` or any(x <= 0)`
+
+---
+
+## Previously, in Breaking Bad...
+
+
+- How to order a vector?
+
+```{r}
+x <- c(0, 1, -4, 2, -6)
+sort(x) # ascendending
+sort(x, decreasing = TRUE) # descending
+```
+
+. . .
+
+Reminder that `something()` means a function and arguments are inside of `()`: there are optional arguments that modify the default mode of functions.
+
+. . .
+
+- How to do statistical operations?
+
+```{r}
+mean(x)
+median(x)
+var(x)
+quantile(x, probs = c(0.15, 0.67, 0.9))
+```
+
+
+---
+
+## Previously, in Breaking Bad...
+
+- Why matrices are bad idea?
+
+. . .
+
+```{r}
+x <- c(1, 2, 3)
+y <- c("a", "b", "c")
+cbind(x, y)
+```
+
+. . .
+
+Our [**final database format**]{.hl-yellow} will be the `tibble` type object, an enhanced `data.frame`.
+
+```{r}
+library(tibble)
+tibble("height" = c(1.7, 1.8, 1.6), "weight" = c(80, 75, 70), "BMI" = weight / (height^2))
+```
+
+- [**Metainformation**]{.hl-yellow}: in the header it automatically tells us the number of rows and columns, and the type of each variable.
+
+- [**Recursivity**]{.hl-yellow}: allows to define the variables sequentially (as we have seen).
+
+- [**Consistency**]{.hl-yellow}: if you access a column that does not exist it warns you with a warning.
+
+
+---
+
+## Previously, in Breaking Bad...
+
+To define a `tibble()` ourselves we have 3 options:
+
+1. [**Concatenating vectors**]{.hl-yellow} that we already have defined, making use of the `tibble()` function of the `{tibble}` package (already included in `{tidyverse}`)
+
+```{r}
+height <- c(1.7, 1.8, 1.6)
+weight <- c(80, 75, 70)
+BMI <- weight / (height^2)
+tibble("height" = height, "weight" = weight, "BMI" = BMI)
+```
+
+---
+
+## Previously, in Breaking Bad...
+
+2. [**Directly in a tibble**]{.hl-yellow} manually providing values and variable names
+
+```{r}
+tibble("height" = c(1.7, 1.8, 1.6),
+       "weight" = c(80, 75, 70),
+       "BMI" = weight / (height^2))
+```
+
+. . .
+
+or ... 3. import from an Excel/csv (we will see, be patient <3).
+
+---
+
+## R base vs Tidyverse
+
+So far, everything we have done in `R` has been done in the programming paradigm known as [**R base**]{.hl-yellow}. When `R` was born as a language, many of those who programmed in it imitated forms and methodologies inherited from other languages, based on the use of
+
+- Loops [**for**]{.hl-yellow} and [**while**]{.hl-yellow}
+
+- Dollar `$` to access to the variables 
+
+- Structures [**if-else**]{.hl-yellow}
+
+And although knowing these structures can be interesting in some cases, in [**most cases they are obsolete and we will be able to avoid them**]{.hl-red} (especially loops) since `R` is specially [**designed to work in a functional way**]{.hl-yellow} (instead of element-by-element).
+
+---
+
+## What is tidyverse?
+
+::: columns
+::: {.column width="50%"}
+![](img/tidyverrse_universe.jpg)
+:::
+
+::: {.column width="50%"}
+![](img/flow_tidyverse.jpg)
+:::
+:::
+
+In this context of functional programming, a decade ago `{tidyverse}` was born, a [**“universe” of packages**]{.hl-yellow} to guarantee an efficient, coherent and lexicographically simple to understand workflow, based on the idea that [**our data is clean and tidy**]{.hl-purple}.
+
+```{r}
+library(tidyverse)
+```
+
+
+---
+
+## What is tidyverse?
+
+::: columns
+::: {.column width="45%"}
+![](img/tidyverrse_universe.jpg)
+
+- `{lubridate}`: date management
+- `{rvest}`: web scraping
+- `{tidymodels}`: modeling/prediction
+
+:::
+
+::: {.column width="55%"}
+
+- `{tibble}`: optimizing data.frame
+- `{tidyr}`: data cleaning
+- `{readr}`: load rectangular data (.csv), `{readxl}`: import .xls and .xlsx files
+- `{dplyr}`: grammar for debugging
+- `{stringr}`: text handling
+- `{purrr}`: list handling
+- `{forcats}`: qualitative handling
+- `{ggplot2}`: data visualization
+
+:::
+:::
+
+
+
+---
+
+## What is tidyverse?
+
+::: columns
+::: {.column width="45%"}
+![](img/tidyverrse_universe.jpg)
+
+- `{lubridate}`: date management
+- `{rvest}`: web scraping
+- `{tidymodels}`: modeling/prediction
+
+:::
+
+::: {.column width="55%"}
+
+- `{tibble}`: [**optimizing data.frame**]{.hl-yellow}
+- `{tidyr}`: [**data cleaning**]{.hl-yellow}
+- `{readr}`: load rectangular data (.csv), `{readxl}`: import .xls and .xlsx files
+- `{dplyr}`: grammar for debugging
+- `{stringr}`: text handling
+- `{purrr}`: list handling
+- `{forcats}`: qualitative handling
+- `{ggplot2}`: data visualization
+
+:::
+:::
+
+
+---
+
+## Basic idea: tidy data
+
+> Tidy datasets are all alike, but every messy dataset is messy in its own way (Hadley Wickham, Chief Scientist en RStudio)
+
+::: {style="font-size:120px; text-align: center; color:#F8DF58;"}
+<b>TIDY</b><b>[VERSE</b>]{style="color:#CAB0EE;"}
+:::
+
+The [**universe**]{.hl-purple} of `{tidyverse}` packages is based on the idea introduced by **Hadley Wickham** (the God we pray to) of [**standardizing**]{.hl-yellow} the format of data to
+
+::: incremental
+- [**systematize**]{.hl-green} debugging
+- make it easier [**simpler**]{.hl-green} to manipulate
+- [**legible**]{.hl-green} code.
+:::
+
+---
+
+## Rules
+
+The first thing will therefore be to understand what the [**tidydata sets**]{.hl-yellow} are, since the whole `{tidyverse}` is based on the data being standardized.
+
+::: columns
+::: {.column width="50%"}
+::: {.fragment .fade-in}
+1.  Each [**variable**]{.hl-yellow} in a [**single column**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+2.  Each [**individual**]{.hl-yellow} in a [**different row**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+3.  Each [**cell**]{.hl-yellow} with a [**single value**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+4.  Each [**dataset**]{.hl-yellow} in a [**tibble**]{.hl-purple}
+:::
+
+::: {.fragment .fade-in}
+5.  If we want to join [**multiple datasets**]{.hl-yellow} we must have a [**common (key) column**]{.hl-purple}.
+:::
+:::
+
+::: {.column width="50%"}
+![](img/tidy_def.jpg){width="160%"}
+:::
+:::
+
+---
+
+## Pipe
+
+In `{tidyverse}` the [**operator pipe (pipe)**]{.hl-yellow} defined as `|>` ([**ctrl+shift+M**]{.hl-purple}) will be key: it will be a [**pipe that traverses the data**]{.hl-yellow} and transforms it.
+. . .
+
+::: columns
+::: {.column width="50%"}
+
+In R base, if we want to apply three functions `first()`, `second()` and `third()` in order, it would be
+
+```{r}
+#| eval: false
+third(second(first(data)))
+```
+:::
+
+::: {.column width="50%"}
+
+In `{tidyverse}` we can [**read from left to right**]{.hl-yellow} and separate data from the actions
+
+```{r}
+#| eval: false
+data |> first() |> second() |> third()
+```
+:::
+:::
+
+
+. . .
+
+::: callout-caution
+## Important
+
+Since version 4.1.0 of `R` we have `|>`, a **native** pipe available [**outside tidyverse**]{.hl-purple}, replacing the [**old pipe**]{.hl-red} `%>%` which depended on the `{magrittr}` package (quite problematic).
+
+:::
+
+---
+
+## Pipe
+
+The main advantage is that the [**code is very readable (almost literal)**]{.hl-yellow} and you can do large operations on the data with very little code.
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  tidy(...) |>
+  filter(...) |>
+  select(...) |>
+  arrange(...) |>
+  modify(...) |>
+  rename(...) |>
+  group(...) |>
+  count(...) |>
+  summarise(...) |>
+  plot(...)
+```
+:::
+
+::: {.column width="50%"}
+<center><img src="img/logo_pipe.png" width="360px"/></center>
+:::
+:::
+
+---
+
+## R base vs Tidyverse
+
+Before in R base
+
+```{r}
+#| eval: false
+output1 <- something_to_do_1(dataset$variable1)
+output2 <- something_to_do_2(output1$variable2)
+output3 <- something_to_do_3(output1$variable3)
+```
+
+. . .
+
+Now in tidyverse
+
+```{r}
+#| eval: false
+dataset |>
+  something_to_do_1(variable1) |>
+  something_to_do_2(variable2) |>
+  something_to_do_3(variable3)
+```
+
+---
+
+## R base vs Tidyverse
+
+Before in R base: get the Ozone and Temperature variables from July
+
+. . .
+
+```{r}
+airquality_tb <- tibble(airquality)
+airquality_tb[airquality_tb$Month == 7, c("Ozone", "Temp")]
+```
+
+. . .
+
+
+Now in tidyverse (thanks to conect with pipe we don't need `" "` neither `$`)
+
+```{r}
+airquality_tb |> 
+  filter(Month == 7) |> 
+  select(Ozone, Temp)
+```
+
+---
+
+
+## Preprocessing: dplyr
+
+Within `{tidyverse}` we will use the `{dplyr}` package for the [**preprocessing process**]{.hl-yellow} of the data.
+
+::: columns
+::: {.column width="60%"}
+![](img/dplyr.png){width=450}
+:::
+
+::: {.column width="40%"}
+```{r}
+#| eval: false
+data |>
+  tidy(...) |>
+  filter(...) |>
+  select(...) |>
+  arrange(...) |>
+  modify(...) |> # mutate in the code
+  rename(...) |>
+  group(...) |>
+  count(...) |>
+  summarise(...) |>
+  plot(...) # actually ggplot
+```
+:::
+:::
+
+The idea is that the [**code is as readable as possible**]{.hl-yellow}, as if it were a **list of instructions** that when read tells us in a very obvious way what it is doing.
+
+
+---
+
+## Assumption: tidydata
+
+::: columns
+::: {.column width="50%"}
+
+All the preprocessing process we are going to perform is on the [**assumption that our data is in tidydata**]{.hl-yellow}
+
+:::
+
+::: {.column width="50%"}
+![](img/tidy_def.jpg){width="160%"}
+:::
+::::
+
+Remember that in `{tidyverse}` the [**pipe operator**]{.hl-yellow} defined as `|>` ([**ctrl+shift+M**]{.hl-purple}) will be key: it will be a [**pipe that traverses the data**]{.hl-yellow} and transforms it.
+
+
+. . .
+
+Let us practice with the `starwars` dataset from the `{dplyr}` package.
+
+```{r}
+#| eval: false
+library(tidyverse)
+starwars
+```
+
+---
+
+
+## Sampling
+
+:::: columns
+::: {.column width="60%"}
+
+One of the most common operations is what is known in statistics as [**sampling**]{.hl-yellow}: a [**selection or filtering of records (rows)**]{.hl-yellow} (a subsample).
+
+
+:::
+
+::: {.column width="40%"}
+
+![](img/muestreo.jpeg){width=500}
+:::
+::::
+
+. . .
+
+
+* [**Non-random (by quota)**]{.hl-purple}: based on logical conditions on the records (`filter()`).
+
+. . .
+
+* [**Non-random (intentional/discretionary)**]{.hl-purple}: based on a position (`slice()`).
+
+. . .
+
+* [**Simple random**]{.hl-purple} (`slice_sample()`).
+
+. . .
+
+* [**Stratified**]{.hl-purple} (`group_by()` + `slice_sample()`).
+
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+The simplest action by rows is when [**filter records**]{.hl-yellow} based on some logical condition: with `filter()` only individuals meeting certain conditions will be selected (non-random sampling by conditions).
+
+
+::: incremental
+-   `==`, `!=`: [**equal**]{.hl-purple} or [**different**]{.hl-yellow} to (`|> filter(variable == "a")`)
+-   `>`, `<`: [**greater**]{.hl-purple} or [**less**]{.hl-yellow} than (`|> filter(variable < 3)`)
+-   `>=`, `<=`: [**greater or equal**]{.hl-yellow} or [**less or equal**]{.hl-purple} than (`|> filter(variable >= 5)`)
+-   `%in%`: values [**belong**]{.hl-yellow} to a set of discrete options (`|> filter(variable %in% c("blue", "green"))`)
+-   `between(variable, val1, val2)`: if continuous values are [**inside of a range**]{.hl-yellow} (`|> filter(between(variable, 160, 180))`)
+:::
+
+---
+
+## Filter rows: filter()
+
+These [**logical conditions**]{.hl-yellow} can be [**combined**]{.hl-yellow} in different ways (and, or, or mutually exclusive).
+
+
+![](img/tablas_verdad.png)
+
+. . .
+
+
+::: callout-tip
+## Important
+
+Remember that inside `filter()` there must always be something that returns a [**vector of logical values**]{.hl-green}.
+
+:::
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+How would you go about... [**filter**]{.hl-yellow} the characters with [**brown eyes**]{.hl-purple}?
+
+. . .
+
+[**What type of variable is it?**]{.hl-yellow} --> The `eye_color` variable is qualitative so it is represented by texts.
+
+. . .
+
+```{r}
+#| echo: false
+#| include: false
+library(tidyverse)
+```
+
+```{r}
+starwars |>
+  filter(eye_color == "brown")
+```
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+How would you go about... [**filter**]{.hl-yellow} the characters that [**do not have brown eyes**]{.hl-purple}?
+
+. . .
+
+
+```{r}
+starwars |>
+  filter(eye_color != "brown")
+```
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+How would you go about ... [**filter**]{.hl-yellow} characters that [**have brown or blue eyes**]{.hl-purple}?
+
+. . .
+
+```{r}
+starwars |>
+  filter(eye_color %in% c("blue", "brown"))
+```
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+Note that `%in%` is equivalent to concatenating several `==` with a conjunction or (`|`)
+
+```{r}
+starwars |>
+  filter(eye_color == "blue" | eye_color == "brown")
+```
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+How would you go about ... [**filter**]{.hl-yellow} the characters that [**are between 120 and 160 cm**]{.hl-purple}?
+
+. . .
+
+[**What type of variable is it?**]{.hl-yellow} --> The variable `height` is a continuous quantitative variable so we must filter by ranges of values (intervals) --> we will use `between()`.
+
+. . .
+
+```{r}
+starwars |>
+  filter(between(height, 120, 160))
+```
+
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+How would you... [**filter**]{.hl-yellow} characters that [**have eyes and are not human**]{.hl-purple}?
+
+. . .
+
+```{r}
+starwars |>
+  filter(eye_color == "brown" & species != "Human")
+```
+
+---
+
+## Filter rows: filter()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  filtro(condition)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  filter(condition)
+```
+:::
+:::
+
+How would you... [**filter**]{.hl-yellow} characters that [**have eyes and are not human, or are over 60 years old**]{.hl-purple}? Think it through: the [**parentheses are important**]{.hl-yellow}: $(a+b)*c$ is not the same as $a+(b*c)$.
+
+. . .
+
+```{r}
+starwars |>
+  filter((eye_color == "brown" & species != "Human") | birth_year > 60)
+```
+
+---
+
+## Drop missings: drop_na()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  drop_missings(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  drop_na(var1, var2, ...)
+```
+:::
+:::
+
+There is a special **filter** for one of the most common operations in debugging: [**remove absent**]{.hl-yellow}. For this we can use inside a filter `is.na()`, which returns `TRUE/FALSE` depending on whether it is absent, or ...
+
+. . .
+
+Use `drop_na()`: if we do not specify a variable, it removes records with missing in any variable. Later on we will see how to [**impute those missing**]{.hl-yellow} 
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  drop_na(mass, height)
+```
+
+```{r}
+#| echo: false
+starwars |>
+  drop_na(mass, height, sex) |> 
+  select(name, mass, height, hair_color) |> 
+  slice(1:7)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  drop_na()
+```
+
+```{r}
+#| echo: false
+starwars |>
+  drop_na() |> 
+  select(name, mass, height, hair_color) |> 
+  slice(1:7)
+```
+:::
+:::
+
+---
+
+## 💻 It's your turn {#tu-turno-3-1}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Select from the starwars set only those characters that are androids or whose `species` value is unknown.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter(species == "Droid" | is.na(species))
+```
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 Select from the starwars set only the characters whose weight is between 65 and 90 kg.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> filter(between(mass, 65, 90))
+```
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 After clearing absent in all variables, select from the starwars set only the characters that are human and come from Tatooine.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na() |> 
+  filter(species == "Human" & homeworld == "Tatooine")
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝 Select from the original starwars set non-human characters, `male` in sex and measuring between 120 and 170 cm, or characters with brown or red eyes.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter((species != "Human" & sex == "male" &
+            between(height, 120, 170)) |
+           eye_color %in% c("brown", "red"))
+```
+
+### [**Exercise 5**]{.hl-yellow}
+
+📝 Look for information in the `str_detect()` function help of the `{stringr}` package (loaded in `{tidyverse}`). Tip: test the functions you are going to use with some test vector beforehand so that you can check how they work. After you know what it does, filter out only those characters with the last name `Skywalker`.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> filter(str_detect(name, "Skywalker"))
+```
+:::
+
+---
+
+## Slices of data: slice()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> slice(positions)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice(positions)
+```
+:::
+:::
+
+Sometimes we may be interested in performing a [**non-random discretionary sampling**]{.hl-yellow}, or in other words, [**filter by position**]{.hl-yellow}: with `slice(positions)` we can select specific rows by passing as argument a [**index vector**]{.hl-yellow}.
+
+. . .
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+
+# fila 1
+starwars |>
+  slice(1)
+```
+
+```{r}
+#| echo: false
+starwars |> slice(1) |> select(name:hair_color)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+
+# from the 7th to the 9th row
+starwars |>
+  slice(7:9)
+```
+
+```{r}
+#| echo: false
+starwars |> slice(7:9) |> select(name:hair_color)
+```
+:::
+:::
+
+. . .
+
+```{r}
+#| eval: false
+
+# 2, 7, 10 and 31th rows
+starwars |>
+  slice(c(2, 7, 10, 31))
+```
+
+```{r}
+#| echo: false
+starwars |>
+  slice(c(2, 7, 10, 31)) |> select(name:sex)
+```
+
+---
+
+## Slices of data: slice()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  slice(positions)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice(positions)
+```
+:::
+:::
+
+We have default options:
+
+* with `slice_head(n = ...)` and `slice_tail(n = ...)` we can get the [**header and tail**]{.hl-yellow} of the table
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice_head(n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_head(n = 2) |> select(name:hair_color)
+```
+:::
+
+::: {.column width="\"50%"}
+```{r}
+#| eval: false
+starwars |> slice_tail(n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_tail(n = 2) |> select(name:hair_color)
+```
+:::
+:::
+
+---
+
+## Slices of data: slice()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  slice(positions)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice(positions)
+```
+:::
+:::
+
+We have default options:
+
+* with `slice_max()` and `slice_min()` we get the [**rows with smallest/largest value of a variable**]{.hl-yellow} (if tie, all unless `with_ties = FALSE`) which we indicate in `order_by = ...`.
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice_min(mass, n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_min(n = 2, order_by = mass) |> select(name:hair_color)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> slice_max(height, n = 2)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_max(n = 2, order_by = height) |> select(name:hair_color)
+```
+:::
+:::
+
+---
+
+## Random sampling
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  slice_aleatorias(positions)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice_sample(positions)
+```
+:::
+:::
+
+The so-called [**simple random sampling**]{.hl-yellow} is based on [**selecting individuals randomly**]{.hl-yellow}, so that each one has certain [**probabilities**]{.hl-yellow} of being selected. With `slice_sample(n = ...)` we can randomly extract n (a priori equiprobable) records.
+
+```{r}
+starwars |> slice_sample(n = 2)
+```
+
+. . .
+
+::: callout-important
+## Important
+
+[**"Random" does not imply equiprobable**]{.hl-yellow}: a normal die is just as random as a trick die. There are no things "more random" than others, they simply have different underlying probability laws.
+
+
+:::
+
+---
+
+## Random sampling
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  slice_random(positions)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice_sample(positions)
+```
+:::
+:::
+
+We can also indicate the [**proportion of data to sample**]{.hl-yellow} (instead of the number) and if we want it to be [**with replacement (that can be repeated)**]{.hl-yellow}.
+
+```{r}
+# 5% of random rows with replacement
+starwars |> 
+  slice_sample(prop = 0.05, replace = TRUE)
+
+```
+
+
+---
+
+
+## Random sampling
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  slice_random(positions)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  slice_sample(positions)
+```
+:::
+:::
+
+As we said, "random" is not the same as "equiprobable", so we can pass a [**probability vector**]{.hl-yellow}. For example, let's force that it is very improbable to draw a row other than the first two rows
+
+```{r}
+starwars |>
+  slice_sample(n = 2, weight_by = c(0.495, 0.495, rep(0.01/85, 85)))
+```
+
+. . .
+
+```{r}
+starwars |>
+  slice_sample(n = 2, weight_by = c(0.495, 0.495, rep(0.01/85, 85)))
+```
+
+---
+
+## sample()
+
+The `slice_sample()` function is simply a `{tidyverse}` integration of the basic `R` function known as `sample()` that allows us to [**sample elements**]{.hl-yellow}
+
+
+. . .
+
+For example, let's [**sample 10 rolls of a die**]{.hl-yellow}, telling it
+
+- [**support**]{.hl-purple} of our random variable (allowed values in `x`)
+- [**sample size**]{.hl-purple} (`size`)
+- [**replacement**]{.hl-purple} (if `TRUE` then they can come out repeated, as in the case of the die).
+
+```{r}
+sample(x = 1:6, size = 10, replace = TRUE)
+```
+
+---
+
+## sample()
+
+The previous option generates events of a random variable [**equiprobable**]{.hl-yellow} but as before, we can assign a vector of probabilities or [**mass function**]{.hl-yellow} to it with the argument `prob = ...`.
+
+
+```{r}
+sample(x = 1:6, size = 50, replace = TRUE,
+       prob = c(0.5, 0.2, 0.1, 0.1, 0.05, 0.05))
+```
+
+---
+
+
+## sample()
+
+**How would you make the following statement?**
+
+&nbsp;
+
+Suppose that seasonal flu episodes have been studied in a city. Let $X_m$ and $X_p$ be random variables such that $X_m=1$ if the mother has flu, $X_m=0$ if the mother does not have flu, $X_p=1$ if the father has flu and $X_p=0$ if the father does not have flu. The theoretical model associated with this type of epidemics indicates that the joint distribution is given by $P(X_m = 1, X_p=1)=0.02$, $P(X_m = 1, X_p=0)=0.08$, $P(X_m = 1, X_p=0)=0. 1$ and $P(X_m = 0, X_p=0)=0.8$
+
+**Generate a sample** of size $n = 1000$ (support `"10"`, `"01"`, `"00"` and `"11"`) by making use of `runif()` and by making use of `sample()`.
+
+
+---
+
+
+## Sort by rows: arrange()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> sort(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> arrange(var1, var2, ...)
+```
+:::
+:::
+
+We can also [**order by rows**]{.hl-yellow} according to some variable with `arrange()`.
+
+```{r}
+#| eval: false
+starwars |> arrange(mass)
+```
+
+```{r}
+#| echo: false
+starwars |> arrange(mass) |> select(name:eye_color) |> slice(1:5) 
+```
+
+. . .
+
+By [**from lowest to highest**]{.hl-yellow} but we can [**reverse the order**]{.hl-purple} with `desc()`.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> arrange(desc(height))
+```
+
+```{r}
+#| echo: false
+starwars |> arrange(desc(height)) |> select(name:mass) |> slice(1:5) 
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> arrange(mass, desc(height))
+```
+
+```{r}
+#| echo: false
+starwars |> arrange(mass, desc(height)) |> select(name:mass) |> slice(1:5) 
+```
+:::
+:::
+
+---
+
+## Remove duplicates: distinct()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> no_duplicates(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> distinct(var1, var2, ...)
+```
+:::
+:::
+
+Many times we will need to make sure that there are no duplicates in some variable (DNI) and we can [**delete duplicate rows**]{.hl-yellow} with `distinct()`.
+
+```{r}
+starwars |> distinct(sex)
+```
+
+. . .
+
+To keep all the columns of the table we will use `.keep_all = TRUE`.
+
+```{r}
+#| eval: false
+starwars |> distinct(sex, .keep_all = TRUE)
+```
+
+```{r}
+#| echo: false
+starwars |> distinct(sex, .keep_all = TRUE) |> slice(1:3)
+```
+
+---
+
+## Including rows: bind_rows()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+tibble1 |> include_rows(tibble2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+tibble1 |> bind_rows(tibble2)
+```
+:::
+:::
+
+Finally, we can [**bind new rows**]{.hl-yellow} with `bind_rows()` with [**new observations in table**]{.hl-red} (if columns do not match fill with absent)
+
+```{r}
+data <-
+  tibble("name" = c("javi", "laura"), "age" = c(33, 50))
+data
+```
+
+. . .
+
+```{r}
+data |> bind_rows(tibble("name" = c("carlos", NA), "cp" = c(28045, 28019)))
+```
+
+---
+
+
+## 💻 It's your turn {#tu-turno-3-2}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Select only the characters that are human and brown-eyed, then sort them in descending height and ascending weight.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter(eye_color == "brown" & species == "Human") |> 
+  arrange(height, desc(mass))
+```
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 Randomly extracts 3 records.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> slice_sample(n = 3)
+```
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 Extracts 10% of the records randomly.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> slice_sample(prop = 0.1)
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝R andomly draws 10 characters but in such a way that the probability of each character being drawn is proportional to its weight (heavier, more likely).
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(mass) |> 
+  slice_sample(n = 10, weight_by = mass)
+```
+
+### [**Exercise 5**]{.hl-yellow}
+
+📝 Select the 3 oldest characters.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> slice_max(birth_year, n = 3)
+```
+
+### [**Exercise 6**]{.hl-yellow}
+
+📝 To find out what unique values are in the hair color, remove duplicates of the `hair_color` variable by first removing the missing ones from the `hair_color` variable.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(hair_color) |> 
+  distinct(hair_color)
+```
+
+### [**Exercise 7**]{.hl-yellow}
+
+📝 Of the characters that are human and taller than 160 cm, eliminate duplicates in eye color, eliminate absent in weight, select the 3 tallest, and order from tallest to shortest in weight. Return the table.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter(species == "Human" & height > 160) |> 
+  distinct(eye_color, .keep_all = TRUE) |> 
+  drop_na(mass) |> 
+  slice_max(height, n = 3) |> 
+  arrange(desc(mass))
+```
+
+:::
 
