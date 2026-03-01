@@ -89,7 +89,9 @@ Currently, [**Assistant Professor at Technical University of Madrid (UPM)**]{.hl
 |:------:|:--------:|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
 | [1-1](#clase-0-1) | S1 | 17 feb | First steps: R base programming | [💻](#tu-turno-0-1-1) [💻](#tu-turno-0-1-2)  |  |  | 
 | [1-2](#clase-0-2) | S1 | 19 feb | First data: concatenate values and databases | [💻](#tu-turno-0-2-1) [💻](#tu-turno-0-2-2) [💻](#tu-turno-0-2-3) |  [🐣](#caso-practico-0-2-1) [🐣](#caso-practico-0-2-2) [🐣](#caso-practico-0-2-3) |  |
-| [1-3](#clase-0-3) | S2 | 24 feb | Welcome to tidyverse! |  [💻](#tu-turno-3-1) [💻](#tu-turno-3-2) |   |  |
+| [1-3](#clase-0-3) | S2 | 24 feb | Welcome to tidyverse! |  |   |  |
+| [1-4](#clase-0-4) | S2 | 26 feb | Starting with tidyverse |  [💻](#tu-turno-4-1) [💻](#tu-turno-4-2) |   |  |
+| [1-5](#clase-0-5) | S3 | 03 mar | More about tidyverse |  [💻](#tu-turno-5-1) [💻](#tu-turno-5-2) [💻](#tu-turno-5-3)  |   |  |
 :::
 :::
 
@@ -3261,6 +3263,7 @@ airquality_tb |>
 
 ---
 
+# L4: [starting with tidyverse]{.flow} {#clase-0-4}
 
 ## Preprocessing: dplyr
 
@@ -3705,13 +3708,13 @@ starwars |>
 
 ---
 
-## 💻 It's your turn {#tu-turno-3-1}
+## 💻 It's your turn {#tu-turno-4-1}
 
 [**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
 
 ::: panel-tabset
 
-### [**Exercise 1**]{.hl-yellow}
+### [**Ex 1**]{.hl-yellow}
 
 📝 Select from the starwars set only those characters that are androids or whose `species` value is unknown.
 
@@ -3722,7 +3725,7 @@ starwars |>
   filter(species == "Droid" | is.na(species))
 ```
 
-### [**Exercise 2**]{.hl-yellow}
+### [**Ex 2**]{.hl-yellow}
 
 📝 Select from the starwars set only the characters whose weight is between 65 and 90 kg.
 
@@ -3732,7 +3735,7 @@ starwars |>
 starwars |> filter(between(mass, 65, 90))
 ```
 
-### [**Exercise 3**]{.hl-yellow}
+### [**Ex 3**]{.hl-yellow}
 
 📝 After clearing absent in all variables, select from the starwars set only the characters that are human and come from Tatooine.
 
@@ -3744,7 +3747,7 @@ starwars |>
   filter(species == "Human" & homeworld == "Tatooine")
 ```
 
-### [**Exercise 4**]{.hl-yellow}
+### [**Ex 4**]{.hl-yellow}
 
 📝 Select from the original starwars set non-human characters, `male` in sex and measuring between 120 and 170 cm, or characters with brown or red eyes.
 
@@ -3757,16 +3760,337 @@ starwars |>
            eye_color %in% c("brown", "red"))
 ```
 
-### [**Exercise 5**]{.hl-yellow}
+### [**Ex 5**]{.hl-yellow}
 
-📝 Look for information in the `str_detect()` function help of the `{stringr}` package (loaded in `{tidyverse}`). Tip: test the functions you are going to use with some test vector beforehand so that you can check how they work. After you know what it does, filter out only those characters with the last name `Skywalker`.
+📝 Look for information in the `str_detect()` function help of the `{stringr}` package (loaded in `{tidyverse}`). Tip: test the functions you are going to use with some test vector beforehand so that you can check how they work. After you know what it does, filter out only those characters with the last name `Skywalker`. Check the function `str_detect(string, pattern)` from the `{stringr}` package (already included in tidvyerse). Think about the differences between `str_detect()` and `contains()`
 
 ```{r}
 #| code-fold: true
 #| eval: false
 starwars |> filter(str_detect(name, "Skywalker"))
 ```
+
+### [**Ex 6**]{.hl-yellow}
+
+📝 Keep only characters who have a height between 160 and 190 cm and have a mass between 50 and 90 kg and are not droids. How many characters satisfy all three conditions? Are they mostly `Human` or not?
+
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars_filter <-
+  starwars |>
+  filter(between(height, 160, 190) & between(mass, 50, 90) & 
+           species != "Droid")
+starwars_filter |> nrow()
+(starwars_filter |> filter(species == "Human") |> nrow()) >
+  (starwars_filter |> filter(species != "Human") |> nrow())
+```
+
+### [**Ex 7**]{.hl-yellow}
+
+📝 Keep only characters who belong to one of the following species (`"Human"`, `"Droid"`, `"Wookiee"`) and whose homeworld is either `"Tatooine"` or `"Naboo"`. Are there any Wookiees from Naboo ?
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars_filter <-
+  starwars |>
+  filter(species %in% c("Human", "Droid", "Wookiee") &
+           (homeworld == "Tattoine" | homeworld == "Naboo"))
+starwars_filter |> 
+  filter(species == "Wookie" & homeworld == "Naboo")
+```
+
+### [**Ex 8**]{.hl-yellow}
+
+📝 Keep characters who satisfy at least one of the following:
+
+- Height greater than 200 cm
+- Mass greater than 120 kg
+- Eye color is either `"red"` or `"yellow"`
+
+BUT exclude characters whose gender is `"none"`.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  filter((height > 200 | mass > 120 | eye_color %in% c("red", "yellow")) &
+           gender != "none")
+```
+
 :::
+
+---
+
+
+## Select columns: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> select(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+Up to now all operations performed (even if we used column info) were by rows. In the case of columns, the simplest action is to [**select variables by name**]{.hl-yellow} with `select()`, giving as arguments the column names [**without quotes**]{.hl-purple}.
+
+```{r}
+starwars |> select(name, hair_color)
+```
+
+---
+
+## Select columns: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> select(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+The `select()` function allows us to select several variables at once, including [**concatenating their names as if they were numerical indexes**]{.hl-yellow} with `:`
+
+```{r}
+#| eval: false
+starwars |> select(name:eye_color) 
+```
+
+```{r}
+#| echo: false
+starwars |> select(name:eye_color) |> slice(1:4)
+```
+
+. . .
+
+And we can [**unselect columns**]{.hl-yellow} with `-` in front of it (reminder: `-` for names/indexes and `!` for logical values)
+
+```{r}
+#| eval: false
+starwars |>  select(-mass, -(eye_color:starships))
+```
+
+```{r}
+#| echo: false
+starwars |> select(-mass, -(eye_color:starships)) |> slice(1:4)
+```
+
+---
+
+## Select columns: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> select(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+We have also [**reserved words**]{.hl-yellow}: `everything()` [**all variables**]{.hl-purple}....
+
+```{r}
+#| eval: false
+starwars |> select(mass, homeworld, everything())
+```
+
+```{r}
+#| echo: false
+starwars |> select(mass, homeworld, everything()) |> slice(1:4)
+```
+
+. . .
+
+...and `last_col()` to refer to [**last column**]{.hl-purple}.
+
+```{r}
+#| eval: false
+starwars |> select(name:mass, homeworld, last_col())
+```
+
+```{r}
+#| echo: false
+starwars |> select(name:mass, homeworld, last_col()) |> slice(1:4)
+```
+
+---
+
+## Select columns: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> select(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+We can also play with [**patterns**]{.hl-yellow} in the name, those that [**begin with a prefix**]{.hl-purple} (`starts_with()`), [**end with a suffix**]{. hl-purple} (`ends_with()`), [**contain text**]{.hl-purple} (`contains()`) or fulfill a [**regular expression**]{.hl-purple} (`matches()`).
+
+```{r}
+# variables which col name finish as "color" and contains sex and gender
+starwars |> select(ends_with("color"), matches("sex|gender"))
+```
+
+---
+
+## Select columns: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> select(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+We can even [**select by numeric range**]{.hl-yellow} if we have variables with a prefix and numbers.
+
+```{r}
+#| echo: false
+data <-
+  tibble("wk1" = c(115, 141, 232), "wk2" = c(7, NA, 17),
+         "wk3" = c(95, 162, NA), "wk4" = c(11, 19, 15),
+         "wk5" = c(NA, 262, 190), "wk6" = c(21, 15, 23))
+data
+```
+
+With `num_range()` we can select with a prefix and a numeric sequence.
+
+```{r}
+data |> select(num_range("wk", 1:4))
+```
+
+---
+
+## Select columns: select()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> select(var1, var2, ...)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> select(var1, var2, ...)
+```
+:::
+:::
+
+Finally, we can select columns by [**datatatype**]{.hl-yellow} using `where()` and inside a function that returns a logical value of datatype.
+
+```{r}
+# just numeric and string columns
+starwars |> select(where(is.numeric) | where(is.character))
+```
+
+---
+
+
+## 💻 It's your turn {#tu-turno-4-2}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Filter the set of characters and keep only those that do not have a missing data in the `height` variable. With the data obtained from the previous filter, select only the variables name, height, as well as all those variables that CONTAIN the word color in their name.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars_2 <-
+  starwars |> 
+  drop_na(height) |> 
+  select(name, height, contains("color"))
+```
+
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 From the original data set, select just character (string) columns. After that, filter only individuals which eye color contains the words `blue`. Check the function `str_detect(string, pattern)` from the `{stringr}` package (already included in tidvyerse). Think about the differences between `str_detect()` and `contains()`
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+starwars |> 
+  select(-where(is.list)) |> 
+  distinct(eye_color, .keep_all = TRUE) |> 
+  pull(eye_color)
+```
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 Using the starwars dataset, keep only characters who belong to the human specie and have a height greater than 180 cm. After that, remove observations with missing values in both previous variables. After that, select only the following variables: name, homeworld and all numeric variables.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  filter(species == "Human" & height > 180) |> 
+  drop_na(species, height) |> 
+  select(name, homeworld, where(is.numeric))
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝 Using the starwars dataset, keep only characters who are female and not human. After that, remove observations with missing values in homeworld, species and mass. Which species appear in the result? From which planets do they come? To answer this, check function `distinct()` (including in `{dplyr}` but try how to use it).
+
+:::
+
+
+
+# L5: [more about tidyverse]{.flow} {#clase-0-5}
 
 ---
 
@@ -4237,7 +4561,7 @@ data |> bind_rows(tibble("name" = c("carlos", NA), "cp" = c(28045, 28019)))
 ---
 
 
-## 💻 It's your turn {#tu-turno-3-2}
+## 💻 It's your turn {#tu-turno-5-1}
 
 [**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
 
@@ -4325,3 +4649,484 @@ starwars |>
 
 :::
 
+---
+
+
+## Move columns: relocate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  move(var1, after = var2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  relocate(var1, .after = var2)
+```
+:::
+:::
+
+To facilitate the [**relocation of variables**]{.hl-yellow} we have a function for it, `relocate()`, indicating in `.after` or `.before` [**behind**]{.hl-purple} or [**in front**]{.hl-purple} of which columns we want to move them.
+
+```{r}
+starwars |> relocate(species, .before = name)
+```
+
+---
+
+## Rename: rename()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> rename(new = old)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> rename(new = old)
+```
+:::
+:::
+
+Sometimes we may also want to [**modify the “meta-information ”**]{.hl-yellow} of the data, [**renaming columns**]{.hl-yellow}. To do this we will use `rename()` by typing [**first the new name**]{.hl-purple} and then the [**old**]{.hl-purple}.
+
+```{r}
+starwars |> rename(nombre = name, altura = height, peso = mass)
+```
+
+---
+
+## Extract columns: pull()
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> extract(var)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> pull(var)
+```
+:::
+:::
+
+
+If you look at the output of the `select()` [**still a tibble table**]{.hl-yellow}, it preserves the nature of our data.
+
+```{r}
+starwars |> select(name)
+```
+
+---
+
+
+## Extract columns: pull()
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> extract(var)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> pull(var)
+```
+:::
+:::
+
+
+Sometimes we will not want such a structure but [**literally extract the column in a VECTOR**]{.hl-yellow}, something we can do with `pull()`.
+
+
+```{r}
+starwars |> pull(name)
+```
+
+
+---
+
+
+## 💻 It's your turn {#tu-turno-5-2}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+
+
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Translate the names of the columns into Spanish.
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+starwars |> 
+  rename(nombre = name, altura = height, color_pelo = hair_color,
+         color_piel = skin_color, color_ojos = eye_color)
+```
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 Place the hair color variable just after the name variable.
+
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+starwars_2 |>
+  relocate(hair_color, .after = name)
+```
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 Check how many unique modalities there are in the hair color variable (without using `unique()`).
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+starwars_2 |>
+  distinct(hair_color)
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝 From the original data set, it removes the list type columns, and then removes duplicates in the `eye_color` variable. After removing duplicates it extracts that column into a vector.
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+starwars |> 
+  select(-where(is.list)) |> 
+  distinct(eye_color, .keep_all = TRUE) |> 
+  pull(eye_color)
+```
+
+### [**Exercise 5**]{.hl-yellow}
+
+📝 From the original starwars dataset, with only the characters whose height is known, extract in a vector with that variable.
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+starwars |> 
+  drop_na(height) |> 
+  pull(height)
+```
+
+### [**Exercise 6**]{.hl-yellow}
+
+📝 After obtaining the vector from the previous Exercise, use this vector to randomly sample 50% of the data so that the probability of each character being chosen is inversely proportional to their height (shorter, more options).
+
+```{r}
+#| code-fold: true
+#| eval: false
+
+heights <-
+  starwars |> 
+  drop_na(height) |> 
+  pull(height)
+  
+starwars |> 
+  slice_sample(prop = 0.5, weight_by = 1/heights)
+```
+
+:::
+
+
+
+---
+
+## Modify columns: mutate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> modify(new_var = funcion())
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> mutate(new_var = function())
+```
+:::
+:::
+
+In many occasions we will want to [**modify or create variables**]{.hl-yellow} with `mutate()`. 
+
+. . . 
+
+Let's create for example a new variable `height_m` with the height in meters.
+
+```{r}
+starwars |> mutate(height_m = height / 100)
+```
+
+---
+
+## Modify columns: mutate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> modify(new_var = funcion())
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> mutate(new_var = function())
+```
+:::
+:::
+
+In addition with the optional arguments we can [**reposition the modified column**]{.hl-yellow}
+
+```{r}
+starwars |> 
+  mutate(height_m = height / 100,
+         BMI = mass / (height_m^2), .before = name)
+```
+
+---
+
+## Modify columns: mutate()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> modify(new_var = funcion())
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> mutate(new_var = function())
+```
+:::
+:::
+
+::: callout-important
+## Important
+
+When we apply `mutate()`, we must remember that the [**operations are performed vector by vector**]{.hl-yellow}, element by element, so the function we use inside must return a vector of equal length. Otherwise, [**it will return a constant**]{.hl-red}.
+
+:::
+
+. . .
+
+```{r}
+starwars |> 
+  mutate(constante = mean(mass, na.rm = TRUE), .before = name)
+```
+
+---
+
+## Recategorize: if_else()
+
+We can also combine `mutate()` with the `if_else()` control expression to [**recategorize the variable**]{.hl-yellow}: if [**a condition**]{.hl-purple} is met, it does one thing, otherwise another.
+
+
+```{r}
+starwars |> 
+  mutate(human = if_else(species == "Human", "Human", "Not Human"),
+         .after = name) |> 
+  select(name:mass)
+```
+
+---
+
+## Recategorize: case_when()
+
+For [**more complex categorizations**]{.hl-yellow} we have `case_when()`, for example, to create a category of characters based on their height.
+
+```{r}
+starwars |> 
+  drop_na(height) |> 
+  mutate(altura = case_when(height < 120 ~ "dwarf",
+                            height < 160 ~ "short",
+                            height < 180 ~ "normal",
+                            height < 200 ~ "tall",
+                            TRUE ~ "giant"), .before = name)
+```
+
+
+---
+
+## 💻 It's your turn {#tu-turno-5-3}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Select only the variables name, height and as well as all those variables related to the color, while keeping only those that are not absent in the height.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  select(name, height, contains("color")) |> 
+  drop_na(height)
+```
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 With the data obtained from the previous Exercise, translate the names of the columns into Spanish or your mother language.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  select(name, height, contains("color")) |> 
+  drop_na(height) |> 
+  rename(nombre = name, altura = height,
+         color_pelo = eye_color, color_piel = skin_color,
+         color_pelo = hair_color)
+```
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 With the data obtained from the previous Exercise, place the hair color variable just after the name variable.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  select(name, height, contains("color")) |> 
+  drop_na(height) |> 
+  rename(nombre = name, altura = height,
+         color_pelo = eye_color, color_piel = skin_color,
+         color_pelo = hair_color) |> 
+  relocate(color_pelo, .after = nombre)
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝 With the original data, check how many unique modalities there are in the hair color variable.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  distinct(hair_color) |> 
+  nrow()
+```
+
+### [**Exercise 5**]{.hl-yellow}
+
+📝 From the original dataset, select only the numeric and text variables. Then define a new variable called `under_18` to recategorize the age variable: `TRUE` if under age and `FALSE` if not.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  select(where(is.numeric) | where(is.character)) |> 
+  mutate(under_18 = birth_year < 18)
+```
+
+### [**Exercise 6**]{.hl-yellow}
+
+📝 From the original dataset, create a new column named `auburn` that tells us TRUE if the hair color contains that word and FALSE otherwise (reminder `str_detect()`).
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  mutate(auburn = str_detect(hair_color, "auburn"))
+```
+
+### [**Exercise 7**]{.hl-yellow}
+
+📝 From the original dataset, include a column that calculates BMI. After that, create a new variable that values `NA` if not human, `underweight` below 18, `normal` between 18 and 30, `overweight` above 30.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> 
+  mutate(IMC = mass / ((height/100)^2),
+         IMC_recat = case_when(species != "Human" ~ NA,
+                               IMC < 18 ~ "underweight",
+                               IMC < 30 ~ "normal",
+                               TRUE ~ "overweight"),
+         .after = name)
+```
+
+:::
+
+
+
+--- 
+
+## 🐣 Case study I: Taylor Swift {#caso-practico-5-1}
+
+We will analyse Taylor Swift songs from `{taylor}` package (you need to install it before)
+
+
+```{r}
+library(taylor)
+taylor_album_songs
+```
+
+
+
+Try to answer the questions posed in the **workbook `intro-tidyverse`**
+
+
+---
+
+## 🐣 Case study II: The Lord of the Rings {#caso-practico-5-2}
+
+
+To practice some `{dplyr}` functions we are going to use data from the [**Lord of the Rings trilogy**]{.hl-yellow} movies. We will load the data directly from the web (Github in this case), without going through the computer before, simply **indicating as path the web where the file is**
+
+* The Fellowship of the Ring -> <https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Fellowship_Of_The_Ring.csv>
+
+* The 2 Towers -> <https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Two_Towers.csv>
+
+* The Return of the King -> <https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Return_Of_The_King.csv>.
+
+```{r}
+#| code-fold: true
+library(readr)
+lotr_1 <-
+  read_csv(file = "https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Fellowship_Of_The_Ring.csv")
+lotr_2 <-
+  read_csv(file = "https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Two_Towers.csv")
+lotr_3 <-
+  read_csv(file = "https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Return_Of_The_King.csv")
+```
+
+
+Try to answer the questions posed in the **workbook `intro-tidyverse`**
