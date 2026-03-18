@@ -91,7 +91,10 @@ Currently, [**Assistant Professor at Technical University of Madrid (UPM)**]{.hl
 | [1-2](#clase-0-2) | S1 | 19 feb | First data: concatenate values and databases | [💻](#tu-turno-0-2-1) [💻](#tu-turno-0-2-2) [💻](#tu-turno-0-2-3) |  [🐣](#caso-practico-0-2-1) [🐣](#caso-practico-0-2-2) [🐣](#caso-practico-0-2-3) |  |
 | [1-3](#clase-0-3) | S2 | 24 feb | Welcome to tidyverse! |  |   |  |
 | [1-4](#clase-0-4) | S2 | 26 feb | Starting with tidyverse |  [💻](#tu-turno-4-1) [💻](#tu-turno-4-2) |   |  |
-| [1-5](#clase-0-5) | S3 | 03 mar | More about tidyverse |  [💻](#tu-turno-5-1) [💻](#tu-turno-5-2) [💻](#tu-turno-5-3)  |   |  |
+| [1-5](#clase-0-5) | S3 | 03 mar | More about tidyverse |  [💻](#tu-turno-5-1) [💻](#tu-turno-5-2)  |   |  |
+| [1-6](#clase-0-6) | S3 | 05 mar | More about tidyverse  | [💻](#tu-turno-5-3)    |  [🐣](#caso-practico-6-1) [🐣](#caso-practico-6-2) |  |
+| [1-7](#clase-0-7) | S4 | 10 mar | Summaries in tidyverse. Export/import | [💻](#tu-turno-7-1)    | [🐣](#caso-practico-7-1) [🐣](#caso-practico-7-2)   |  |
+| [1-8](#clase-0-8) | S4 | 12 mar | Case study: NHANES |   |   |  |
 :::
 :::
 
@@ -4092,7 +4095,6 @@ starwars |>
 
 # L5: [more about tidyverse]{.flow} {#clase-0-5}
 
----
 
 ## Slices of data: slice()
 
@@ -4858,8 +4860,7 @@ starwars |>
 :::
 
 
-
----
+# L6: [more about tidyverse]{.flow} {#clase-0-6}
 
 ## Modify columns: mutate()
 
@@ -5089,7 +5090,7 @@ starwars |>
 
 --- 
 
-## 🐣 Case study I: Taylor Swift {#caso-practico-5-1}
+## 🐣 Case study I: Taylor Swift {#caso-practico-6-1}
 
 We will analyse Taylor Swift songs from `{taylor}` package (you need to install it before)
 
@@ -5106,7 +5107,7 @@ Try to answer the questions posed in the **workbook `intro-tidyverse`**
 
 ---
 
-## 🐣 Case study II: The Lord of the Rings {#caso-practico-5-2}
+## 🐣 Case study II: The Lord of the Rings {#caso-practico-6-2}
 
 
 To practice some `{dplyr}` functions we are going to use data from the [**Lord of the Rings trilogy**]{.hl-yellow} movies. We will load the data directly from the web (Github in this case), without going through the computer before, simply **indicating as path the web where the file is**
@@ -5130,3 +5131,1316 @@ lotr_3 <-
 
 
 Try to answer the questions posed in the **workbook `intro-tidyverse`**
+
+# L7: [summaries and import/export in tidyverse]{.flow} {#clase-0-7}
+
+
+## count()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> count(var1, var2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> count(var1, var2)
+```
+:::
+:::
+
+So far we have only transformed or queried the data but we have not generated statistics. Let's start with the simple: [**how to count (frequencies)?**]{.hl-yellow}
+
+. . .
+
+When used alone `count()` will simply return the number of records, but when used with `count()` variables it calculates what is known as [**frequencies**]{.hl-yellow}: [**number of elements of each modality**]{.hl-purple}.
+
+```{r}
+starwars |> count(sex)
+```
+
+---
+
+## count()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> count(var1, var2)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> count(var1, var2)
+```
+:::
+:::
+
+Also if we pass several variables it calculates what is known as a [**contiguity table**]{.hl-yellow}. With `sort = TRUE` it will return the [**ordered count**]{.hl-purple} (most frequent first).
+
+
+```{r}
+starwars |> count(sex, gender, sort = TRUE)
+```
+
+---
+
+## group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  group(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+:::
+
+One of the most powerful [**functions**]{.hl-yellow} to combine with the actions seen is `group_by()`, which will allow us to [**group our records**]{.hl-yellow} beforehand.
+
+
+```{r}
+starwars |> 
+  group_by(sex) |>
+  count() |>
+  ungroup()
+```
+
+---
+
+## group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  group(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+:::
+
+When applying `group_by()` it is important to understand that it [**DOES NOT MODIFY the data**]{.hl-yellow}, but creates a [**group variable**]{.hl-yellow} (sub-tables for each group) that will modify future actions: the [**operations will be applied to each sub-table separately**]{.hl-purple}
+
+. . .
+
+For example, imagine that we want to extract the highest character with `slice_max()`.
+
+```{r}
+starwars |> slice_max(height)
+```
+
+
+---
+
+## group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  group(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+:::
+
+What if we want to [**extract the tallest character but...of each of the sexes**]{.hl-yellow}?
+
+. . .
+
+```{r}
+starwars |>
+  group_by(sex) |> 
+  slice_max(height) |> 
+  ungroup()
+```
+
+---
+
+## group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  group(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+:::
+
+::: columns
+::: {.column width="50%"}
+![](img/tidydatatutor_1.jpg)
+:::
+
+::: {.column width="50%"}
+![](img/tidydatatutor_2.jpg)
+:::
+:::
+
+The web <https://tidydatatutor.com/> allows to visualize the operations of `{tidyverse}` (doing with the old pipe `%>%`)
+
+---
+
+## group_by()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |>
+  group(var1, var2) |> 
+  some_action() |> 
+  ungroup()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |>
+  group_by(var1, var2) |> 
+  some_action() |>
+  ungroup()
+```
+:::
+:::
+
+::: callout-important
+## Important
+
+You should always remember to [**make ungroup**]{.hl-red} to remove the created group variable.
+
+:::
+
+. . .
+
+The "new" version of `{dplyr}` now [**allows to include the group variable**]{.hl-yellow} in the call to many functions with the argument `by = ...` or `.by = ...`.
+
+```{r}
+#| eval: false
+starwars |> slice_max(height, by = sex)
+```
+
+```{r}
+#| echo: false
+starwars |> slice_max(height, by = sex) |> select(name:eye_color)
+```
+
+---
+
+## Row-by-row: rowwise()
+
+A very useful option used before an operation is also `rowwise()`: every [**operation that comes afterwards will be applied on each row separately**]{.hl-yellow}. For example, let's define a dummy set of grades.
+
+```{r}
+grades <- tibble("maths" = c(7.5, 8, 9.1, 3),
+                 "language" = c(8, 6, 6.5, 9.2))
+```
+
+. . .
+
+If we apply the average directly the value will be identical since it has done the global average, but we would like to get an [**average per record**]{.hl-yellow}. For that we will use `rowwise()`.
+
+```{r}
+grades |> 
+  rowwise() |> 
+  mutate(ave_grades = mean(c(maths, language)))
+```
+
+---
+
+## Summary: summarise()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> simple_summary()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> summarise()
+```
+:::
+:::
+
+Finally we have `summarise()`, which will allow us to get statistical summaries. For example, let's [**calculate the average of the heights**]{.hl-yellow}.
+
+```{r}
+starwars |> 
+  drop_na(height) |> 
+  summarise(ave_height = mean(height))
+```
+
+. . .
+
+::: callout-warning
+##  Be careful
+
+Notice that `mutate()` returns [**as many rows as original records**]{.hl-yellow}, while with `summarise()` it calculates a [**new summary dataset**]{.hl-purple}, only including what is indicated.
+
+:::
+
+---
+
+## Summary: summarise()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> simple_summary()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> summarise()
+```
+:::
+:::
+
+If we also [**combine this with the grouping**]{.hl-yellow} of `group_by()` or `.by = ...`, in a few lines of code you can get [**disaggregated statistics**]{.hl-purple}.
+
+```{r}
+starwars |> 
+  drop_na(sex, height, mass) |> 
+  summarise(ave_height = mean(height),
+            ave_mass = mean(mass),
+            .by = sex)
+```
+
+---
+
+## Summary: reframe()
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| eval: false
+data |> complex_summary()
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| eval: false
+starwars |> reframe()
+```
+:::
+:::
+
+In the new `{dplyr}` they have included `reframe()` to avoid `summarise()` problems when [**we return more than one value per variable**]{.hl-yellow} in more complex summaries.
+
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| warning: true
+starwars |>
+  drop_na(mass) |>
+  summarise(quantile(mass))
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+starwars |>
+  drop_na(mass) |>
+  reframe(quantile(mass))
+```
+:::
+:::
+
+---
+
+## across()
+
+One trick is to [**make use of selectors**]{.hl-yellow} `across()` and `where()`. The former allows us to [**act on several columns by name**]{.hl-purple} (with `mutate()` or `summarise()`).
+
+
+```{r}
+starwars |> summarise(ave = across(height:mass, mean, na.rm = TRUE), .by = sex)
+```
+
+. . .
+
+The second, `where()`, allows us to do the same but [**selecting by type**]{.hl-yellow}.
+
+```{r}
+starwars |> 
+  summarise(across(where(is.numeric), mean, na.rm = TRUE), .by = c(sex, gender))
+```
+
+
+---
+
+## 💻 It's your turn {#tu-turno-7-1}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Calculate how many characters there are of each species, ordered from most to least frequent.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> count(species, sort = TRUE)
+```
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 After eliminating missing variables for weight and height, add a new variable to calculate the BMI of each character, and determine the average BMI of our characters disaggregated by gender.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(mass, height) |> 
+  mutate(BMI = mass / ((height/100)^2)) |> 
+  summarise(ave_BMI = mean(BMI), .by = sex)
+```
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 Obtain the youngest character for each gender.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> # reminder that birth_year is in fact the age
+  slice_min(birth_year, by = sex)
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝 Get the age of the youngest and oldest character of each sex.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  drop_na(birth_year) |>
+  summarise(min(birth_year), max(birth_year), .by = sex)
+```
+
+### [**Exercise 5**]{.hl-yellow}
+
+📝 Determine the number of characters in each decade (take a look at `round()`, first without disaggregating and then disaggregated by sex.
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  count(birth_decade = round(birth_year, -1))
+```
+:::
+
+---
+
+## 🐣 Case study I: billboard {#caso-practico-7-1}
+
+We are going to do a **summary of what we learned** in `{tidyverse}` with the billboard table of the `{tidyr}` package. The dataset represents something similar to the top 40 (but American version and a top 100 instead of 40): for each artist and song we store the date when it entered the ranking, and the position it occupied in the ranking in each of the weeks (`wk1`, `wk2`, ...).
+
+
+```{r}
+#| eval: false
+billboard
+```
+
+```{r}
+#| echo: false
+billboard[, 1:8]
+```
+
+
+Try to answer the questions posed in the **workbook `intro-tidyverse`**
+
+
+---
+
+
+## 🐣 Case study II: speechs {#caso-practico-7-2}
+
+
+Although we cannot do arithmetic operations with them, some [**operations we can do with the text strings**]{.hl-yellow} will be important. For that we will use the `{stringr}` package (within the same `{lubridate}` “universe of packages”).
+
+```{r}
+library(stringr)
+```
+
+The dataset will be `discursos` (speeches, extracted from <https://github.com/lirondos/discursos-de-navidad>) where are stored the christmas speeches of the heads of state of Spain from 1946 to 2021 (in dictatorship and in democracy)
+
+```{r}
+load(file = "./data/discursos.RData")
+```
+
+Try to answer the questions posed in the **workbook `intro-tidyverse`**
+
+---
+
+
+
+## Import/export
+
+So far we have only used data already loaded in packages but many times [**we will need to import data externally**]{.hl-yellow}. One of the main [**strengths**]{.hl-yellow} of `R` is that we can import data very easily in different formats:
+
+
+* [**R native formats**]{.hl-yellow}: `.rda`, `.RData` and `.rds` formats.
+
+* [**Rectangular (tabular) data**]{.hl-yellow}: `.csv` and `.tsv` formats
+
+* [**Untabulated data**]{.hl-yellow}: `.txt` format.
+
+* [**Data in excel**]{.hl-yellow}: `.xls` and `.xlsx` formats
+
+* [**Data from SAS/Stata/SPSS**]{.hl-yellow}: `.sas7bdat`, `.sav` and `.dat` formats
+
+* [**Data from Google Drive**]{.hl-yellow}
+
+* [**Data from API's**]{.hl-yellow}: aemet, catastro, twitter, spotify, etc.
+
+---
+
+## R native formats
+
+The [**simplest**]{.hl-yellow} files to import into `R` (and which usually take up less disk space) are its own [**native extensions**]{.hl-yellow}: files in `.RData`, `.rda` and `.rds` formats. To load the former we simply need to [**use the native**]{.hl-yellow} function `load()` by providing it the file path.
+
+* `RData` file: we are going to import the file `world_bank_pop.RData`, which includes the dataset `world_bank_pop`
+
+
+```{r}
+load("./data/world_bank_pop.RData")
+world_bank_pop
+```
+
+
+---
+
+## R native formats
+
+* `.rda` file: we will import the airquality dataset from `airquality.rda`
+
+```{r}
+load("./data/airquality.rda")
+airquality |> as_tibble()
+```
+
+---
+
+## R native formats
+
+Note that files loaded with `load()` are [**automatically loaded into the environment**]{.hl-yellow} (with the originally saved name), and not only datasets can be loaded: `load()` allows us to load multiple objetcs (not only a tabular data)
+
+Native `.rda` and `.RData` files are a properly way to save your environment.
+
+```{r}
+#| eval: false
+load(file = "./data/multiple_objects.rda")
+```
+
+
+---
+
+## R native formats
+
+* `.rds` files: for this type we must use `readRDS()`, and we need to incorporate a [**argument `file`**]{.hl-yellow} with the path. In this case we are going to import [**lung cancer data**]{.hl-purple} from the North Central Cancer Treatment Group. Note that now [**.rds import files are a unique database**]{.hl-yellow}
+
+```{r}
+#| eval: false
+lung_cancer <-
+  readRDS(file = "./data/NCCTG_lung_cancer.rds") |>
+  as_tibble()
+```
+
+
+::: callout-important
+
+## Important
+
+The [**paths**]{.hl-yellow} must always be [**without spaces, ñ, or accents**]{.hl-yellow}. 
+
+:::
+
+---
+
+## Tabular data: readr
+
+The `{readr}` package within the `{tidyverse}` environment contains several useful functions for [**loading rectangular data (without formatting)**]{.hl-yellow}.
+
+:::: columns
+::: {.column width="50%"}
+
+* `read_csv()`: `.csv` files whose [**separator is comma**]{.hl-purple}
+* `read_csv2()`: [**semicolon**]{.hl-purple}
+* `read_tsv()`: [**tabulator**]{.hl-purple}.
+* `read_table()`: [**space**]{.hl-purple}.
+* `read_delim()`: generic function for [**character delimited files**]{.hl-purple}.
+
+
+:::
+
+::: {.column width="50%"}
+
+![](img/data-import-readr.png)
+:::
+::::
+
+All of them need as **argument the file path** plus **other optional** (skip header or not, decimals, etc). See more at <https://readr.tidyverse.org/>
+
+---
+
+## Tabular data (.csv, .tsv)
+
+The main advantage of `{readr}` is that it [**automates formatting**]{.hl-yellow} to go from a flat (unformatted) file to a tibble (in rows and columns, with formatting).
+
+. . .
+
+* File `.csv`: with `read_csv()` we will load [**comma separated**]{.hl-purple} files, passing as [**argument the path**]{.hl-yellow} in `file = ...`. Let's import the `chickens.csv` dataset (about cartoon chickens, why not). If you look at the output it gives us the type of variables.
+
+```{r}
+library(readr)
+chickens <- read_csv(file = "./data/chickens.csv")
+chickens
+```
+
+---
+
+## Tabular data (.csv, .tsv)
+
+
+The [**variable format**]{.hl-yellow} will normally be done [**automatically**]{.hl-yellow} by `read_csv()`, and we can query it with `spec()`.
+
+```{r}
+spec(chickens)
+```
+
+---
+
+## Tabular data (.csv, .tsv)
+
+Although it usually does it well automatically we can [**specify the format explicitly**]{.hl-yellow} in `col_types = list()` (in list format, with `col_xxx()` for each type of variable, for example `eggs_laid` will be imported as character). 
+
+
+```{r}
+chickens <-
+  read_csv(file = "./data/chickens.csv",
+           col_types = list(col_character(), col_character(),
+                            col_character(), col_character()))
+chickens
+```
+
+---
+
+## Tabular data (.csv, .tsv)
+
+We can even indicate that [**variables we want to select**]{.hl-yellow} (without occupying memory), by indicating it in `col_select = ...` (in list format, with `col_select = ...`).
+
+
+```{r}
+chickens <-
+  read_csv(file = "./data/chickens.csv",
+           col_select = c(chicken, sex, eggs_laid))
+chickens
+```
+
+---
+
+## Untabulated data (.txt)
+
+What happens when the [**separator is not correct**]{.hl-red}?
+
+. . .
+
+If we use `read_csv()` it expects the separator between columns to be a comma but, as you can see with the following `.txt`, it interprets everything as a single column: [**has no comma and does not know where to separate**]{.hl-yellow}
+
+```{r}
+datos_txt <- read_csv(file = "./data/massey-rating.txt")
+dim(datos_txt)
+as_tibble(datos_txt)
+```
+
+
+---
+
+## Untabulated data (.txt)
+
+To do this we have.
+
+* `read_csv2()` when the [**separator is semicolon**]{.hl-yellow}, `read_tsv()` when the [**is a tab**]{.hl-yellow} and `read_table()` when the [**is a space**]{.hl-yellow}.
+
+* `read_delim()` in general.
+
+```{r}
+datos_txt <- read_table(file = "./data/massey-rating.txt")
+as_tibble(datos_txt)
+```
+
+
+---
+
+## Excel data (.xls, .xlsx)
+
+Another key import package will be the `{readxl}` package for [**importing data from Excel**]{.hl-yellow}. Three functions will be key:
+
+* `read_xls()` specific to `.xls`, `read_xlsx()` specific to `.xlsx`.
+* `read_excel()`: for both `.xls` and `.xlsx`.
+
+. . .
+
+We are going to import `deaths.xlsx` with celebrity death records.
+
+```{r}
+library(readxl)
+deaths <- read_xlsx(path = "./data/deaths.xlsx")
+deaths
+```
+
+---
+
+## Excel data (.xls, .xlsx)
+
+
+```{r}
+deaths |> slice(1:6)
+```
+
+One thing that is [**very common misfortune**]{.hl-yellow} is that there is some kind of comment or text at the beginning of the file, having to [**skip those rows**]{.hl-yellow}.
+
+---
+
+## Excel data (.xls, .xlsx)
+
+We can [**skip these rows**]{.hl-yellow} directly in the load with `skip = ...` (indicating the number of rows to skip).
+
+```{r}
+deaths <- read_xlsx(path = "./data/deaths.xlsx", skip = 4)
+deaths
+```
+
+
+---
+
+## Excel data (.xls, .xlsx)
+
+In addition with `col_names = ...` we can already rename the columns in the import (if [**provide names assumes 1st line already as a data**]{.hl-yellow})
+
+```{r}
+#| code-line-numbers: "2-3"
+deaths <-
+  read_xlsx(path = "./data/deaths.xlsx", skip = 5,
+            col_names = c("name", "profession", "age", "kids", "birth", "death"))
+deaths
+```
+
+---
+
+## Excel data (.xls, .xlsx)
+
+Sometimes [**Excel dates are incorrectly formatted**]{.hl-red} (surprise): we can use `convertToDate()` from the `{openxlsx}` package to convert it.
+
+
+```{r}
+library(openxlsx)
+deaths$death <- convertToDate(deaths$death)
+deaths
+```
+   
+
+---
+
+## Excel data (.xls, .xlsx)
+
+We can also [**load an Excel with several sheets**]{.hl-yellow}: to [**indicate the sheet**]{.hl-yellow} (either by its name or by its number) we will use the argument `sheet = ...`.
+
+```{r}
+mtcars <- read_xlsx(path = "./data/datasets.xlsx", sheet = "mtcars")
+mtcars
+```
+
+---
+
+## Excel data (.xls, .xlsx)
+
+ 
+We can even indicate the [**range of cells**]{.hl-yellow} to load with `range = ...`.
+
+```{r}
+iris <- read_xlsx(path = "./data/datasets.xlsx", sheet = "iris", range = "C1:E4")
+iris
+```
+
+---
+
+## Import from SAS/STATA/SPSS
+
+The `{haven}` package within the tidyverse orbit will allow us to [**import files from the 3 most important payment software**]{.hl-yellow}: SAS, SPSS and Stata.
+
+```{r}
+library(haven)
+
+# SAS
+iris_sas <- read_sas(data_file = "./data/iris.sas7bdat")
+
+# SPSS
+iris_spss <- read_sav(file = "./data/iris.sav")
+
+# Stata
+iris_stata <- read_dta(file = "./data/iris.dta")
+```
+
+
+---
+
+
+## Export
+
+In the same way that we can import we can also [**export**]{.hl-yellow}
+
+* exported in `.RData` (recommended option for variables stored in `R`). Remember that this extension [**can only be used in `R`**]{.hl-yellow}. To do so, just use `save(object, file = path)`.
+
+```{r}
+table <- tibble("a" = 1:4, "b" = 1:4)
+save(table, file = "./data/table.RData")
+rm(table) # eliminar
+load("./data/table.RData")
+table
+```
+
+---
+
+## Export
+
+In the same way that we can import we can also [**export**]{.hl-yellow}
+
+* exported in `.RData` multiple objects
+
+```{r}
+table <- tibble("a" = 1:4, "b" = 1:4)
+a <- 1
+b <- c("javi", "sandra")
+save(table, a, b, file = "./data/mult_obj.RData")
+rm(list = c("a", "b", "table"))
+load("./data/mult_obj.RData")
+table
+```
+
+---
+
+## Export
+
+In the same way that we can import we can also [**export**]{.hl-yellow}
+
+* exported in `.csv`. To do this we simply use `write_csv(object, file = path)`.
+
+```{r}
+write_csv(table, file = "./data/table.csv")
+read_csv(file = "./data/table.csv")
+```
+
+---
+
+## Import from website
+
+One of the main advantages of `R` is that we can make use of all the previous functions of [**import but directly from a web**]{.hl-yellow}, without the need to perform the manual download: instead of passing it the local path we will indicate the [**link**]{.hl-yellow}. For example, we are going to download the covid data from ISCIII (<https://cnecovid.isciii.es/covid19/#documentaci%C3%B3n-y-datos>)
+
+```{r}
+#| eval: false
+covid_data <-
+  read_csv(file = "https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv")
+covid_data
+```
+
+```{r}
+#| echo: false
+covid_data <-
+  read_csv(file = "https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv", n_max = 500)
+covid_data
+```
+
+---
+
+## Import from wikipedia
+
+The `{rvest}` package, one of the most useful of `{tidyverse}` allows us to import directly from an `html`. For example, to export wikipedia tables just `read_html()` to import the html, `html_element("table")` to extract the table objects, and `html_table()` to convert the html table to `tibble`.
+
+```{r}
+library(rvest)
+wiki_jump <- 'https://en.wikipedia.org/wiki/Men%27s_long_jump_world_record_progression'
+wiki_jump |> read_html() |> 
+  html_element("table") |> 
+  html_table()
+```
+
+---
+
+
+## Import from google drive
+
+Another option available (especially if we work with other people working) is to [**import from a Google Drive spreadsheet**]{.hl-yellow}, making use of `read_sheet()` from the `{googlesheets4}` package.
+
+The first time you will be asked for a tidyverse permission to interact with your drive
+
+```{r}
+#| eval: false
+library(googlesheets4)
+google_sheet <-
+  read_sheet("https://docs.google.com/spreadsheets/d/1Uz38nHjl3bmftxDpcXj--DYyPo1I39NHVf-xjeg1_wI/edit?usp=sharing")
+google_sheet
+```
+
+---
+
+## Import from API (owid)
+
+Another interesting option is the [**data download from an API**]{.hl-yellow}: an intermediary between an app or data provider and our `R`. For example, let's load the `{owidR}` library, which allows us to download data from the web <https://ourworldindata.org/>. For example, the `owid_covid()` function loads without realizing it more than 400 000 records with more than 60 variables from 238 countries.
+
+```{r}
+#| eval: false
+library(owidR)
+owid_covid() |> as_tibble()
+```
+
+```{r}
+#| echo: false
+#| eval: false
+library(owidR)
+owid_covid() |> as_tibble() |> slice(1:7)
+```
+
+---
+
+## Import from API (aemet)
+
+In many occasions to connect to the API we will first have to [**register and obtain a key**]{.hl-yellow}, this is the case of the `{climaemet}` package to access [**Spanish meteorological data**]{.hl-yellow} (<https://opendata.aemet.es/centrodedescargas/inicio>).
+
+
+Once we have the API key we register it in our RStudio to be able to use it in the future.
+
+```{r}
+#| eval: false
+library(climaemet)
+
+# Api key
+apikey <- "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYXZhbHYwOUB1Y20uZXMiLCJqdGkiOiI4YTU1ODUxMS01MTE3LTQ4MTYtYmM4OS1hYmVkNDhiODBkYzkiLCJpc3MiOiJBRU1FVCIsImlhdCI6MTY2NjQ2OTcxNSwidXNlcklkIjoiOGE1NTg1MTEtNTExNy00ODE2LWJjODktYWJlZDQ4YjgwZGM5Iiwicm9sZSI6IiJ9.HEMR77lZy2ASjmOxJa8ppx2J8Za1IViurMX3p1reVBU"
+
+aemet_api_key(apikey, install = TRUE)
+```
+
+
+```{r}
+#| eval: false
+#| echo: false
+library(climaemet)
+```
+
+--- 
+
+## Import from API (aemet)
+
+
+With this package we can do a [**search for stations**]{.hl-yellow} to know both its postal code and its identifier code within the AEMET network
+
+```{r}
+#| eval: false
+stations <- aemet_stations()
+stations
+```
+
+---
+
+## Import from API (aemet)
+
+For example, to get data from the station of the airport of El Prat, Barcelona, the code to provide is `"0076"`, obtaining **hourly data**
+
+```{r}
+#| eval: false
+aemet_last_obs("0076")
+```
+
+
+---
+
+
+## Importar from API (US census)
+
+One of the most useful tools in recent years is known as `{tidycensus}`: a tool for [**facilitating the process of downloading census data**]{.hl-yellow} for the United States from `R`.
+
+```{r}
+library(tidycensus)
+```
+
+* `get_decennial()`: to access the [**census data (US Decennial Census)**]{.hl-yellow}, done every 10 years (years 2000, 2010 and 2020).
+
+* `get_acs()`: to access the [**annual and quinquennial (5 years) ACS (American Community Survey)**]{.hl-yellow} (census != survey)
+
+* `get_estimates()`: to access the [**annual population, birth and death estimates**]{.hl-yellow} (census != survey)
+
+* `get_pums()`: to access the [**microdata (unaggregated data) of the ACS (anonymized at the individual level)**]{.hl-yellow}
+
+* `get_flows()`: to access the [**migration flow**]{.hl-yellow} data.
+
+
+---
+
+## Importar from API (US census)
+
+For example, we will download the **census data** (`get_decennial()`) at the state level (`geography = “state”`) for the population (variable `variables = “P001001”`) for the year 2010 (see variables in `tidycensus::load_variables()`).
+
+```{r}
+total_population_10 <-
+  get_decennial(geography = "state", 
+  variables = "P001001",
+  year = 2010)
+total_population_10
+```
+
+
+
+---
+
+## Import from API 
+
+Other options:
+
+* `{chessR}`: data from chess matches. See <https://github.com/JaseZiv/chessR>
+
+* `{spotifyr}`: data from Spotify. See <https://www.rcharlie.com/spotifyr/>
+
+* `{gtrendsR}`: data from Google Trends. See <https://github.com/PMassicotte/gtrendsR>
+
+* `{scholar}`: data from <https://github.com/jkeirstead/scholar>
+
+# L8: [case study in tidyverse]{.flow} {#clase-0-8}
+
+## Q1
+
+> Carga el archivo .sav
+
+```{r}
+library(tidyverse)
+library(haven)
+datos_spss <- read_sav(file = "./data/SARCOIMAGE1&2_090724 (1).sav")
+```
+
+---
+
+## Q2-Q3
+
+> Determina número de individuos y número de variables
+
+> Necesitamos tener su código de paciente si o si. Determina de la forma que sepas la cantidad de pacientes que tienen código ausente
+
+```{r}
+#| code-fold: true
+#| eval: false
+# rbase
+sum(is.na(datos_spss$Código))
+
+# tidyverse
+datos_spss |> 
+  count(is.na(Código))
+
+datos_spss |> 
+  summarise("n_ausentes" = sum(is.na(Código)))
+```
+
+
+---
+
+## Q4a
+
+Selecciona solo las variables
+- Código, Edad, Peso, Talla, IMC, Velocidadmarcha1, Fumador, OBE_IMC
+- Charlson, SMM_ESPEN, Four_groups, Sarc_F, Fat_Mass_Index
+- variables relacionadas con sentarse/levantarse (SitStand)
+- variables relacionadas con sarcopenia (SARCO)
+
+```{r}
+#| code-fold: true
+datos4 <- 
+  datos_spss |> 
+  select(Código, Edad, Peso, Talla, IMC, Velocidadmarcha1, Fumador, OBE_IMC,
+         Charlson, SMM_ESPEN, Four_groups, Sarc_F, Fat_Mass_Index,
+         contains("SitStand"), contains("SARCO"))
+```
+
+---
+
+## Q4b
+
+Instala el paquete janitor y aplica janitor::clean_names() a esa tabla. ¿Qué ha hecho?
+
+```{r}
+#| code-fold: true
+datos4 <- 
+  datos_spss |> 
+  select(Código, Edad, Peso, Talla, IMC, Velocidadmarcha1, Fumador, OBE_IMC,
+         Charlson, SMM_ESPEN, Four_groups, Sarc_F, Fat_Mass_Index,
+         contains("SitStand"), contains("SARCO")) |> 
+  janitor::clean_names()
+```
+
+---
+
+## Q4c
+
+Renombra todas las variables seleccionadas del primer item - a inglés para tenerlo todo estandarizado
+
+```{r}
+#| code-fold: true
+datos4 <- 
+  datos_spss |> 
+  select(Código, Edad, Peso, Talla, IMC, Velocidadmarcha1, Fumador, OBE_IMC,
+         Charlson, SMM_ESPEN, Four_groups, Sarc_F, Fat_Mass_Index,
+         contains("SitStand"), contains("SARCO")) |> 
+  janitor::clean_names() |> 
+  rename(code = codigo, age = edad, mass = peso, height = talla,
+         bmi = imc, walk = velocidadmarcha1, smoker = fumador, obe_bmi = obe_imc)
+```
+
+---
+
+## Q4d
+
+
+La variable Four_groups contiene los 4 grupos de sarco: normal / obeso / sarcopénico / obeso-sarcopénico. Quédate solo con los pacientes de los que conocemos dicha clasificación.
+
+```{r}
+#| code-fold: true
+datos4 <- 
+  datos_spss |> 
+  select(Código, Edad, Peso, Talla, IMC, Velocidadmarcha1, Fumador, OBE_IMC,
+         Charlson, SMM_ESPEN, Four_groups, Sarc_F, Fat_Mass_Index,
+         contains("SitStand"), contains("SARCO")) |> 
+  janitor::clean_names() |> 
+  rename(code = codigo, age = edad, mass = peso, height = talla,
+         bmi = imc, walk = velocidadmarcha1, smoker = fumador, obe_bmi = obe_imc) |> 
+  drop_na(four_groups)
+write_csv(datos4, file = "./datos_ejercicio4.csv")
+```
+
+
+---
+
+## Q5
+
+¿Qué % de pacientes desconocemos su edad? ¿Y de cuántos desconocemos la puntuación SARC-F del cuestionario de cribado? Tras comprobarlo elimina todos los pacientes que tengan ausente en alguna de las dos.
+
+```{r}
+#| code-fold: true
+#| eval: false
+datos4 |> 
+  count(is.na(age)) |> 
+  mutate("porc" = 100*n/sum(n))
+
+datos4 |> 
+  summarise("porc_age" = 100*mean(is.na(age)),
+            "porc_sarcf" = 100*mean(is.na(sarc_f)))
+```
+
+```{r}
+#| code-fold: true
+datos5 <- 
+  datos4 |> 
+  drop_na(age, sarc_f)
+```
+
+---
+
+## Q6
+
+La variable Fat_Mass_Index representa algo parecido al BMI solo que con los 
+kg de grasa (kg de grasa / estatura^2). Con ella crea una nueva variable en el dataset que sean los kilos de grasa y otra que represente su % respecto a su peso.
+
+```{r}
+#| code-fold: true
+datos6 <-
+  datos5 |> # Fat_Mass_Index = (kg de grasa / estatura^2) 
+  # kg de grasa = Fat_Mass_Index* estatura^2
+  mutate("kg_fat" = fat_mass_index * (height^2),
+         "porc_fat" = 100*kg_fat/mass)
+```
+
+---
+
+## Q7
+
+En la tabla original existían las variables OBE_38FAT y OBE_40.9FAT que deberían almacenar un 1/0 en función de si la persona tiene más de un 38% de grasa o un 40.9%, respectivamente. Recategoriza tu la variable manualmente creando obe_38fat y obe_40fat con el % de grasa corporal creado en 6.
+
+```{r}
+#| code-fold: true
+datos7 <-
+  datos6 |>
+  mutate("obe_38fat" = porc_fat > 38,
+         "obe_40_9fat" = porc_fat > 40.9)
+```
+
+---
+
+## Q8
+
+Sabiendo que para recategorizar OBE_BMI se ha usado algún corte en BMI, haz uso de count() para "adivinar" que umbral se ha elegido.
+
+```{r}
+#| code-fold: true
+#| eval: false
+datos7 |> 
+  count(obe_bmi, bmi > 30)
+```
+
+---
+
+## Q9
+
+* SitStand → valor numérico en segundos (tiempo en completar prueba, menos tiempo = mejor)
+SitStand_DICO → dicotomizado con un umbral general
+* SitStand_ESPEN_DICO → dicotomizado con el umbral específico de ESPEN
+
+La diferencia entre SitStand_DICO y SitStand_ESPEN_DICO es simplemente que  usan umbrales distintos para clasificar, ¿cómo podríamos comprobar en qué valores  de SitStand empiezan a divergir los dos? Detecta los umbrales usados en ambos
+
+```{r}
+#| code-fold: true
+datos7 |> 
+  filter(sit_stand_dico == 1 & sit_stand_espen_dico == 0) |> 
+  slice_min(sit_stand)
+```
+  
+
+---
+
+## Q10
+
+Analicemos la relación entre Fat_Mass_Index y BMI:
+* 10a. Si tuviéses que cuantificar su relación/asociación con un solo número, ¿qué usarías? Incluye eso en lo que estés pesando en una tabla resumen junto con la media yb la mediana de cada una de las variables
+
+
+
+---
+
+## Q10
+
+10b. Repite el proceso pero desagregado por categoría de Four groups
+
+---
+
+## Q10
+
+10c. Volviendo al caso sin desagregar, ¿cómo saber si esa correlación es suficientemente distinta de 0 para decir que existe una asociación (estadísticamente  significativa) entre ambas? Incluye lo que te permite concluirlo en la tabla resumen del 9a.
+
+
+---
+
+## Q10
+
+10d. Exporta el resumen obtenido en 9c. a un .csv
+
+---
+
+## Q11
+
+Analicemos la relación entre fumador y la clasificación en 4 grupos
+
+* 11a. Recodifica la variable fumador (y tras ello retira los NA en la variable) para tener algo binario
+   - 0 si nunca fumó (0) o si tiene NA pero fumó menos de 10 cigarros de media al día
+   - 1 si fuma (1) o si tiene NA pero fumó igual o más de 10 cigarros de media al día
+   - si es ex-fumador (2):
+     - 1 si lo hizo más de 20 años o más de 15 cigarros diarios.
+     - 0 en caso contrario.
+   - NA si tiene NA en Fumador y NA en cigarros de media al día
+
+---
+
+## Q11
+
+11b. ¿Qué usarías para cuantificar la relación entre fumar/no fumar y la clasificación en 4 grupos?
+
+---
+
+## Q12
+
+La variable Sarc_F sale de un cribado hecho mediante cuestionario (paciente reporta sus dificultades de manera subjetiva). Puede dar falsos negativos si el paciente no percibe su limitación o la minimiza. Sin embargo SARCO_PROB/CONFI/SEVERE → diagnóstico objetivo basado en mediciones reales (masa muscular, fuerza, función física, etc)
+
+* 12a. Recategoriza Sarc_F tal que >= 4 --> 1 y 0 en otro caso
+
+---
+
+## Q12
+
+* 12b. ¿Existe relación entre el cribado y SARCO_PROB?
+
+
+---
+
+## Q12
+
+* 12c. Si definimos como SARCO_PROB = 1 verdaderos positivos, crea una tabla resumen que incluya:
+- pvalor del 11b
+- accuracy: del total de todas, qué % está bien clasificado por Sarc_F?)
+- sensibilidad: del total de verdaderos positivos, qué % está bien clasificado?
+- especificidad: del total de verdaderos negativos, ¿qué % está bien clasificado?
