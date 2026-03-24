@@ -98,6 +98,20 @@ Currently, [**Assistant Professor at Technical University of Madrid (UPM)**]{.hl
 :::
 :::
 
+---
+
+## Planning: applied statistics in R  {#planificacion-2}
+
+Click here [Module 2](#module-2) to module 2.
+
+::: column-screen-inset-right
+::: {style="font-size:20px"}
+|  LESSON | WEEK | DATES | TOPIC | EX. | WORKBOOK | TASK | 
+|:------:|:--------:|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
+| [1-1](#clase-1-1) | S1 | 24 mar | Introduction to ggplot2 | [💻](#tu-turno-2-1-1)   |  |  | 
+| [1-2](#clase-1-2) | S1 | 26 mar | ... | ... |  ... |  |
+:::
+:::
 
 ---
 
@@ -111,9 +125,7 @@ Currently, [**Assistant Professor at Technical University of Madrid (UPM)**]{.hl
   - **workbooks** contained in `workbooks` folder.
   - **cheatsheets of packages** contained in `cheatsheets-packages` folder.
   
-<!---
-* [🗃 **Data**]{.hl-yellow}: datasets that will be used, available on **<https://javieralvarezliebana.es/docencia/mucss-data-programming/material>** or **Google Drive** <https://drive.google.com/drive/folders/18Ok6Epqcimszqguj_JTTLuSbs5Ot5Srd?usp=sharing>
---->
+* [🗃 **Data**]{.hl-yellow}: datasets that will be used, available on [**Google Drive**](https://drive.google.com/drive/folders/17TJJKu6vhcEfb99LtiVZZtTCy6xQ4DXf?usp=sharing)
 
 * [📚 **Extra resources**]{.hl-yellow}:  <https://r4ds.had.co.nz/>, <https://cdr-book.github.io/> and <https://ivelasq.quarto.pub/intro-to-quarto/>.
 
@@ -6018,6 +6030,7 @@ covid_data
 
 ```{r}
 #| echo: false
+#| eval: false
 covid_data <-
   read_csv(file = "https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv", n_max = 500)
 covid_data
@@ -6030,6 +6043,7 @@ covid_data
 The `{rvest}` package, one of the most useful of `{tidyverse}` allows us to import directly from an `html`. For example, to export wikipedia tables just `read_html()` to import the html, `html_element("table")` to extract the table objects, and `html_table()` to convert the html table to `tibble`.
 
 ```{r}
+#| eval: false
 library(rvest)
 wiki_jump <- 'https://en.wikipedia.org/wiki/Men%27s_long_jump_world_record_progression'
 wiki_jump |> read_html() |> 
@@ -6153,6 +6167,7 @@ library(tidycensus)
 For example, we will download the **census data** (`get_decennial()`) at the state level (`geography = “state”`) for the population (variable `variables = “P001001”`) for the year 2010 (see variables in `tidycensus::load_variables()`).
 
 ```{r}
+#| eval: false
 total_population_10 <-
   get_decennial(geography = "state", 
   variables = "P001001",
@@ -6444,3 +6459,1515 @@ La variable Sarc_F sale de un cribado hecho mediante cuestionario (paciente repo
 - accuracy: del total de todas, qué % está bien clasificado por Sarc_F?)
 - sensibilidad: del total de verdaderos positivos, qué % está bien clasificado?
 - especificidad: del total de verdaderos negativos, ¿qué % está bien clasificado?
+
+# MODULE 2: applied statistics in R {#module-2}
+
+
+# L1: [introduction to ggplot]{.flow} {#clase-1-1}
+
+
+
+[**Introduction to ggplot: dataviz is not just a pretty tool**]{style="color:#444442;"}
+
+* [📆 Planning](#planificacion-2)
+
+---
+
+## Statistics in R
+
+💡 [**Core idea**]{.hl-yellow}
+
+> Before modeling, inferring, or testing… we need to understand the data. And that starts by looking at it
+
+. . .
+
+🎯 Why is **visualization key in statistics**?
+
+. . .
+
+1. It **reveals** what numbers hide
+2. It **helps** identify patterns and relationships
+3. It **detects** errors and outliers, helping with data cleaning
+4. It helps **formulate hypotheses**, even though a graph alone cannot confirm or reject them
+5. Analysis doesn’t end with results: what is not **communicated** does not exist
+
+---
+
+## Example
+
+1. Get into **groups** until you form 4 teams. Each team should download a `.csv` file (click [here](https://drive.google.com/drive/folders/17TJJKu6vhcEfb99LtiVZZtTCy6xQ4DXf?usp=sharing))
+
+. . .
+
+2. Each team should **import their file** by placing the `.csv` inside the RStudio project and loading it into R **as a tibble**.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+dataset_1 <- anscombe |> as_tibble() |> select(x1, y1)
+dataset_2 <- anscombe |> as_tibble() |> select(x2, y2)
+dataset_3 <- anscombe |> as_tibble() |> select(x3, y3)
+dataset_4 <- anscombe |> as_tibble() |> select(x4, y4)
+```
+
+. . .
+
+3. Create a **summary table** similar to the one below by calculating the mean of x and y, the variance of x and y, and their correlation.
+
+```{r}
+#| echo: false
+dataset_1 |>
+  summarise("mean_x" = mean(x1), "mean_y" = mean(y1),
+            "var_x" = var(x1), "var_y" = var(y1),
+            "cor_xy" = cor(x1, y1))
+```
+
+. . .
+
+4. Share the results from each group with the class. **What conclusions do you draw?**
+
+---
+
+## Example
+
+
+```{r}
+#| code-fold: true
+dataset_1 |>
+  summarise("mean_x" = mean(x1), "mean_y" = mean(y1),
+            "var_x" = var(x1), "var_y" = var(y1),
+            "cor_xy" = cor(x1, y1)) |> 
+  mutate("dataset" = "dataset_1") |> 
+  bind_rows(dataset_2 |>
+              summarise("mean_x" = mean(x2), "mean_y" = mean(y2),
+                        "var_x" = var(x2), "var_y" = var(y2),
+                        "cor_xy" = cor(x2, y2)) |> 
+              mutate("dataset" = "dataset_2")) |> 
+  bind_rows(dataset_3 |>
+              summarise("mean_x" = mean(x3), "mean_y" = mean(y3),
+                        "var_x" = var(x3), "var_y" = var(y3),
+                        "cor_xy" = cor(x3, y3)) |> 
+              mutate("dataset" = "dataset_3")) |> 
+  bind_rows(dataset_4 |>
+              summarise("mean_x" = mean(x4), "mean_y" = mean(y4),
+                        "var_x" = var(x4), "var_y" = var(y4),
+                        "cor_xy" = cor(x4, y4)) |> 
+              mutate("dataset" = "dataset_4"))
+```
+
+**ALL** the summary measures are identical to the first decimal place → [**Are the four datasets essentially the same?**]{.hl-orange}
+
+---
+
+## Example
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(showtext)
+library(sysfonts)
+
+font_add_google("Space Grotesk", "space")
+showtext_auto()
+theme_own <- 
+  theme_minimal(base_family = "space") + 
+  theme(legend.position = "bottom",
+        plot.title = element_text(face = "bold", size = 17),
+        plot.subtitle =
+          element_text(face = "bold", size = 13, color = "grey30"),
+        axis.title = element_text(size = 13))
+
+datasets <-
+  dataset_1 |> 
+  rename(x = x1, y = y1) |> 
+  mutate("dataset" = "dataset_1") |> 
+  bind_rows(dataset_2 |> 
+              rename(x = x2, y = y2) |> 
+              mutate("dataset" = "dataset_2")) |> 
+  bind_rows(dataset_3 |> 
+              rename(x = x3, y = y3) |> 
+              mutate("dataset" = "dataset_3")) |> 
+  bind_rows(dataset_4 |> 
+              rename(x = x4, y = y4) |> 
+              mutate("dataset" = "dataset_4"))
+ggplot(datasets,
+       aes(x = x, y = y, color = dataset)) + 
+  geom_point(alpha = 0.65, size = 4.5) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.5,
+              linetype = "dashed") +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~dataset) +
+  theme_own +
+  labs(color = "dataset", 
+       title = "Are the same dataset?",
+       subtitle = "Datasets extracted from the well-known Anscombe's Quartet. All datasets fit the same regression line")
+```
+
+---
+
+## Dataviz: not only a pretty tool
+
+```{r}
+#| echo: false
+#| eval: false
+library(datasauRus)
+datasaurus_dozen |> 
+  summarise("mean_x" = mean(x), "mean_y" = mean(y), "cor_xy" = cor(x, y),
+            .by = dataset)
+```
+
+
+```{r}
+#| code-fold: true
+library(datasauRus)
+ggplot(datasaurus_dozen |> 
+         filter(dataset != "v_lines"),
+       aes(x = x, y = y, color = dataset)) +
+  geom_point(alpha = 0.7, size = 2) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.5,
+              linetype = "dashed") +
+  MetBrewer::scale_color_met_d(palette_name = "Renoir") +
+  facet_wrap(~ dataset, ncol = 3) +
+  theme_own +
+  labs(title = "Datasaurus dozen dataset")
+```
+
+---
+
+
+## Dataviz: a bit of history
+
+
+The emergence of statistical graphics is [**relatively recent in science**]{.hl-yellow}, since until the Middle Ages the only visualizations were **maps**
+
+:::: columns
+::: {.column width="60%"}
+
+It was when [**navigation and astronomy**]{.hl-yellow} began to gain importance that the first graph (not strictly statistical) appeared, depicting the cyclical movement of the planets (10th–11th centuries).
+
+:::
+
+::: {.column width="40%"}
+![](img/dataviz_historico_1.png){width="370"}
+:::
+::::
+ 
+
+. . .
+
+Most experts, such as Tufte [^3] [^4], consider this nearly longitudinal chart as the [**first data visualization**]{.hl-yellow} in history, created by Van Langren in 1644, showing the **distance between Toledo and Rome**
+
+```{r}
+#| echo: false
+knitr::include_graphics("./img/longitud_dataviz.jpg")
+``` 
+
+::: {style="font-size:60%"}
+
+[^1]: [«Gramática de las gráficas: pistas para mejorar las representaciones de datos» de Joaquín Sevilla](http://academica-e.unavarra.es/bitstream/handle/2454/15785/Gram%C3%A1tica.pdf)
+
+[^2]: [«Quantitative Graphics in Statistics: A Brief History» de James R. Beniger y Dorothy L. Robyn. The American Statistician (1978)](https://www.jstor.org/stable/2683467)]
+
+[^3]: [«Visual explanations: images and quantities, evidence and narrative» de E. Tufte](https://archive.org/details/visualexplanatio00tuft)
+
+[^4]: [«PowerPoint is evil» de E. Tufte](https://www.wired.com/2003/09/ppt2/)
+
+:::
+
+---
+
+## Dataviz: a bit of history
+
+In the 17th century, there was a boom in statistics as it began to be applied to [**demography**]{.hl-yellow}. One of the most important authors was J. Graunt, author of Natural and Political Observations Made upon the Bills of Mortality (1662), who estimated the population of London using the [**first birth and death tables**]{.hl-yellow}.
+
+However, the figure who truly transformed data visualization was, without a doubt, the economist and politician [**William Playfair (1759–1823)**]{.hl-yellow}, who in 1786 published the **Political and Commercial Atlas** featuring 44 charts (including the most famous bar chart in history).
+
+
+```{r echo = FALSE, out.width = "30%", fig.align = "center", fig.cap = "Extracted from Funkhouser and Walker (1935)"}
+knitr::include_graphics("./img/playfair_6.jpg")
+``` 
+
+
+
+
+[^5]: [«Atlas político y comercial» de William Playfair (1786)](https://www.amazon.es/Playfairs-Commercial-Political-Statistical-Breviary/dp/0521855543)
+
+[^6]: [«Playfair and his charts» de H. Gray Funkhouser and  Helen M. Walker (1935)](https://www.jstor.org/stable/45366440)
+
+
+---
+
+
+## What is a dataviz?
+
+
+Is this a statistical dataviz? Why or why not?
+
+![](img/cuadro_dataviz.jpg)
+
+
+. . .
+
+There is [**no INFORMATION**]{.hl-red} represented.
+
+---
+
+## What is a dataviz?
+
+Is this a statistical dataviz? Why or why not?
+
+
+![](img/celsius_dataviz.jpg)
+
+. . .
+
+There is [**no DATA**]{.hl-red} represented (just a physical magnitude and its conversion, just a formula)
+
+---
+
+## What is a dataviz?
+
+These same questions were posed by **Joaquín Sevilla** [^7 ], who provided [**3 requirements**]{.hl-yellow}:
+
+1. It must be based on the [**metric axis**]{.hl-yellow} framework (measurement process): it must [**measure something**]{.hl-yellow}.
+2. It must include [**statistical information (data)**]{.hl-yellow}.
+3. The [**representational relationship**]{.hl-yellow} must be [**reversible**]{.hl-purple}: the data should be able to be “recovered” from the chart.
+
+[^7]: [«Gramática de las gráficas: pistas para mejorar las representaciones de datos» de Joaquín Sevilla](http://academica-e.unavarra.es/bitstream/handle/2454/15785/Gram%C3%A1tica.pdf)
+
+---
+
+## Vizfails
+
+::: columns
+::: {.column width="55%"}
+![](img/persona_dataviz.jpg)
+:::
+
+::: {.column width="45%"}
+
+* The chosen figure (person walking) has no relation to what is being visualized: [**poor metaphor**]{.hl-red}.
+
+* The [**marked sectors have no relation to the item**]{.hl-red} being represented, making interpretation difficult.
+
+* The [**colors are uncoded**]{.hl-red}: they provide no information.
+
+* The [**irregular shapes prevent comparison**]{.hl-red} of areas (also, the total exceeds 100%).
+
+* No source provided
+
+:::
+::::
+
+
+---
+
+## Vizfails
+
+![](img/viz_fail_covid.jpg)
+
+---
+
+## Context is crucial
+
+A **good idea can be poorly executed**: how it is implemented matters.
+
+![](img/semaforos.jpg)
+
+---
+
+
+## Dataviz resources
+
+
+📚 [«The Functional Art: an introduction to information graphics and visualization» de Alberto Cairo](https://www.amazon.es/Functional-Art-Voices-That-Matter/dp/0321834739)
+
+
+📚 [«Gramática de las gráficas: pistas para mejorar las representaciones de datos» de Joaquín Sevilla](https://academica-e.unavarra.es/bitstream/handle/2454/15785/Gram%C3%A1tica.pdf)
+
+
+📚 [«A Brief History of Visualization» de Friendly et al. (2008)](https://www.researchgate.net/publication/226400313_A_Brief_History_of_Data_Visualization)
+
+📚 [«Quantitative Graphics in Statistics: A Brief History» de James R. Beniger y Dorothy L. Robyn. The American Statistician (1978)](https://www.jstor.org/stable/2683467)]
+
+📚 [«Presentation Graphics» de Leland Wilkinson. International Encyclopedia of the Social & Behavioral Sciences](https://www.cs.uic.edu/~wilkinson/Publications/iesbs.pdf)
+
+📚 [«The Grammar of Graphics» de Leland Wilkinson](https://www.amazon.es/Grammar-Graphics-Statistics-Computing/dp/0387245448)
+
+
+📚 [«The Minard System: The Graphical Works of Charles-Joseph Minard» de Sandra Rendgen](https://www.amazon.es/gp/product/1616896337/ref=sw_img_1?smid=A1AT7YVPFBWXBL&psc=1)
+
+📚 [«The Visual Display of Quantitative Information» de E. W. Tufte](https://www.amazon.es/Visual-Display-Quantitative-Information/dp/0961392142)
+
+---
+
+## Dataviz in R: ggplot2
+
+::: columns
+::: {.column width="50%"}
+
+The `{ggplot2}` package is based on [**«Grammar of graphics»**]{.hl-yellow} by Leland Wilkinson: giving graphics their own grammar.
+
+```{r}
+library(ggplot2)
+```
+
+[**Data visualization**]{.hl-yellow} should be a fundamental part of any data analysis. It’s not just about aesthetics.
+
+:::
+
+::: {.column width="50%"}
+![](img/telling_dataviz.jpg){width="400"}
+:::
+:::
+
+---
+
+## Dataviz in R: ggplot2
+
+The goal is to start with a blank canvas and gradually [**add layers to your plot**]{.hl-yellow}, just like you would in Photoshop. The advantage of {ggplot2} is that it allows you to [**map aesthetic attributes**]{.hl-purple} (color, shape, size) of geometric objects (points, bars, lines) **based on the data**.
+
+You can check the **package documentation** here: <https://ggplot2-book.org/introduction.html>
+
+
+![](img/grammar_ggplot2.jpg)
+
+---
+
+## Dataviz in R: ggplot2
+
+![](img/tarta_ggplot2.png)
+
+---
+
+## Dataviz in R: ggplot2
+
+::: columns
+::: {.column width="40%"}
+![](img/tarta_recortada_ggplot2.jpg)
+:::
+
+::: {.column width="60%"}
+
+A figure can be composed of [**layers**]{.hl-yellow}:
+
+- [**Data**]{.hl-purple}
+- [**Aesthetics (mapping)**]{.hl-purple}: visual elements such as axes, color, shape, etc. (mapped from the data)
+- [**Geometries (geom)**]{.hl-purple}: points, lines, bars, polygons, etc.
+- [**Faceting (facet)**]{.hl-purple}: splitting plots into multiple panels
+- [**Statistical transformations (stat)**]{.hl-purple}: ordering, summarizing, etc.
+- [**Coordinates (coord)**]{.hl-purple}: Cartesian, polar, grids, etc.
+- [**Themes (theme)**]{.hl-purple}: fonts, text size, subtitles, captions, legends, axes, etc.
+
+:::
+:::
+
+---
+
+
+## First attempt
+
+Let’s look at a **first attempt** to understand the ggplot philosophy. For this, we’ll use the `gapminder` dataset from the package of the same name: a file containing **life expectancy, population, and per capita income data for different countries**.
+
+**Task**: the file contains 1,704 records and 6 variables (`country`, `continent`, `year`, `lifeExp`, `pop`, and `gdpPercap`). [**Filter only the 2007 data**]{.hl-yellow} and remove missing values from `lifeExp`, `pop`, and `gdpPercap`.
+
+
+```{r}
+library(gapminder)
+gapminder
+```
+
+
+```{r}
+#| echo: false
+gapminder_2007 <-
+  gapminder |> 
+  filter(year == 2007) |> 
+  drop_na(lifeExp, pop, gdpPercap)
+```
+
+
+---
+
+
+## Canvas
+
+What [**elements do we need**]{.hl-yellow} to create a plot? To [**start the canvas**]{.hl-purple}, we need a dataset and a call to `ggplot()`.
+
+:::: columns
+::: {.column width="45%"}
+
+* [**Instruction**]{.hl-yellow}: `ggplot()` 
+* [**Data**]{.hl-yellow}: dataset `gapminder_2007`.
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007)
+
+# alternative
+gapminder_2007 |> 
+  ggplot()
+```
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007)
+```
+
+:::
+::::
+
+---
+
+## Which plot?
+
+In our case, we want to see the relationship between `gdpPercap` and `pop`. **What plot would you make** and why?
+
+. . .
+
+The most immediate and simple option is the well-known [**scatter plot**]{.hl-yellow}, and for this we need to [**tell ggplot() which GEOMETRY**]{.hl-yellow} (type) we want to use.
+
+
+:::: columns
+::: {.column width="45%"}
+
+* **Instruction**: `ggplot()` 
+* **Data**: dataset `gapminder_2007`.
+* [**Geometry (geom_)**]{.hl-yellow}: we chose **scatter** using `geom_point()`.  **Variables should be cuantitative (continuous)**.
+
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point()
+```
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+#| error: true
+ggplot(gapminder_2007) +
+  geom_point()
+```
+
+:::
+::::
+
+. . .
+
+Notice the error: [**«requires the following missing aesthetics: x and y»**]{.hl-red}. We have the data and the type of plot, but... **which variables should we use?**
+
+---
+
+
+## Ingredients: (x, y)
+
+
+In this case, we want `gdpPercap` to be on the X-axis and `pop` on the Y-axis. Here’s the main tool of `ggplot`: we can specify inside `geom_point()` that the [**aesthetic attributes**]{.hl-yellow} of the plot `(x, y)` depend on [**data attributes/variables**]{.hl-purple} (`gdpPercap` and `pop`)
+
+:::: columns
+::: {.column width="45%"}
+
+* **Instruction**: `ggplot()` 
+* **Data**: dataset `gapminder_2007`.
+* **Geometry (geom_)**: we chose **scatter** using `geom_point()`.
+* [**Mapping (aes)**]{.hl-yellow}: what is x? what is y? Everything inside [**`aes()` will be mapped from the table**]{.hl-green}
+
+
+```{r}
+#| eval: false
+ggplot(data = gapminder_2007) +
+  geom_point(aes(x = gdpPercap,
+                 y = pop))
+```
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007) +
+  geom_point(aes(x = gdpPercap, y = pop))
+```
+
+:::
+::::
+
+---
+
+## Think about it again
+
+```{r}
+ggplot(gapminder_2007) + geom_point(aes(x = gdpPercap, y = pop))
+```
+
+* Canvas: `ggplot()` + data
+* Geometry: what type of plot do I want?
+* `aes()`: which aspects of my geometry should depend on the data?
+
+. . .
+
+**What would you need to change** in the code if we want to make a scatter plot with pop on the X-axis and gdpPercap on the Y-axis?
+
+---
+
+## Think about it again
+
+```{r}
+ggplot(gapminder_2007) + geom_point(aes(y = gdpPercap, x = pop))
+```
+
+* Canvas: `ggplot()` + data
+* Geometry: what type of plot do I want?
+* `aes()`: which aspects of my geometry should depend on the data?
+
+. . .
+
+**What would you need to change** in the code if we want to make a scatter plot with gdpPercap on the X-axis and life expectancy on the Y-axis?
+
+
+---
+
+## Think about it again
+
+```{r}
+ggplot(gapminder_2007) + geom_point(aes(x = gdpPercap, y = lifeExp))
+```
+
+* Canvas: `ggplot()` + data
+* Geometry: what type of plot do I want?
+* `aes()`: which aspects of my geometry should depend on the data?
+
+
+---
+
+## More geometries
+
+What **other types of plots** can you think of to represent `gdpPercap`, `lifeExp`, or `pop`? (separately)
+
+. . .
+
+* [**Histograms**]{.hl-red}: often not ideal because they depend on a subjective decision like the number of bins
+* [**Density plots**]{.hl-yellow}: very useful to see the data distribution (and to form a hypothesis about whether they are normal or not)
+* [**Boxplots**]{.hl-orange}: very common in research to show data relative to the median and percentiles, and to detect outliers
+
+. . .
+
+**What would need to be changed** in this code to switch to a different type of plot?
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(x = gdpPercap, y = lifeExp))
+```
+
+---
+
+## More geometries
+
+:::: columns
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggplot(gapminder_2007) +
+  geom_density(aes(x = lifeExp))
+```
+
+:::
+
+::: {.column width="50%"}
+
+
+```{r}
+#| code-fold: true
+ggplot(gapminder_2007) +
+  geom_boxplot(aes(y = gdpPercap))
+```
+
+:::
+
+::::
+
+---
+
+## Color, size, shape
+
+We come back to `geom_point()`. Could we **customize** any other elements?
+
+. . .
+
+* `color = ...`: color (if mapped to a variable, it changes the outline; otherwise, it sets the point color)
+
+* `fill = ...`: fill color
+
+
+:::: columns
+::: {.column width="40%"}
+
+We’ll start with a [**fixed color**]{.hl-yellow}, for example "red" (others include "blue", "black", "yellow", etc.).
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap,
+                 x = lifeExp),
+             color = "red")
+```
+
+:::
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(color = "red")
+```
+
+:::
+::::
+
+
+---
+
+
+## Color, size, shape
+
+:::: columns
+::: {.column width="40%"}
+
+* `size = ...`: size of geometry (in that case, **size of points**)
+
+  
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap,
+                 x = lifeExp),
+             color = "red", size = 6) 
+```
+
+:::
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(color = "red", size = 6)
+```
+
+:::
+::::
+
+---
+
+## Color, size, shape
+
+
+:::: columns
+::: {.column width="40%"}
+
+* `alpha = ...`: % of opacity (1 completely fill, 0 completely transparent)
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap, x = lifeExp),
+             color = "red", size = 6, alpha = 0.4)
+```
+
+:::
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(color = "red", size = 6, alpha = 0.4)
+```
+
+:::
+::::
+
+---
+
+## Color, size, shape
+
+
+:::: columns
+::: {.column width="40%"}
+
+* `shape = ...`: shape of geometry (point, square, diamond, triangle, ...). See all of them in `vignette("ggplot2-specs")`
+
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap,
+                 x = lifeExp),
+             color = "red",
+             fill = "black",
+             size = 6,
+             alpha = 0.4,
+             shape = 23)
+```
+
+:::
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(color = "red", fill = "black",
+             size = 6, alpha = 0.4, shape = 23)
+```
+
+:::
+::::
+
+---
+
+## Color, size, shape
+
+
+:::: columns
+::: {.column width="40%"}
+
+* `stroke = ...`: width of contour.
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap,
+                 x = lifeExp),
+             color = "red",
+             fill = "black",
+             size = 6,
+             alpha = 0.4,
+             stroke = 3)
+```
+
+:::
+
+::: {.column width=60%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(color = "red", fill = "black", alpha = 0.4,
+             size = 6, stroke = 3)
+```
+
+:::
+::::
+
+
+---
+
+## About colors
+
+
+:::: columns
+::: {.column width="45%"}
+
+We can also **assign colors using their hexadecimal code**, which you can look up at <https://htmlcolorcodes.com/es/> to choose any color you want. The hexadecimal code always starts with `#`.
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap,
+                 x = lifeExp),
+             color = "#A02B85",
+             alpha = 0.4,
+             size = 6) 
+```
+
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(color = "#A02B85", alpha = 0.4, size = 6)
+```
+
+:::
+::::
+
+  
+---
+
+## More variables: aes()
+
+
+So far, we have passed the **aesthetic attributes** as fixed and [**constant**]{.hl-yellow} except axis. But the true power and versatility of ggplot is that we can [**map ALL attributes based on the data**]{.hl-yellow} inside `aes()` so that they depend on variables from the dataset.
+
+&nbsp;
+
+[**How we can include more variables in the scatter plot?**]{.hl-orange}
+
+---
+
+## More variables: aes()
+
+
+[**How we can include more variables in the scatter plot?**]{.hl-orange}
+
+
+:::: columns
+::: {.column width="45%"}
+
+For example, let’s assign a [**color to each data point based on its continent**]{.hl-yellow} using `aes(color = continent)`.
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap, x = lifeExp,
+                 color = continent),
+             size = 5)
+```
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(size = 5)
+```
+
+:::
+::::
+
+---
+
+## More variables: aes()
+
+
+:::: columns
+::: {.column width="40%"}
+  
+We can combine it with what we did before:
+
+* [**color**]{.hl-yellow} based on [**continent**]{.hl-purple}
+* [**size**]{.hl-yellow} based on [**population**]{.hl-purple}
+* [**transparency**]{.hl-yellow} set to a [**constant**]{.hl-purple} of 50%
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap,
+                 x = lifeExp,
+                 color = continent,
+                 size = pop),
+             alpha = 0.7)
+```
+
+This particular scatter plot is known as a **BUBBLE CHART**
+
+:::
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = lifeExp,
+           color = continent, size = pop)) +
+  geom_point(alpha = 0.7)
+```
+
+:::
+::::
+
+
+
+---
+
+## Think about it
+  
+Let’s think about the previous plot:
+
+* `color` based on continent
+* `size` based on population
+* fixed transparency at 50%
+
+Using the data, we have managed to draw a [**four-variable in a 2D plot**]{.hl-yellow}: `lifeExp` and `gdpPercap` on the axes, `continent` as color, and `pop` as the size of the geometry.
+
+---
+
+## Labs: labs()
+
+We can also [**easily customize**]{.hl-yellow} using the `labs()` layer:
+
+:::: columns
+::: {.column width="43%"}
+
+* `title, subtitle`
+* `caption`
+* `x, y`
+* `size, color, fill, ...`: name in the legend for the **variables that encode** the different attributes
+
+
+:::
+
+::: {.column width="57%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = lifeExp,
+           color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  labs(x = "Esperanza de vida",
+       y = "Renta per cápita",
+       title = "Primer ggplot",
+       caption = "J. Álvarez Liébana",
+       color = "continente",
+       size = "población")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_point(aes(y = gdpPercap, x = lifeExp,
+                 color = continent, size = pop),
+             alpha = 0.7) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot", subtitle = "Datos de gapminder",
+       caption = "J. Álvarez Liébana", color = "continente", size = "población")
+```
+
+---
+
+## 💻 It's your turn {#tu-turno-2-1-1}
+
+[**Try to perform the following exercises without looking at the solutions**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Exercise 1**]{.hl-yellow}
+
+📝 Modify the `lifeExp` density plot we made earlier so that a separate density is drawn for each continent, with each continent having a different color. Also, set alpha to 50%, include a title, and translate all plot labels into Spanish.
+
+```{r}
+#| code-fold: true
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_density(aes(x = lifeExp, fill = continent), alpha = 0.5) +
+  labs(x = "Esperanza de vida", y = "Densidad",
+       fill = "Continente", title = "Esperanza de vida por continente en 2007")
+```
+
+
+### [**Exercise 2**]{.hl-yellow}
+
+📝 Modify the `gdpPercap` boxplot to create the plot below, setting the alpha to 50%.
+
+
+```{r}
+#| echo: false
+#| fig-height: 3.7
+ggplot(gapminder_2007) +
+  geom_boxplot(aes(y = continent, x = gdpPercap, fill = continent),
+               alpha = 0.5) +
+  labs(x = "Renta per cápita", y = "Continentes",
+       fill = "Continente", title = "Renta per cápita por continente en 2007")
+```
+
+
+### [**Exercise 3**]{.hl-yellow}
+
+📝 Explore the `geom_boxplot()` function to highlight outliers in `"darkred"` with a size of 3.5. Think about how you could hide the outliers.
+
+```{r}
+#| code-fold: true
+#| eval: false
+ggplot(gapminder_2007) +
+  geom_boxplot(aes(y = continent, x = gdpPercap, fill = continent),
+               alpha = 0.5,  outlier.color = "darkred",
+               outlier.size = 3.5) +
+  labs(x = "Renta per cápita", y = "Continentes",
+       fill = "Continente", title = "Renta per cápita por continente en 2007")
+
+# sin outliers
+ggplot(gapminder_2007) +
+  geom_boxplot(aes(y = continent, x = gdpPercap, fill = continent),
+               alpha = 0.5,  outliers = FALSE) +
+  # o poniendo outlier.alpha = 0
+  labs(x = "Renta per cápita", y = "Continentes",
+       fill = "Continente", title = "Renta per cápita por continente en 2007")
+```
+
+### [**Exercise 4**]{.hl-yellow}
+
+📝 Explore a bit the `geom_...()` functions (tab and see what comes up). After that, try to replicate the following plot, performing any operations you consider necessary (attention to the title and axes). For lines, line width is specified with `linewidth = ...`. Check `vignette("ggplot2-specs")` if you need it.
+
+```{r}
+#| echo: false
+#| fig-height: 3
+gapminder |>
+  filter(continent == "Africa") |>
+  summarise("avg_gdp" = mean(gdpPercap), .by = year) |> 
+  ggplot() +
+  geom_line(aes(x = year, y = avg_gdp), linewidth = 1.2) +
+  labs(x = "Año", y = "Producto interior bruto (promedio)",
+       title = "Evolución del PIB en África")
+```
+
+### [**Exercise 5**]{.hl-yellow}
+
+📝 Modify whatever you consider necessary from the previous exercise to replicate the following plot.
+
+```{r}
+#| echo: false
+#| fig-height: 3.7
+gapminder |>
+  summarise("avg_gdp" = mean(gdpPercap), .by = c(year, continent)) |> 
+  ggplot() +
+  geom_line(aes(x = year, y = avg_gdp, color = continent),
+            linewidth = 1, linetype = "dashed") +
+  labs(x = "Año", y = "Producto interior bruto (promedio)",
+       title = "Evolución del PIB mundial")
+```
+
+:::
+
+---
+
+## Scale layer
+
+So far, with `aes()` we have only mapped `aesthetic 1 → variable 1`
+ or `aesthetic 2 → variable 2` but [**we haven’t been able to customize this mapping**]{.hl-red}.
+
+* What colors do we want?
+* If size depends on population, do we want it to range from a minimum to a maximum value?
+* Do we want the X-axis in specific units?
+* Do we want the Y-axis on a logarithmic scale?
+
+. . .
+
+One of the most important layers is [**scale (customization) layer**]{.hl-yellow} or `scale_...()`
+
+---
+
+## Scale layer: color/fill
+
+Let’s customize colors with `scale_color_...()` and `scale_fill_...()`.
+
+```{r}
+gg_basics <-
+  ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.6, size = 3) 
+```
+
+:::: columns
+
+::: {.column width="45%"}
+
+::: {style="font-size:70%"}
+
+With `scale_color_manual(values = ...)` we can manually specify a [**palette**]{.hl-yellow} by passing colors as a vector.
+
+:::
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+pal <- c("#A02B85", "#2DE86B", "#4FB2CA", "#E8DA2D", "#E84C2D")
+gg_basics +
+  scale_color_manual(values = pal) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot", caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+:::
+::::
+      
+```{r}
+#| eval: false
+gg_basics +
+  scale_color_manual(values = c("#A02B85", "#2DE86B", "#4FB2CA", "#E8DA2D", "#E84C2D")) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+---
+
+## Scale layer: color/fill
+
+
+Another option is to choose one of the [**pre-designed color palettes**]{.hl-yellow} from packages like `{ggthemes}`.
+
+:::: columns
+
+::: {.column width="40%"}
+
+
+* `scale_color_colorblind()`: palette of colors adapted for  [**colorblind people**]{.hl-yellow}.
+
+:::
+
+::: {.column width="60%"}
+
+```{r}
+#| echo: false
+library(ggthemes)
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+
+:::
+::::
+
+```{r}
+#| eval: false
+library(ggthemes)
+gg_basics +
+  scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot", caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+
+
+---
+
+## Scale layer: color/fill
+
+We can even load [**color palettes inspired by movies or art**]{.hl-yellow}.
+
+:::: columns
+
+::: {.column width="45%"}
+
+* [**paintings**]{.hl-yellow}: the `{MetBrewer}` package (GitHub repository BlakeRMills/MetBrewer
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+library(MetBrewer)
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = met.brewer("Monet")) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot", caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+devtools::install_github(repo = "BlakeRMills/MetBrewer") 
+library(MetBrewer)
+gg_basics +
+  scale_color_manual(values = met.brewer("Monet")) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot",
+       caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+
+---
+
+
+## Scale layer: color/fill
+
+We can even load [**color palettes inspired by movies or art**]{.hl-yellow}.
+
+:::: columns
+
+::: {.column width="45%"}
+
+* [**albums**]{.hl-yellow}: the `{peRReo}` package (GitHub repository `jbgb13/peRReo`) using `scale_colour_manual(values = latin_palette()`).
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+library(peRReo)
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = latin_palette("rosalia")) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+devtools::install_github(repo = "jbgb13/peRReo") 
+library(peRReo)
+
+gg_basics +
+  scale_color_manual(values = latin_palette("rosalia")) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot",
+       caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+---
+
+
+## Scale layer: axis
+
+The **same idea** we used to customize colors can be applied, for example, to [**customize the axes**]{.hl-yellow} using `scale_x_...()` and `scale_y_...()`.
+
+:::: columns
+
+::: {.column width="47%"}
+
+Let’s [**customize the x-axis ticks**]{.hl-yellow} using `scale_x_continuous(breaks = ...)` to have breaks every 10 units.
+
+:::
+
+::: {.column width="53%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  ggthemes::scale_color_colorblind() +
+  scale_x_continuous(breaks = seq(30, 90, by = 10)) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+gg_basics +
+  scale_color_colorblind() +
+  scale_x_continuous(breaks = seq(30, 90, by = 10)) +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot",
+       caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+
+---
+
+## Scale layer: axis
+
+Let’s dive a bit deeper into the [**scales**]{.hl-yellow} within our scatter plot
+
+:::: columns
+
+::: {.column width="45%"}
+
+In `scale_x_continuous()` and `scale_y_continuous()`, in addition to setting breaks, we can also [**fix axis limits**]{.hl-purple} using `limits = ....`
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_x_continuous(limits = c(50, 70),
+                     breaks = seq(50, 70, by = 5)) +
+  scale_y_continuous(limits = c(1000, 18000),
+                      breaks = seq(0, 18000, by = 1000)) +
+  ggthemes::scale_color_colorblind() +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+:::
+
+::::
+
+```{r}
+#| eval: false
+gg_basics +
+  scale_x_continuous(limits = c(50, 70),
+                     breaks = seq(50, 70, by = 5)) +
+  scale_y_continuous(limits = c(1000, 18000),
+                     breaks = seq(0, 18000, by = 1000)) +
+  scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") 
+```
+
+---
+
+## Scale layer: axis
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+* How can we [**label axis units**]{.hl-purple}? Using the `{scales}` package, we can add [**prefixes/suffixes**]{.hl-yellow} with `labels = label_number(...)`.
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+library(scales)
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_x_continuous(limits = c(50, 70), breaks = seq(50, 70, by = 5),
+                     labels = label_number(suffix = " años")) +
+  scale_y_continuous(limits = c(1000, 18000), breaks = seq(0, 18000, by = 1000),
+                     labels = label_number(suffix = " $")) +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+library(scales)
+gg_basics +
+  scale_x_continuous(limits = c(50, 70),
+                     breaks = seq(50, 70, by = 5),
+                     labels = label_number(suffix = " años")) +
+  scale_y_continuous(limits = c(1000, 18000),
+                     breaks = seq(0, 18000, by = 1000),
+                     labels = label_number(suffix = " $")) +
+  scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+---
+
+## Scale layer: axis
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+* How can we [**change size, alpha, and other settings**]{.hl-purple}? Just like we have `scale_x_...()` or `scale_color_...()`, we also have `scale_size_...()` and `scale_alpha_...()`.
+
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(aes(alpha = pop)) +
+  scale_size(range = c(4, 12)) +
+  scale_alpha(range = c(0.1, 0.95)) +
+  ggthemes::scale_color_colorblind() +
+  guides(alpha = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot",
+       subtitle = "Alpha depends on population. guides(alpha = 'none') to remove it from the legend",
+       caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+gg_basics +
+  scale_alpha(range = c(0.1, 0.5)) +
+  scale_color_colorblind() +
+  guides(alpha = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot",
+       subtitle = "Alpha depends on population. guides(alpha = 'none') to remove it from the legend",
+       caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+---
+
+## Scale layer: axis
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+* How can we [**change the (linear) scale relationship between axes**]{.hl-purple}? With `scale_x_sqrt()` or `scale_x_log10()` we can modify the axis scale.
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_y_log10() +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente")
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+gg_basics +
+  scale_y_log10() +
+  scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita",
+       title = "Primer ggplot",
+       caption = "J. Álvarez Liébana",
+       color = "continente")
+```
+
+
+
+

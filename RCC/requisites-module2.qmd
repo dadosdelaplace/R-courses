@@ -1,0 +1,1286 @@
+---
+title: "Prerequisites for Module 2"
+format:
+  html:
+    embed-resources: true
+    toc-location: left
+    toc: true
+editor: visual
+---
+
+## What can you expect?
+
+The **Module 2 — Applied Statistics in R (25 hours)** is a hands-on, statistics-focused module designed to take your R skills into real analytical practice. Across 10 sessions, you will cover the full pipeline of data analysis: starting with a review of descriptive statistics and an introduction to statistical inference, then diving into association analysis between variables (quantitative vs quantitative, qualitative vs qualitative, and mixed with ANOVA models), learning how to summarize, visualize, and run the appropriate statistical tests and effect size measures for each case.
+
+The module then moves into modelling such as linear regression (both simple and multiple), and closes with unsupervised learning techniques 
+
+Throughout, you will also work with data visualization tools like ggplot2 and reporting with Quarto, making this module a comprehensive introduction to applied statistics for anyone looking to conduct and communicate real data analyses in R.
+
+## What is expected of you?
+
+**What are the prerequisites?**
+
+You are expected to have completed Module 1 or have the following knowledge. If not, please check before <https://javieralvarezliebana.es/R-courses/RCC/>
+
+### R and R studio
+
+> 1. Do you know which is the difference between both?
+
+
+* R: programming language (the grammar)
+* RStudio: IDE (editor, the "Word")
+
+We **will work in RStudio**, but it will be R who executes the code
+
+
+> 2. What is the extension of an R script?
+
+```{r}
+#| code-fold: true
+# Scripts will be .r files
+```
+
+> 3. Where should you code: in the script or the console? Why?"
+
+```{r}
+#| code-fold: true
+# All the code should be in one or several scripts (.R files)
+# and not directly in the console, since everything you run in
+# the console will most likely be lost when you close the session.
+# The console should only be used for small tests.
+```
+
+
+> 4. What is an RStudio project? What is it used for? Do you know how to create it?
+
+```{r}
+#| code-fold: true
+# An RStudio project (.Rproj) is a feature in RStudio that helps
+# you organize your work by keeping all the files related to a 
+# specific analysis together in a single folder.
+# It is useful because:
+#   - It sets the working directory automatically to the project folder,
+#     so you don't need to manually set file paths.
+#   - It keeps your environment, history, and settings saved between
+#     sessions, so you can pick up right where you left off.
+#   - It makes it easier to collaborate with others or move your work
+#     between computers.
+```
+
+> 5. What is a R package? How to install it? How to load it? Which is the differences between both?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# An R package is a collection of functions, data, and documentation
+# that extends the capabilities of base R.
+# Packages are created by the R community to solve specific problems, such as data visualization (ggplot2), data manipulation (dplyr), or statistical modeling.
+
+# How to install a package:
+install.packages("ggplot2")
+# You only need to install a package once on your machine (buy a book)
+
+# How to load a package:
+library(ggplot2)
+# Every time you start a new R session, you need to load it (bring the book)
+
+# How to use only a function from a package
+ggplot2::geom_line()
+
+# In short: you install a package once, but you load it every 
+# time you want to use it.
+```
+
+> 6. How to get help?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# There are several ways to find help when you are stuck 
+# or want to learn more about a function.
+
+# Built-in R help:
+# You can access the documentation of any function directly from the console:
+? mean            # opens the help page for a function
+help("mean")     # equivalent, same result
+
+# Package documentation and vignettes — many packages include detailed guides:
+vignette("ggplot2")
+```
+
+### Types of data
+
+> 1. How do you assign values to variables in R? What differences will we make between <-, = and ==?
+
+
+* `<-` is the standard assignment operator in R. It assigns a value to a variable and is the recommended style.
+* `=` can also be used for assignment, but it is mainly used to assign values to function arguments.
+* `==` is not an assignment operator — it is a comparison operator that checks whether two values are equal, returning TRUE or FALSE.
+
+```{r}
+x <- 5      # assigns 5 to x (recommended)
+mean(x = 5) # argument in a function
+x == 5      # checks if x is equal to 5 → returns TRUE
+```
+
+> 2. If we think of individual data as cells in a table, what types of information can we have in a database?
+
+```{r}
+#| code-fold: true
+# Each cell in a table can contain different types of data:
+# Numeric — integer or decimal numbers (e.g. 42, 3.14)
+age <- 36
+height <- 1.64
+# class(age)
+
+# Character / String — text
+city <- "boston"
+name <- "javi"
+# class(name)
+
+# Logical / Boolean — TRUE or FALSE
+car <- FALSE
+license <- TRUE
+single <- FALSE
+# class(car)
+
+# Date / DateTime — calendar dates or timestamps (e.g. 2024-01-01)
+birth_date <- lubridate::as_date("1989-09-10")
+# class(birth_date)
+```
+
+> 3. Why does the following code throw an error?
+
+```{r}
+#| error: true
+name <- javi
+```
+
+```{r}
+#| code-fold: true
+# nombre <- javi produces an error since it is expecting that
+# there exists a variable named javi, since you are using characters
+# without quotes, and then, javi should exist before
+# If you want to define a string/character variable use quotes
+name <- "javi"
+```
+
+> 4. What does NA mean? What are the differences between NA, NaN and Inf?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# NA (Not Available) — represents a missing or unknown value. It can appear in any data type.
+# NaN (Not a Number) — represents an undefined mathematical result, such as 0/0.
+# Inf (Infinity) — represents a value that is too large to be represented
+
+NA # → missing value
+sqrt(-1) # → NaN Not a (real) number
+1/0 # → Infinity
+-1/0 # → Negative Infinity
+```
+
+> 5. Why does the following code return NA?
+
+```{r}
+age1 <- 30
+age2 <- NA
+age1 + age2
+```
+
+```{r}
+#| code-fold: true
+#| eval: false
+age1 <- 30
+age2 <- NA
+age1 + age2
+# produces NA since any arithmetic operations with NA involved the output
+# will be also NA
+```
+
+> 6. What are the differences between TRUE and "TRUE"?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# (without quotes) is a logical / boolean value that R recognizes as one of the
+# two possible logical states (TRUE / FALSE). You can use it in logical operations.
+TRUE 
+
+# (with quotes) is a character string — it is just text that happens to
+# spell the word "TRUE", so it cannot be used in logical operations.
+"TRUE" 
+
+x == 5 # output is TRUE
+is.logical(TRUE) # → TRUE
+is.logical("TRUE") # → FALSE
+```
+
+
+> 7. Why does the following code throw an error?
+
+```{r}
+#| error: true
+name <- "javi"
+name + 1
+```
+
+```{r}
+#| code-false: true
+# There are some operations that they can only be executed with a particular 
+# type of data. For example, binary operations (+, -, *, /) cannot be used with
+# characters
+```
+
+> 8. What should the following pieces of code return?
+
+```{r}
+#| eval: false
+x <- 5
+x != 4
+x < 5
+x >= 3
+x == "javi"
+x + "javi"
+sqrt(-x)
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x != 4 # TRUE
+x < 5 # FALSE
+x >= 3 # TRUE 
+x == "javi" # FALSE
+x + "javi" # error
+sqrt(-x) # NaN + warning
+```
+
+> 9. Why is it not enough to define a date in quotes? What should the following pieces of code produce?
+
+```{r}
+#| eval: false
+library(lubridate)
+date1 <- "1989-09-10"
+date2 <- as_date("1989-09-10")
+date1 + 7
+date2 + 7
+```
+
+```{r}
+#| code-fold: true
+#| eval: false
+# Because when you write a date in quotes, R treats it as a 
+# plain character string, not as a date object. This means you 
+# cannot perform date operations on it (such as calculating differences 
+# between dates, ordering chronologically, or extracting the month or year). 
+# To work with dates properly, you need to explicitly convert the string 
+# into a date object using lubridate package
+library(lubridate)
+date1 <- "1989-09-10"
+date2 <- as_date("1989-09-10")
+date1 + 7 # error (date1 is a string)
+date2 + 7 # the next week to my birthdate
+```
+
+
+> 10. Do you know how to use the next functions to work with dates?
+
+```{r}
+#| eval: false
+library(lubridate)
+today()
+now()
+
+birth_date <- as_date("10-09-1989", format = "%d-%m-%Y")
+year(birth_date)
+month(birth_date)
+day(birth_date)
+wday(birth_date, week_start = 1)
+today() - birth_date
+```
+
+### Concatenate elements
+
+> 1. Do you know how to create a vector? For example, create a vector of two numbers and another of two names.
+
+```{r}
+#| code-fold: true
+x <- c(1, 2)
+y <- c("javi", "sandra")
+# We use c() as a function to create a concatenation of elements
+# elements should be separated by commas
+```
+
+> 2. How do you calculate the length of a vector?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# You can use the length() function, which returns the number
+# of elements in a vector.
+numbers <- c(3, 7, NA)
+length(numnbers) # 3
+
+names_vec <- c("javi", "sandra")
+length(names_vec) # 2
+
+library(lubridate)
+dates_vec <- as_date(c(NA, "1989-09-10", NA, "1996-06-12"))
+length(dates_vec) # 4
+
+# The length() function works with any type of vector — numeric, character, logical, etc.
+```
+
+> 3. What does the following code produce?
+
+```{r}
+#| eval: false
+x <- c(2, 4, 6)
+y <- c(NA, 7, -8)
+x + y
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(2, 4, 6)
+y <- c(NA, 7, -8)
+x + y # NA, 11, -2 (element-by-element)
+```
+
+
+> 4. What has happened in the following code?
+
+```{r}
+x <- c(2, 4, 6)
+y <- c(1, NA, 7, -8)
+x + y
+```
+
+```{r}
+#| code-fold: true
+#| eval: false
+x <- c(2, 4, 6)
+y <- c(1, NA, 7, -8)
+x + y
+# since they dont have the same length, R recycle the shortest element
+# such as 
+# 1st + 1st
+# 2nd + 2nd
+# 3rd + 3rd
+# 1st + 4th
+```
+
+> 5. What do the following pieces of code produce?
+
+```{r}
+#| eval: false
+1:7 
+seq(1, 10, by = 2)  
+seq(0, 1, l = 5) 
+rep(0, 4)
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+1:7              # → 1 2 3 4 5 6 7
+seq(1, 10, by=2) # → 1 3 5 7 9
+seq(0, 1, l=5)   # → 0 0.25 0.5 0.75 1
+rep(0, 4)        # → 0 0 0 0
+```
+
+> 6.  What do the following pieces of code produce? Why?
+
+```{r}
+#| eval: false
+x <- c(NA, 2, 4, 6)
+x + 1  
+x * 2    
+x^2     
+sqrt(x)  
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(NA, 2, 4, 6)
+x + 1     # → NA 3 5 7
+x * 2     # → NA 4 8 12
+x^2       # → NA 4 16 36
+sqrt(x)   # → NA 1.41 2 2.45
+# R always works element-by-element
+```
+
+> 7. How do you access elements of a vector? For example, how do you access the first element? And the first and third at the same time?
+
+```{r}
+#| eval: false
+#| code-fold: true
+# You use square brackets [] with the index of the element you want (R is 1-indexed)
+x <- c(10, 20, 30, 40)
+x[1]        # → 10 (first element)
+x[c(1, 3)]  # → 10 30 (first and third elements)
+```
+
+
+> 8. How do you remove elements from a vector? For example, how do you remove the second element? And the second and fourth at the same time?
+
+```{r}
+#| eval: false
+#| code-fold: true
+# You use negative indexing with - inside square brackets:
+x <- c(10, 20, 30, 40)
+x[-2]         # → 10 30 40 (removes second element)
+x[-c(2, 4)]   # → 10 30 (removes second and fourth elements)
+```
+
+> 9. What do the following pieces of code produce?
+
+```{r}
+#| eval: false
+x <- c(10, 20, 30, 40, 50)
+
+x[3]         
+x[length(x)]  
+x[c(1, 3, 5)] 
+x[2:4]        
+x[-1]        
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(10, 20, 30, 40, 50)
+x[3]           # → 30 
+x[length(x)]   # → 50 
+x[c(1, 3, 5)]  # → 10 30 50
+x[2:4]         # → 20 30 40
+x[-1]          # → all except the first one
+```
+
+> 10. Do you recognize the following statistical functions? Do you know how to use them?
+
+```{r}
+#| eval: false
+x <- c(3, 7, 1, NA, 9)
+sum(x, na.rm = TRUE) 
+mean(x, na.rm = TRUE)
+median(x, na.rm = TRUE)
+min(x, na.rm = TRUE) 
+max(x, na.rm = TRUE)
+var(x, na.rm = TRUE) 
+sd(x, na.rm = TRUE) 
+quantile(x, probs=c(0.25, 0.75), na.rm=TRUE) 
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(3, 7, 1, NA, 9)
+sum(x, na.rm = TRUE) # 20
+mean(x, na.rm = TRUE) # 5
+median(x, na.rm = TRUE)
+min(x, na.rm = TRUE) # 1
+max(x, na.rm = TRUE) # 9
+var(x, na.rm = TRUE) # 13.333
+sd(x, na.rm = TRUE) # 3.651
+quantile(x, probs=c(0.25, 0.75), na.rm=TRUE) # 2.5 7.5 
+```
+
+> 11. What are the differences between order() and sort() when sorting a vector?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# sort() returns the sorted values of the vector directly.
+# order() returns the indices (positions) that would sort the vector, not the values themselves.
+x <- c(3, 1, 4, 1, 5)
+sort(x)   # → 1 1 3 4 5  (returns the sorted values)
+order(x)  # → 2 4 1 3 5  (returns the positions that would sort x)
+x[order(x)] # → 1 1 3 4 5  (same as sort(x) but faster)
+sort(x, decreasing = TRUE)   # descending order
+```
+
+### () vs []
+
+> Do you know when you should use () and when []?
+
+
+In R, parentheses () and square brackets [] serve completely different purposes.
+
+* Parentheses are used to call functions, wrapping the arguments you pass to them — for example
+
+```{r}
+#| code-fold: true
+#| eval: false
+mean(x)
+length(x)
+lubridate::as_date("2024-01-01")
+```
+
+* Square brackets, on the other hand, are used for indexing and subsetting, meaning they let you access or remove specific elements from a vector, list, or data frame — for example
+
+```{r}
+#| code-fold: true
+#| eval: false
+x[1]
+x[-c(2, 5)] 
+```
+
+In short: () is for executing functions, [] is for accessing elements.
+
+### Logical comparisons
+
+> 1. What does the following code return, and why?
+
+```{r}
+#| eval: false
+x <- c(4, 7, 2, 9, 1)
+x[x > 3]
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(4, 7, 2, 9, 1)
+x[x > 3] # 4 7 9 (only elements that verify condition)
+```
+
+> 2. How would you select all elements of a vector that are not equal to a specific value? For example, select all elements from x <- c(1, 2, 3, 2, 4) that are not 2.
+
+```{r}
+#| code-fold: true
+#| eval: false
+x <- c(1, 2, 3, 2, 4) 
+x[x != 2]
+```
+
+> 3. What is the difference between these two approaches to subsetting a vector?
+
+```{r}
+#| eval: false
+x <- c(10, 20, 30, 40)
+x[c(1, 3)]
+x[c(TRUE, FALSE, TRUE, FALSE)]
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(10, 20, 30, 40)
+x[c(1, 3)] # by position
+x[c(TRUE, FALSE, TRUE, FALSE)] # by condition
+```
+
+> 4. What do you think the following code produces? What is which() doing?
+
+```{r}
+#| eval: false
+x <- c(5, 3, 8, 1, 9)
+which(x > 4)
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(5, 3, 8, 1, 9)
+which(x > 4) # 1 3 5 -> positions which verify condition
+```
+
+> 5. How would you select elements of a vector that satisfy two conditions at the same time? For example, from x <- c(1, 5, 8, 3, 12, 7), select values that are greater than 4 and less than 10. Select values that are greater than 5 or different than 1
+
+```{r}
+#| code-fold: true
+#| eval: false
+x <- c(1, 5, 8, 3, 12, 7)
+x[x > 4 & x < 10] # 5 8 7 -> & allows us to combine AND conditions
+x[x > 5 | x != 1] # 5 8 3 12 7 -> | allows us to combine OR conditions
+```
+
+> 6. Given the following two vectors, how would you retrieve the names of people whose score is greater than or equal to 5?
+
+```{r}
+scores <- c(3, 7, 5, 2, 8)
+people <- c("Ana", "Luis", "Marta", "Carlos", "Elena")
+```
+
+```{r}
+#| code-fold: true
+#| eval: false
+scores <- c(3, 7, 5, 2, 8)
+people <- c("Ana", "Luis", "Marta", "Carlos", "Elena")
+people[scores >= 5] # "Luis" "Marta" "Elena"
+```
+
+> 7. What do you think the following code produces?
+
+```{r}
+#| eval: false
+x <- c(-1, 5, 8, -3, 12, NA, 7)
+x > 2 & x < 8
+x > 2 | x < 8
+!(x > 5)
+x %in% c(1, 3, 5)
+is.na(x)
+x[x > 2 & x < 8]
+sum(x > 2 & x < 8)
+sum(x > 2 & x < 8, na.rm = TRUE)
+mean(x > 2 & x < 8, na.rm = TRUE)
+any(x > 2 & x < 8)
+all(x > 2 & x < 8)
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+x <- c(-1, 5, 8, -3, 12, NA, 7)
+x > 2 & x < 8 # FALSE  TRUE FALSE FALSE FALSE  NA  TRUE
+x > 2 | x < 8 # TRUE TRUE TRUE TRUE TRUE   NA TRUE
+!(x > 5) # TRUE  TRUE FALSE  TRUE FALSE    NA FALSE
+x %in% c(1, 3, 5) # FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+is.na(x) # FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+# in all of them same length as the original vector: 
+
+x[x > 2 & x < 8] # 5 NA  7
+sum(x > 2 & x < 8) # NA
+sum(x > 2 & x < 8, na.rm = TRUE) # 2
+mean(x > 2 & x < 8, na.rm = TRUE) # 0.3333333
+any(x > 2 & x < 8) # TRUE
+all(x > 2 & x < 8) # FALSE
+```
+
+### Tabular data and database
+
+> 1. Do you know which is the differences between a single value, a vector, a matrix and a data.frame or tibble?
+
+In R, **data structures follow a natural hierarchy of complexity**.
+
+* At the most basic level, we have a cell — a single value, which can be a number, a piece of text, or a logical value.
+
+* When we combine multiple cells of the same type, we get a vector, the most fundamental structure in R.
+
+* Vectors can then be arranged into a matrix, which is a two-dimensional structure that also requires all elements to be of the same type — this is an important limitation, since if you mix numbers and text in a matrix, R will automatically convert everything to text, losing the integrity of your numeric data.
+
+* Finally, at the top of the hierarchy sits the tibble (an improved version of R's classic data.frame), which is the format we will use most in practice: unlike vectors and matrices, a tibble allows different types of data in each column, making it the ideal structure for storing real-world datasets where you might have numeric variables, text, dates, and logical values all together in the same table.
+
+
+> 2. How to create a tibble? 
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(tibble) # package including in tidyverse
+data <-
+  tibble("age"   = c(14, 24, 30),
+         "name" = c("Javi", "Sandra", "Lucía"),
+         "single" = c(TRUE, NA, FALSE))
+```
+
+
+> 3. How to access to rows by positions?
+
+```{r}
+#| eval: false
+#| code-fold: true
+data[1, ] # first row
+data[c(1, 3)] # first and third row
+```
+
+> 4. How to access to rows by conditions?
+
+```{r}
+#| eval: false
+#| code-fold: true
+data[data$age > 18, ] # individuals which verify conditions
+```
+
+> 5. How to access to columns by positions? Do you know why is a bad idea access by position?
+
+```{r}
+#| eval: false
+#| code-fold: true
+data[, 1] # first column
+data[, "name"] # by name
+date[1, "name"] # 1st individual's name
+# access by position is a bad idea --> now columns have meaning
+# and position could be change in the future
+```
+
+> 6. How to extract a column?
+
+```{r}
+#| eval: false
+#| code-fold: true
+data$name # bad idea if we work in a tidyverse framework
+```
+
+> 7. How to get the name of variables?
+
+```{r}
+#| eval: false
+#| code-fold: true
+names(data)
+```
+
+> 8. What do you think the following codes produce?
+
+```{r}
+#| eval: false
+data[data$age > 18, ]
+data[data$age > 18 & data$name != "Sandra", ]
+nrow(data)
+ncol(data) 
+data[data$age < 18 | data$name != "Sandra", ]
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+data[data$age > 18, ]
+# A tibble: 2 × 3
+# age name   single
+#   <dbl> <chr>  <lgl> 
+# 1    24 Sandra NA    
+# 2    30 Lucía  FALSE 
+data[data$age > 18 & data$name != "Sandra", ]
+# A tibble: 1 × 3
+#     age name  single
+#   <dbl> <chr> <lgl> 
+# 1    30 Lucía FALSE 
+nrow(data) # 3
+ncol(data) # 3
+data[data$age < 18 | data$name != "Sandra", ]
+# A tibble: 2 × 3
+#     age name  single
+#   <dbl> <chr> <lgl> 
+# 1    14 Javi  TRUE  
+# 2    30 Lucía FALSE
+```
+
+### Tidyverse
+
+> 1. Do you know the universe of packages of tidyverse?
+
+The tidyverse is a **collection of R packages** designed around a common philosophy: code should be readable, consistent, and intuitive.
+
+Compared to base R, the tidyverse offers a much more human-friendly syntax that closely resembles how we naturally think about data manipulation — filtering rows, selecting columns, creating new variables, and summarizing results. This makes it significantly easier to learn for beginners, and faster to write and debug for experienced users. The packages within the tidyverse (such as dplyr, ggplot2, tidyr, and readr) all share the same design principles and work seamlessly together, reducing the friction of combining different tools. In short, the tidyverse prioritizes clarity and productivity without sacrificing power.
+
+```{r}
+library(tidyverse)
+```
+
+> 2. Which are the main differences between the tidyverse and Base R
+
+The most visible difference is the syntax.
+
+* Base R relies heavily on square brackets for subsetting, $ for accessing columns, and nested function calls that can become difficult to read.
+
+* The **tidyverse introduces the pipe operator** (`|>` or `%>%`, ctrl+shift+M the shortcut), which allows you to chain operations in a left-to-right, step-by-step manner that is much easier to follow, and **standarising your pipelines**
+
+For example, filtering a data frame/tibble and computing a summary in base R requires nested or multi-step code, whereas in the tidyverse the same task can be written as a clean, readable pipeline. Another **key difference is that tidyverse functions are designed to always work with data frames/tibbles as input and output, making the workflow more predictable and consistent**, while base R functions can return many different types of objects depending on the context.
+
+```{r}
+#| eval: false
+# base R:
+mean(df$age[df$gender == "female"])
+
+# Tidyverse:
+df |> filter(gender == "female") |> summarise(mean_age = mean(age))
+```
+
+
+
+> 3. Do you known about the Tidy Data Hypothesis?
+
+At the **core of the tidyverse lies the concept of tidy data**, formalized by Hadley Wickham. The idea is simple but powerful: **data is easiest to work with when it follows three rules**
+
+1. Each variable has its own column. 
+2. Each observation has its own row. 
+3. Each value has its own cell.
+
+When data is structured this way, the **entire tidyverse ecosystem works naturally and efficiently** — you can filter, group, visualize, and model without needing to reshape or reorganize your data at every step. In contrast, messy or wide-format data, where multiple variables are crammed into a single column or observations are spread across multiple columns, requires extra transformation before any meaningful analysis can be done.
+
+The **tidyverse packages tidyr and dplyr** are specifically designed to help you get your data into tidy format quickly, making tidy data not just a theoretical ideal but a practical foundation for the entire analysis workflow.
+
+> 4. Are you familiar with pipe?
+
+The pipe `|>` (or `%>%) — ctrl+shift+M the shortcut - allows us to **chain operations**. Instead of nesting functions, the pipe passes the result on the left as the first argument of the function on the right. The code reads from top to bottom, **like a recipe**.
+
+```{r}
+#| eval: false
+data |> # ← tibble
+  filter(age > 18) |> # ← filtering rows by condition
+  select(name, age, income) |> # ← selecting columns
+  mutate(income_k = income / 1000) |> # ← creating a new variable
+  arrange(desc(income_k)) # ← arrange/sort in a descending order
+```
+
+> 5. Do you know how to sample rows by logical conditions (filter) in tidyverse? Can you guess which the following output produces? Can you type the equivalent in base R?
+
+```{r}
+#| eval: false
+data <-
+  tibble("age"   = c(14, 24, 30),
+         "name" = c("Javi", "Sandra", "Lucía"),
+         "single" = c(TRUE, NA, FALSE))
+data |> 
+  filter(age > 18)
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+# filtering/sampling rows by logical conditions
+# filter(logical conditon) where logical condition should produce
+# TRUE or FALSE vector
+data |> 
+  filter(age > 18)
+# base R: data[data$age > 18, ]
+```
+
+Note that now in tidyverse **we don't need dataset$variable neither "quotes"** since action and data are connected by a pipe.
+
+> 6. Can you guess which the following codes produces? 
+
+```{r}
+#| eval: false
+data |> filter(between(age, 18, 25))
+data |> filter(age > 18 | name == "Javi")
+data |> filter(age > 18 & !is.na(single))
+data |> filter(name %in% c("Javi", "Sandra", "Carlos") & age > 18) 
+```
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+data |> filter(between(age, 18, 25))
+# A tibble: 1 × 3
+#     age name   single
+#   <dbl> <chr>  <lgl> 
+# 1    24 Sandra NA  
+
+data |> filter(age > 18 | name == "Javi")
+# # A tibble: 3 × 3
+#     age name   single
+#   <dbl> <chr>  <lgl> 
+# 1    14 Javi   TRUE  
+# 2    24 Sandra NA    
+# 3    30 Lucía  FALSE 
+
+data |> filter(age > 18 & !is.na(single))
+# # A tibble: 1 × 3
+#     age name  single
+#   <dbl> <chr> <lgl> 
+# 1    30 Lucía FALSE 
+
+data |> filter(name %in% c("Javi", "Sandra", "Carlos") & age > 18) 
+# A tibble: 1 × 3
+#     age name   single
+#   <dbl> <chr>  <lgl> 
+# 1    24 Sandra NA 
+```
+
+> 7. Do you know how to remove NA in tidyverse?
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |> # starwars is a dataset included in dplyr package (in tidyverse)
+  drop_na(height) # remove individuals with NA in height
+
+starwars |>
+  drop_na(height, mass, name) # remove individuals with NA in height or mass or name
+
+starwars |>
+  drop_na() # remove individuals with NA in any variable
+# drop_na() allows to remove outliers for a specified variable (or set of variables)
+```
+
+> 8. Do you know how to sample rows by position or values (slices family) in tidyverse? Can you guess which the following output produces? Can you type the equivalent in base R?
+
+```{r}
+#| eval: false
+data |> 
+  slice(c(1, 3)) # first and third row
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+data |> 
+  slice(c(1, 3)) # first and third row
+# base R: data[c(1, 3), ]
+```
+
+`slice()` allows us to sample rows by positions
+
+> 9. Can you guess which the following output produces?
+
+```{r}
+#| eval: false
+data |> slice(2:3) 
+data |> slice(-1) 
+starwars |> slice_head(n = 6) 
+starwars |> slice_tail(n = 2) 
+starwars |> slice_sample(n = 10) 
+starwars |> slice_sample(prop = 0.1)
+```
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+data |> slice(2:3) # second and thir row
+data |> slice(-1) # remove first row
+starwars |> slice_head(n = 6) # first 6 rows
+starwars |> slice_tail(n = 2) # last 2 rows
+starwars |> slice_sample(n = 10) # 10 rows randomly sampled
+starwars |> slice_sample(prop = 0.1)  # 10% of rows randomly sampled
+```
+
+> 10. Can you guess which the following output produces?
+
+```{r}
+#| eval: false
+starwars |> slice_min(mass, n = 4)
+starwars |> slice_max(height, prop = 0.2)
+starwars |> slice_min(mass, n = 3, with_ties = FALSE)
+```
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+starwars |> slice_min(mass, n = 4) # the 4 characters (4 + ties) with less mass
+starwars |> slice_max(height, prop = 0.2) # the 20% of characters with more height
+starwars |> slice_min(mass, n = 3, with_ties = FALSE) # the 3 characters with less mass (exactly 3, without ties)
+```
+
+> 10. Do you know how to arrange rows in tidyverse?
+
+```{r}
+#| eval: false
+#| code-fold: true
+starwars |> arrange(mass) # ascending in mass: from low to high
+starwars |> arrange(desc(height), mass) # descending in height (from high to low) and, in case of ties, ascending in mass
+# NA are always sorted to the end for local data
+starwars |> arrange(is.na(mass), mass) # NA first
+```
+
+
+> 11. Do you know how to remove duplicates in tidyverse?
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+starwars |> distinct(name, .keep_all = TRUE) # remove rows where we have duplicates in name
+starwars |> distinct(eye_color) # extract only the column eye_color with unique values
+```
+
+
+> 12. Can you guess the instructions (as a recipe) of the following code?
+
+
+```{r}
+starwars |>
+  filter(between(height, 120, 200) &
+           eye_color %in% c("red", "yellow", "blue", "orange") &
+           gender != "none") |> 
+  distinct(skin_color, .keep_all = TRUE) |> 
+  drop_na(mass) |> 
+  slice_sample(prop = 0.3, weight_by = mass) |> 
+  arrange(desc(mass))
+```
+
+
+```{r}
+#| code-fold: true
+#| eval: false
+starwars |>
+  # height between [120, 200]
+  # AND
+  # eye_color red or yellow or blue or orange
+  # AND
+  # gender different than "none"
+  filter(between(height, 120, 200) &
+           eye_color %in% c("red", "yellow", "blue", "orange") &
+           gender != "none") |> 
+  # Preserves all information (.keep_all = TRUE)
+  # but we remove rows with duplicates in skin_color
+  distinct(skin_color, .keep_all = TRUE) |> 
+  # Remove characters with NA in mass
+  drop_na(mass) |> 
+  # Randomly sampled of 30% of rows 
+  # BUT
+  # using the mass as weight (as probability to be sampled)
+  slice_sample(prop = 0.3, weight_by = mass) |> 
+  # Arrange by mass in a descending order
+  arrange(desc(mass))
+# In short: in most of time that you run, "Jabba Desilijic Tiure" appears.
+# Think about it
+```
+
+
+> 13. Do you know how to select or unselect columns in tidyverse? Can you guess which the following output produces? Can you type the equivalent in base R?
+
+```{r}
+#| eval: false
+data |> 
+  select(age, single)
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+data |>
+  # select only age and single variables
+  select(age, single)
+# base R: data[, c("age", "single")]
+```
+
+> 14. Do you know to use selectors in tidyverse as starts_with, where or contains? Do you know how to rename and/or relocate columns in tidyverse? Can you guess which the following codes produces?
+
+```{r}
+#| eval: false
+starwars |> select(name, mass, height)
+starwars |> select(name:hair_color, sex, -height)
+starwars |> select(name, sex, contains("color"))
+starwars |>
+  select(name, where(is.numeric), sex) |> 
+  rename(nombre = name) |> 
+  relocate(sex, .after = name)
+```
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+# select only name, mass and height variables
+starwars |> select(name, mass, height) 
+
+# select from name to hair_color, sex and exclude height
+starwars |> select(name:hair_color, sex, -height)
+
+# select only name, sex and variables that contains "color" in their name
+starwars |> select(name, sex, contains("color"))
+
+# select only name, sex and variable that are numeric
+# then rename name by nombre, and then relocate sex after name variable
+starwars |>
+  select(name, where(is.numeric), sex) |> 
+  rename(nombre = name) |> 
+  relocate(sex, .after = name)
+```
+
+> 15. Do you know how to create or modify columns in tidyverse? Can you guess which the following output produces? Can you type the equivalent in base R?
+
+```{r}
+#| eval: false
+data |> 
+  mutate("mass" = c(50, 70, 90),
+         "height" = c(175, 155, 185),
+         "height" = height/100,
+         "bmi" = mass/(height^2))
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+data <- # IMPORTANT TO ASSIGN!
+  data |> 
+  # mutate -> create a "mutation" of database creating (or modifying variables)
+  mutate("name" = str_to_upper(name), # modification of old variable (name in upper)
+         "mass" = c(50, 70, 90), # new variable
+         "height" = c(175, 155, 185), # new variable
+         "height" = height/100, # modification of old variable
+         "bmi" = mass/(height^2)) # new variable
+# base r:
+# data$mass <- c(50, 70, 90)
+# data$height <- c(175, 155, 185)
+# data$height <- data$height/100
+# data$bmi <- data$mass/(data$height^2)
+```
+
+> 16. Can you guess which the following codes produces?
+
+```{r}
+#| eval: false
+starwars |> 
+  mutate("name" = str_to_lower(name),
+         "human_or_not" = species == "Human")
+starwars |> 
+  mutate("name" = str_to_upper(name),
+         "blond_or_not" = hair_color == "blond",
+         "height" = height/100,
+         "bmi" = mass/(height^2),
+         .after = name)
+starwars |>
+  mutate(across(where(is.numeric), function(x) { x/100 }))
+```
+
+```{r}
+#| eval: false
+#| code-fold: true
+# modify name to convert to lower
+# create "human_or_not" (TRUE if human, FALSE otherwise)
+starwars |> 
+  mutate("name" = str_to_lower(name),
+         "human_or_not" = species == "Human")
+
+# modify name to convert to upper
+# create "blond_or_not" (TRUE if blond, FALSE otherwise)
+# modify height (divided by 100)
+# create bmi
+# relocate after name all the modified/new variables
+starwars |> 
+  mutate("name" = str_to_upper(name),
+         "blond_or_not" = hair_color == "blond",
+         "height" = height/100,
+         "bmi" = mass/(height^2),
+         .after = name)
+
+# all numeric variables will be divided by 100 and rounded to 1 decimal
+starwars |>
+  mutate(across(where(is.numeric), function(x) { round(x/100, 1) }))
+```
+
+
+> 17. Do you know how to recategorize variables in tidyverse? Can you guess which the following codes produces?
+
+```{r}
+#| eval: false
+data |>
+  mutate("older_than_18" =
+           if_else(age >= 18, "adulto", "menor", missing = "no data"))
+data |>
+  mutate("older_than_18" =
+           if_else(age < 18, "menor",
+                   if_else(age < 30, "under 30", "over 30"),
+                   missing = "no data"))
+# More restrictive than ifelse(): value for TRUE and FALSE should be the same type
+
+starwars |>
+  mutate("type" = 
+           case_when(!(species %in% c("Human", "Droid")) ~ "other",
+                     species == "Droid" & birth_year < 100 ~ "young droid",
+                     species == "Droid" & birth_year >= 100 ~ "old droid",
+                     species == "Human" & birth_year < 18 ~ "human under 18",
+                     species == "Human" & between(birth_year, 18, 65) ~ "middle age human",
+                     species == "Human" & birth_year > 65 ~ "old human",
+                     TRUE ~ "other"))
+# The order of instructions is crucial
+```
+
+
+> 18. Do you know how to create summaries in tidyverse?
+
+
+
+### Import/export files
+
+
+> 1. Do you know how to import files when you are working on a project?
+
+
+```{r}
+#| code-fold: true
+# When you import a file, R looks for it starting from the root of the project (.Rproj). You don't need to provide the full absolute path — just the relative path from there.
+#  Project structure:
+#  mi_proyecto/
+#  ├── mi_proyecto.Rproj
+#  ├── scripts/
+#  │   └── analisis.R   ← you are here
+#  └── data/
+#     ├── encuesta.csv
+#     ├── ventas.xlsx
+#     └── modelo.RData
+
+# Relative paths from the project root
+# read_csv("data/encuesta.csv")
+# load("./modelo.RData")
+
+# Never use absolute paths like "C:/Users/javi/..." — the code will stop working on #  another computer. With RStudio projects, relative paths always point correctly.
+# Select the format.
+```
+
+
+> 2. Do you know how to import/export .RData?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# Files from R
+# .RData can save many objets at the same time
+x <- 1
+data <- tibble("a" = 1:3, "b" = 4:6)
+
+# export
+save(x, data,
+     file = "./data/results.RData")
+
+# import into the environment
+load("./data/results.RData")
+```
+
+
+> 3. Do you know how to import/export tabular data (.csv)?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# readr package allows us to import tabular data
+# csv: comma (,) separated values
+# csv2: comma-dot (;) separated values
+# tsv: tab (  ) separated values
+library(readr)
+data <- read_csv(file = "./data/file.csv") 
+data <- read_csv2(file = "./data/file.csv")
+data <- read_tsv(file = "./data/file.csv") 
+
+# general function (you need to fix the delim character)
+data <- read_delim(file = "./data/file.csv", delim = ";")
+
+# how to export
+write_csv(data, file = "./data/file_export.csv")
+
+# You should export in .csv not in excel
+# .csv is a free format that you can open with any
+# OS and any computer (not excel)
+```
+
+
+> 4. Do you know how to import excel data?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# readxl package allows us to import excel data
+# xls -> old version
+# xlsx -> new version
+data <- read_excel(path = "./data/file.xlsx")  
+data <- read_excel(path = "./data/file.xls") 
+data <- read_xlsx(path = "./data/file.xlsx")  
+data <- read_xls(path = "./data/file.xls")  
+```
+
+> 5. Do you known how to import other formats?
+
+```{r}
+#| code-fold: true
+#| eval: false
+# haven package allows us to import data coming from other used data apps
+# - .sav --> SPSS (allow you to import also labels)
+# - .sas7bdat --> SAS
+# -. dta --> STATA
+library(haven)
+data <- read_sav("./data/file.sav") 
+data <- read_dta("./data/file.dta")
+data <- read_sas("./data/file.sas7bdat")
+```
+
+
+
