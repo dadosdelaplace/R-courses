@@ -7553,6 +7553,16 @@ gapminder |>
 
 :::
 
+
+# L2: [ggplot + Quarto]{.flow} {#clase-1-2}
+
+
+
+[**Customize your ggplot. Communicate your results with Quarto**]{style="color:#444442;"}
+
+* [📆 Planning](#planificacion-2)
+
+
 ---
 
 ## Scale layer
@@ -7750,6 +7760,149 @@ gg_basics +
 ---
 
 
+## Scale layer: color gradient
+
+We have already seen how to define color palettes, but if you notice, the variable encoding the color was qualitative or discrete. **What if the variable encoding color were quantitative numeric?**
+
+. . . 
+
+There are some color palettes known as **ColorBrewer** that can be defined as sequential, diverging, or qualitative (see info at <https://colorbrewer2.org>).
+
+```{r}
+RColorBrewer::brewer.pal.info
+```
+
+---
+
+## Scale layer: color gradient
+
+With `RColorBrewer::brewer.pal()` we can get a vector of n colors for a given palette, for example the **diverging palette** `RdYlBu`.
+
+```{r}
+RColorBrewer::brewer.pal(n = 5, name = "RdYlBu")
+```
+
+. . .
+
+With `RColorBrewer::display.brewer.pal()` we can **visualize the colors from the palette**.
+
+```{r}
+RColorBrewer::display.brewer.pal(n = 10, name = "RdYlBu")
+```
+
+---
+
+
+## Scale layer: color gradient
+
+
+An example of **sequential palette** is `PuBuGn`
+
+
+```{r}
+RColorBrewer::display.brewer.pal(n = 8, name = "PuBuGn")
+```
+
+---
+
+## Scale layer: color gradient
+
+
+An example of **qualitative palette** is
+
+```{r}
+RColorBrewer::display.brewer.pal(n = 8, name = "Pastel1")
+```
+
+
+---
+
+
+## Scale layer: color gradient
+
+:::: columns
+
+::: {.column width="45%"}
+
+To include it, we can use `scale_color_brewer()` or `scale_color_distiller()` if we want to **create a real continuous scale (interpolating between the colors)**.
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = pop, color = lifeExp)) +
+  geom_point(alpha = 0.7, size = 3) +
+  scale_color_distiller(palette = "RdYlBu") +
+  labs(x = "Población", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "esperanza de vida") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = pop, color = lifeExp)) +
+  geom_point(alpha = 0.7, size = 3) +
+  scale_color_distiller(palette = "RdYlBu") +
+  labs(x = "Población", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "esperanza de vida") +
+  theme_minimal()
+```
+
+
+---
+
+## Scale layer: color gradient
+
+We can also create [**custom color gradients**]{.hl-yellow} with `scale_color_gradient()`, `scale_fill_gradient()`, `scale_color_gradient2()`, `scale_fill_gradient2()`.
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+::: {style="font-size:80%"}
+
+We are going to use `scale_color_gradient2(low = ..., mid = ..., high = ..., midpoint = ...)`, specifying the lowest and highest colors, as well as the middle color (and the numeric value we want to associate with it).
+
+:::
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = pop, color = lifeExp)) +
+  geom_point(alpha = 0.7, size = 3) +
+  scale_color_gradient2(low = "#825598", mid = "#9dd0c1", high = "#d93535", midpoint = 60) +
+  labs(x = "Población", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "esperanza de vida") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = pop, color = lifeExp)) +
+  geom_point(alpha = 0.7, size = 3) +
+  scale_color_gradient2(low = "#825598", mid = "#9dd0c1", high = "#d93535", midpoint = 60) +
+  labs(x = "Población", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "esperanza de vida") +
+  theme_minimal()
+```
+
+
+---
+
 ## Scale layer: axis
 
 The **same idea** we used to customize colors can be applied, for example, to [**customize the axes**]{.hl-yellow} using `scale_x_...()` and `scale_y_...()`.
@@ -7938,7 +8091,7 @@ gg_basics +
 
 ::: {.column width="45%"}
 
-* How can we [**change the (linear) scale relationship between axes**]{.hl-purple}? With `scale_x_sqrt()` or `scale_x_log10()` we can modify the axis scale.
+* How can we [**change the (linear) scale relationship between axes**]{.hl-purple}? With `scale_x_sqrt()` or `scale_x_log10()` we can modify the axis scale (without modifying the data!)
 
 :::
 
@@ -7968,6 +8121,533 @@ gg_basics +
        color = "continente")
 ```
 
+
+
+---
+
+## Stats layer
+
+
+Una capa también importante es la [**capa de estadísticas**]{.hl-yellow} con `stat_...()`
+
+:::: columns
+
+::: {.column width="45%"}
+
+
+* `stat_smooth()`: visualiza un [**ajuste suavizado**]{.hl-yellow} de los datos (reg. lineal, glm, loess, gam, etc). Con `stat_smooth(method = "lm")` una recta de regresión, con `stat_smooth(method = "loess")` un ajuste local polinomial
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(aes(color = continent, size = pop), alpha = 0.8) +
+  stat_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  scale_y_log10() +
+  guides(size = "none") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+:::
+::::
+
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(aes(color = continent, size = pop), alpha = 0.8) +
+  stat_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  scale_y_log10() +
+  guides(size = "none") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+---
+
+## Stats layer
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+Fíjate que si usas en la [**primera capa parámetros estéticos**]{.hl-yellow} se acaban [**heredando a capas posteriores**]{.hl-purple}, en concreto al ajuste visualizado.
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.8) +
+  stat_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  scale_y_log10() +
+  guides(size = "none") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+:::
+::::
+
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.8) +
+  stat_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  scale_y_log10() +
+  guides(size = "none") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+
+---
+
+## Stats layer
+
+:::: columns
+
+::: {.column width="45%"}
+
+Dentro de `stat_smooth()` podemos especificarle otro [**ajuste polinómico**]{.hl-yellow} dándole expresión en `formula = ...`, por ejemplo un **polinomio de grado 5** `formula = y ~ x + I(x^2) + I(x^3) + I(x^4) + I(x^5)`
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(aes(color = continent, size = pop), alpha = 0.8) +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2) + I(x^3) + I(x^4) + I(x^5),
+              color = "firebrick", se = FALSE, linewidth = 1.2) +
+  guides(size = "none") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+:::
+::::
+
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp)) +
+  geom_point(aes(color = continent, size = pop), alpha = 0.8) +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2) + I(x^3) + I(x^4) + I(x^5),
+              color = "firebrick", se = FALSE, linewidth = 1.2) +
+  guides(size = "none") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+
+---
+
+## Stats layer
+
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+Con `stat_summary()` podemos incluso añadir [**estadísticas por grupos**]{.hl-yellow}, como la media o mediana.
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder, aes(y = gdpPercap, x = year)) +
+  geom_point(size = 1.7, alpha = 0.2) +
+  stat_summary(fun = "mean", size = 0.4, color = "coral") + 
+  stat_summary(fun = "median", size = 0.4, color = "darkcyan") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+:::
+::::
+
+
+```{r}
+#| eval: false
+ggplot(gapminder, aes(y = gdpPercap, x = year)) +
+  geom_point(size = 1.7, alpha = 0.2) +
+  stat_summary(fun = "mean", size = 0.4, color = "coral") + 
+  stat_summary(fun = "median", size = 0.4, color = "darkcyan") +
+  ggthemes::scale_color_colorblind() +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+
+---
+
+## Facet layer
+
+The `facet_()` layer allows us to [**split the plots (facet) by groups**]{.hl-yellow}, equivalent to `group_by()` in the tidyverse.
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+For example, let’s create a [**plot by continent**]{.hl-yellow}, showing all the plots at once (but separately) using `facet_wrap(~continent)`.
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, size = pop, color = continent)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~continent)+
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, size = pop, color = continent)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~continent) +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+---
+
+## Facet layer
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+By default, the scales on the axes are shared. If we want the [**axis scales to vary independently**]{.hl-yellow}, we should use `scales = "free_x"`, `scales = "free_y"`, or `scales = "free"`.
+
+
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, size = pop, color = continent)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~continent, scales = "free") +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = lifeExp,
+           size = pop, color = continent)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~continent, scales = "free") +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+---
+
+## Facet layer
+
+:::: columns
+
+::: {.column width="45%"}
+
+With `nrow = ...` and `ncol = ...` we can [**specify how many rows and columns**]{.hl-yellow} we want in the grid of plots.
+
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, size = pop, color = continent)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~continent, scales = "free", nrow = 3) +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007,
+       aes(y = gdpPercap, x = lifeExp,
+           size = pop, color = continent)) +
+  geom_point(alpha = 0.75) +
+  ggthemes::scale_color_colorblind() +
+  facet_wrap(~continent, scales = "free", nrow = 3) +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+
+
+---
+
+
+## Facet layer
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+We can also pass two arguments (variables) to [**create a grid of plots**]{.hl-yellow} with `facet_grid(var1 ~ var2)`
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder |> filter(year >= 1962), aes(y = gdpPercap, x = lifeExp, size = pop, color = continent)) +
+  geom_point(alpha = 0.7) +
+  ggthemes::scale_color_colorblind() +
+  facet_grid(continent ~ year, scales = "free") +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder |>
+         filter(year >= 1962),
+       aes(y = gdpPercap, x = lifeExp,
+           size = pop, color = continent)) +
+  geom_point(alpha = 0.7) +
+  ggthemes::scale_color_colorblind() +
+  facet_grid(continent ~ year, scales = "free") +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+
+---
+
+## Theme layer
+
+Finally, the [**theme**]{.hl-yellow}. In `{ggplot2}` we can [**customize the entire plot**]{.hl-yellow}, including defining our own aesthetic theme by using the `theme_...()` layers. 
+
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+For example, we will use `theme_minimal()` to have a “clean” and minimalist theme (we will learn how to define every detail).
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_continuous(breaks = seq(35, 85, by = 10)) +
+  ggthemes::scale_color_colorblind() +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_continuous(breaks = seq(35, 85, by = 10)) +
+  ggthemes::scale_color_colorblind() +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal()
+```
+
+---
+
+## Theme layer
+
+
+:::: columns
+
+::: {.column width="45%"}
+
+With theme() we can customize everything in the plot, for example the position of the legend and the typography of the X-axis titles.
+
+:::
+
+
+::: {.column width="55%"}
+
+```{r}
+#| echo: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_continuous(breaks = seq(35, 85, by = 10)) +
+  ggthemes::scale_color_colorblind() +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal() +
+  theme(legend.position = "bottom", 
+        axis.title.x = element_text(face = "bold", size = 13))
+```
+
+:::
+::::
+
+```{r}
+#| eval: false
+ggplot(gapminder_2007, aes(y = gdpPercap, x = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_continuous(breaks = seq(35, 85, by = 10)) +
+  ggthemes::scale_color_colorblind() +
+  guides(size = "none") +
+  labs(x = "Esperanza de vida", y = "Renta per cápita", title = "Primer ggplot",
+       caption = "J. Álvarez Liébana", color = "continente") +
+  theme_minimal() +
+  theme(legend.position = "bottom", 
+        axis.title.x = element_text(face = "bold", size = 13))
+```
+
+
+---
+
+## Join plots: patchwork
+
+
+```{r}
+#| code-fold: true
+gg1 <-
+  ggplot(gapminder_2007) +
+  geom_point(aes(x = gdpPercap, y = pop, color = continent)) +
+  ggthemes::scale_color_colorblind() +
+  guides(color = "none") +
+  theme_minimal()
+gg2 <- 
+  ggplot(gapminder_2007) +
+  geom_density(aes(x = lifeExp, color = continent, fill = continent),
+               alpha = 0.5) +
+  ggthemes::scale_color_colorblind() +
+  ggthemes::scale_fill_colorblind() +
+  guides(color = "none") +
+  theme_minimal()
+gg3 <- 
+  ggplot(gapminder_2007) +
+  geom_boxplot(aes(x = continent, y = gdpPercap, color = continent, fill = continent),
+               alpha = 0.5) +
+  ggthemes::scale_color_colorblind() +
+  ggthemes::scale_fill_colorblind() +
+  guides(color = "none") +
+  theme_minimal()
+```
+
+```{r}
+library(patchwork)
+(gg1 + (gg2 / gg3))
+```
+
+
+
+--- 
+
+## Interactive plots: ggplotly
+
+
+---
+
+## Case study: NHANES
+
+empezar por cuanti vs cuanti
+
+---
+
+cuali vs cuali
+
+bar/col
+
+factor
+
+---
+
+## Quarto
 
 
 
