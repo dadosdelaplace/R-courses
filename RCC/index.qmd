@@ -109,7 +109,10 @@ Click here [Module 2](#module-2) to module 2.
 |  LESSON | WEEK | DATES | TOPIC | EX. | WORKBOOK | TASK | 
 |:------:|:--------:|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
 | [1-1](#clase-1-1) | S1 | 24 mar | Introduction to ggplot2 | [💻](#tu-turno-2-1-1)   |  |  | 
-| [1-2](#clase-1-2) | S1 | 26 mar | ... | ... |  ... |  |
+| [1-2](#clase-1-2) | S1 | 26 mar | More about ggplot2 | [{#case-study-NHANES}](#case-study-NHANES) |   |  |
+| [1-3](#clase-1-3) | S3 | 7 apr | Association cuali vs cuali / cuanti vs cuanti | [💻](#tu-turno-2-3-1) |  |  |
+| [1-4](#clase-1-4) | S4 | 9 apr | Effect sizes and infer package | ... |  [🐣](#caso-practico-2-3-1) [🐣](#caso-practico-2-3-2) |  |
+
 :::
 :::
 
@@ -7554,11 +7557,11 @@ gapminder |>
 :::
 
 
-# L2: [ggplot + Quarto]{.flow} {#clase-1-2}
+# L2: [ggplot]{.flow} {#clase-1-2}
 
 
 
-[**Customize your ggplot. Communicate your results with Quarto**]{style="color:#444442;"}
+[**Customize your ggplot**]{style="color:#444442;"}
 
 * [📆 Planning](#planificacion-2)
 
@@ -8626,28 +8629,1841 @@ library(patchwork)
 
 
 
---- 
 
-## Interactive plots: ggplotly
+---
+
+## Case study: NHANES {#case-study-NHANES}
+
+> What plot can we make to visualize the relationship between weight and Systolic Blood Pressure (`BPSysAve`)?"
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+library(NHANES)
+NHANESraw |> 
+  ggplot() +
+  geom_point(aes(x = Weight, y = BPSysAve)) +
+  theme_minimal() +
+  labs(x = "Weight", y = "BP Sys")
+```
+
+---
+
+
+## Case study: NHANES
+
+
+> How can we add units to the axes (weight in Kg and BPSysAve in mmHg)?"
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+NHANESraw |> 
+  ggplot() +
+  geom_point(aes(x = Weight, y = BPSysAve)) +
+  scale_x_continuous(labels = scales::label_number(suffix = " Kg")) +
+  scale_y_continuous(labels = scales::label_number(suffix = " mmHg")) +
+  theme_minimal() +
+  labs(x = "Weight", y = "BP Sys")
+```
+
+---
+
+
+## Case study: NHANES
+
+
+> How can we add another variable (gender) to the graph so that we can distinguish the points by gender?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+NHANESraw |> 
+  ggplot() +
+  geom_point(aes(x = Weight, y = BPSysAve, color = Gender), alpha = 0.5) +
+  scale_x_continuous(labels = scales::label_number(suffix = " Kg")) +
+  scale_y_continuous(labels = scales::label_number(suffix = " mmHg")) +
+  theme_minimal() +
+  labs(x = "Weight", y = "BP Sys")
+```
+
+---
+
+## Case study: NHANES
+
+> To improve the visualization, how can we generate a subsample of 1000 people, respecting the proportions between genders (stratified random sampling)?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+NHANES_sample <-
+  NHANESraw |> 
+  slice_sample(n = 1000, by = Gender)
+NHANES_sample |> 
+  ggplot() +
+  geom_point(aes(x = Weight, y = BPSysAve, color = Gender), alpha = 0.5) +
+  scale_x_continuous(labels = scales::label_number(suffix = " Kg")) +
+  scale_y_continuous(labels = scales::label_number(suffix = " mmHg")) +
+  theme_minimal() +
+  labs(x = "Weight", y = "BP Sys")
+```
 
 
 ---
 
 ## Case study: NHANES
 
-empezar por cuanti vs cuanti
+> How can we customize the colors?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+NHANES_sample |> 
+  ggplot() +
+  geom_point(aes(x = Weight, y = BPSysAve, color = Gender), alpha = 0.5) +
+  scale_x_continuous(labels = scales::label_number(suffix = " Kg")) +
+  scale_y_continuous(labels = scales::label_number(suffix = " mmHg")) +
+  scale_color_manual(values = c("female" = "#2a9d8f", "male" = "#e9c46a")) +
+  theme_minimal() +
+  labs(x = "Weight", y = "BP Sys")
+```
 
 ---
 
-cuali vs cuali
+## Case study: NHANES
 
-bar/col
 
-factor
+> How can we add a regression fit to the points for each gender?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+NHANES_sample |> 
+  ggplot(aes(x = Weight, y = BPSysAve, color = Gender)) +
+  geom_point(alpha = 0.2) +
+  stat_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  scale_x_continuous(labels = scales::label_number(suffix = " Kg")) +
+  scale_y_continuous(labels = scales::label_number(suffix = " mmHg")) +
+  scale_color_manual(values = c("female" = "#2a9d8f", "male" = "#e9c46a")) +
+  theme_minimal() +
+  labs(x = "Weight", y = "BP Sys")
+```
 
 ---
 
-## Quarto
+## Case study: NHANES
+
+
+> How can we modify where we place the legend? For example, we want the legend at the bottom (in horizontal mode)
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+gg1 <-
+  NHANES_sample |> 
+  ggplot(aes(x = Weight, y = BPSysAve, color = Gender)) +
+  geom_point(alpha = 0.2) +
+  stat_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  scale_x_continuous(labels = scales::label_number(suffix = " Kg")) +
+  scale_y_continuous(labels = scales::label_number(suffix = " mmHg")) +
+  scale_color_manual(values = c("female" = "#2a9d8f", "male" = "#e9c46a")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(x = "Weight", y = "BP Sys")
+gg1
+```
+
+---
+
+## Case study: NHANES
+
+
+> What plot would you make to see the proportion of people who smoke in each gender?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+NHANES_sample |> 
+  drop_na(Smoke100) |> 
+  ggplot() +
+  geom_bar(aes(x = Smoke100, fill = Smoke100), alpha = 0.5) +
+  scale_fill_manual(values = c("No" = "#e76f51", "Yes" = "#457b9d")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(x = "Income", fill = "Smoke?", y = "Number of individuals")
+```
+
+---
+
+## Case study: NHANES
+
+
+> What plot would you make to see the proportion of people who smoke in each gender?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+gg2 <-
+  NHANES_sample |> 
+  drop_na(Smoke100) |> 
+  ggplot() +
+  geom_bar(aes(x = Gender, fill = Smoke100), alpha = 0.5) +
+  scale_fill_manual(values = c("No" = "#e76f51", "Yes" = "#457b9d")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(x = "Income", fill = "Smoke?", y = "Number of individuals")
+gg2
+```
+
+---
+
+## Case study: NHANES
+
+
+> How would you combine the last plot with the last plot made between blood pressure and weight?
+
+. . .
+
+```{r}
+#| code-fold: true
+#| fig-height: 3.5
+library(patchwork)
+gg1 + gg2
+```
+
+
+# L3: [effects and association]{.flow} {#clase-1-3}
+
+Cuali vs cuali / Cuanti vs Cuanti
+
+
+-   [📆 Planning](#planificacion-2)
+
+
+---
+
+## Effects and association
+
+Uno de los principales objetivos de la estadística bivariante es [**determinar si existe relación o dependencia entre dos variables**]{.hl-yellow}
+
+¿Cuándo un cambio en el valor de una de ellas va asociado a un cambio en el de la otra (una dependencia estadística)?
+
+. . .
+
+Una [**dependencia estadística NO implica un efecto causal**]{.hl-red} (ejemplo: nivel de bronceado y consumo de helados)
+
+. . .
+
+La situación contraria, es decir, la ausencia de relación, se denomina [**independencia**]{.hl-yellow}.
+
+
+---
+
+## Effects and association
+
+- [**Cuali vs cuali**]{.hl-yellow}:
+  - **Resumen**: tablas de contigencia (frecuencia cruzada).
+  - **Inferencia**: prueba $\chi^2$ de independencia o test de Fisher.
+  - **Gráficos**: barras apiladas, gofres, gráficos de «flujo».
+
+. . .
+
+- [**Cuanti vs cuanti**]{.hl-yellow}:
+  - **Resumen**: covarianza y correlación.
+  - **Inferencia**: test de correlación (relación lineal) y test de Kolmogorov-Smirnov
+  - **Gráficos**: diagrama de dispersión, correlogramas, heatmaps.
+
+. . .
+
+
+- [**Cuanti vs cuali**]{.hl-yellow}:
+  - **Resumen**: medidas de la cuanti desagregado vs grupos de la cuali.
+  - **Inferencia**: ANOVA (una vía, dos vías, ...) / Kruskal-Wallis
+  - **Gráficos**: boxplots, gráficos de violín (desagregados por grupos)
 
 
 
+---
+
+
+## Cuali vs cuali: summary
+
+Las variables cualitativas o cuantis discretas las vamos a [**resumir numéricamente en tablas de frecuencias**]{.hl-yellow} donde se ordenan y estructuran los valores de una variable x de forma resumida de la siguiente manera:
+
+- **Frecuencia absoluta de x** (n): nº de veces que se repite cada modalidad de x.
+
+- **Frecuencia relativa de x** (f): proporción de veces que se repite cada modalidad de x.
+
+. . .
+
+Para ello en tidyverse basta usar `count()`
+
+```{r}
+starwars |>
+  drop_na(sex) |> 
+  count(sex)
+```
+
+---
+
+## Tablas de frecuencias
+
+```{r}
+tabla_freq <-
+  starwars |>
+  drop_na(sex) |> 
+  count(sex)
+```
+
+Si te fijas la [**frecuencia absoluta viene siempre como $n$**]{.hl-yellow} pero podemos **renombrarla**
+
+```{r}
+tabla_freq <-
+  tabla_freq |> 
+  rename(frec_abs = n)
+tabla_freq
+```
+
+---
+
+## Tablas de frecuencias
+
+A esa tabla de frecuencias podemos añadirle la [**frecuencia relativa**]{.hl-yellow} calculada como cada frecuencia absoluta dividida por el total (la suma de todos)
+
+```{r}
+tabla_freq <-
+  tabla_freq |> 
+  mutate("frec_rel" = frec_abs / sum(frec_abs))
+tabla_freq
+```
+
+---
+
+## Tablas de frecuencias
+
+Este proceso podemos obtenerlo de forma [**más sencilla con `R base`**]{.hl-yellow} (recuerda: funciones aplican a vectores aislados, que debes sacar de la tabla con `$` y sin tuberías) con la función `table()`
+
+```{r}
+tabla_freq <-
+ table(starwars$sex)
+tabla_freq
+```
+
+---
+
+## Tablas de frecuencias
+
+También podemos obtener en `R base` las [**frecuencias relativas**]{.hl-yellow} aplicando `prop.table()` a la tabla de frecuencias anterior.
+
+```{r}
+prop.table(tabla_freq)
+```
+
+. . .
+
+[**Moraleja**]{.hl-green}: no te cases de manera acérrima con una forma de hacer las cosas, ambos mundos van a ser necesarios.
+
+---
+
+---
+
+## Case study: SatisfaccionPacientes.csv
+
+Vamos a practicar con tablas de frecuencia usando datos de una encuesta satisfacción de pacientes de un hospital
+
+```{r}
+library(readr)
+datos <-
+  read_csv(file = "./data/SatisfaccionPacientes.csv") |> 
+  janitor::clean_names()
+```
+
+. . .
+
+Para calcular una tabla bidimensional de frecuencias en tidyverse basta con **indicar dos variables en `count()`**
+
+```{r}
+datos |>
+  count(genero, estado_civil)
+```
+
+---
+
+## Tablas de contigencia
+
+Lo habitual es mostrar esta tabla como una [**tabla con m filas y n columnas**]{.hl-yellow}, siendo $m$ el número de modalidades distintas de la primera variable (en este caso $m=2$, femenino y masculino) y $n$ el número de modalidades distintas de la segunda variable (en este caso $n = 4$). 
+
+. . .
+
+Esto se puede hacer **mucho más sencillo de nuevo en `R base`** con `table()`
+
+
+```{r}
+table(datos$genero, datos$estado_civil)
+```
+
+---
+
+## Tablas de contigencia
+
+
+Fíjate que ahora podemos [**normalizar las frecuencias de 3 formas**]{.hl-yellow}: respecto al total de los datos, por filas (`margin = 1`) o por columnas (`margin = 2`).
+
+```{r}
+prop.table(table(datos$genero, datos$estado_civil))
+prop.table(table(datos$genero, datos$estado_civil), margin = 1)
+prop.table(table(datos$genero, datos$estado_civil), margin = 2)
+
+```
+
+---
+
+## Tablas de contigencia
+
+Haciendo uso de las tablas anteriores intenta responder a las siguientes preguntas:
+
+a) ¿Qué cantidad de pacientes mujeres están solteras?
+
+b) ¿Qué porcentaje, de entre los pacientes hombres, están viudos?
+
+c) ¿Qué porcentaje, de entre los que están divorciados, son mujeres?
+
+d) ¿Qué porcentaje (del total de pacientes) son hombres solteros?
+
+
+```{r}
+#| code-fold: true
+# a) 22 mujeres
+# b) 8.51%
+# c) 57.89%
+# d) 20%
+```
+
+
+---
+
+
+## Cuali vs cuali: dataviz
+
+¿Cómo poder visualizar si existe relación entre las dos variables cualitativas `genero` y `estado_civil` para **complementar el análisis numérico realizado**? 
+
+. . .
+
+Sabemos realizar un diagrama de barras de cada una por separado, [**¿cómo incluir la información de ambas con `geom_bar()`**]{.hl-yellow}
+
+. . .
+
+Piensa cómo hacerlo recordando que `geom_bar()` solo admite una coordenada `x = ...` o `y = ...`. ¿Cómo incluir la info de otra variable que no sea en `x` o `y`?
+
+---
+
+## Cuali vs cuali: dataviz
+
+```{r}
+#| code-fold: true
+ggplot(datos) +
+  geom_bar(aes(x = estado_civil, fill = genero), alpha = 0.6) +
+  ggthemes::scale_fill_colorblind() +
+  labs(x = "Estado civil", y = "Frec. absolutas",
+       fill = "Género") +
+  theme_minimal()
+```
+
+---
+
+## Cuali vs cuali: dataviz
+
+La función `geom_bar()` nos permite jugar un poco con el tipo de barras, que por defecto las muestra `stacked` (apiladas). Dicho ajuste podemos **cambiarlo con el argumento `position`**: si `position = "dodge"` las muestra de [**manera agrupada una detrás de otra**]{.hl-yellow}.
+
+```{r}
+#| code-fold: true
+ggplot(datos) +
+  geom_bar(aes(x = estado_civil, fill = genero),
+           position = "dodge", alpha = 0.6) +
+  ggthemes::scale_fill_colorblind() +
+  labs(x = "Estado civil", y = "Frec. absolutas",
+       fill = "Género") +
+  theme_minimal()
+```
+
+---
+
+## Cuali vs cuali: dataviz
+
+La mejor opción para visualizar si hay asociación es que **cada barra de estado civil representa el total y nos muestre el % de cada sexo** (menos colores, más fácil comparar) en cada una: si fuesen independientes, el reparto por sexo en cada barra debería ser similar. Lo haremos con `position = "fill"`
+
+```{r}
+#| code-fold: true
+ggplot(datos) +
+  geom_bar(aes(x = estado_civil, fill = genero),
+           position = "fill", alpha = 0.6) +
+  ggthemes::scale_fill_colorblind() +
+  labs(x = "Estado civil", y = "Frec. relativas",
+       fill = "Género") +
+  theme_minimal()
+```
+
+
+---
+
+## Cuali vs cuali: dataviz
+
+También podemos invertir los ejes
+
+```{r}
+#| code-fold: true
+ggplot(datos) +
+  geom_bar(aes(y = estado_civil, fill = genero),
+           position = "fill", alpha = 0.6) +
+  ggthemes::scale_fill_colorblind() +
+  labs(x = "Estado civil", y = "Frec. relativas",
+       fill = "Género") +
+  theme_minimal()
+```
+
+---
+
+## Cuali vs cuali: dataviz
+
+Alternativa al diagrama de barras: diagrama de gofre. Cualquier gráfico que permita comparar proporciones sin formas raras o curvas (no uses pie chart)
+
+```{r}
+#| code-fold: true
+# devtools::install_github("hrbrmstr/waffle")
+library(waffle)
+datos |> 
+  count(genero, estado_civil) |> 
+  ggplot() +
+  geom_waffle(aes(fill = genero, values = n),
+              make_proportional = TRUE, alpha = 0.6) +
+  ggthemes::scale_fill_colorblind() +
+  facet_wrap(~estado_civil, ncol = 1) +
+  labs(fill = "Género") +
+  theme_minimal()
+```
+
+
+
+---
+
+## Tablas de contigencia
+
+Puedes incluso visualizar dichas cantidades con `geom_tile()` indicándole que el relleno dependa del conteo `n`
+
+```{r}
+datos |>
+  count(genero, estado_civil) |>
+  ggplot() +
+  geom_tile(aes(x = genero, y = estado_civil, fill = n)) +
+  theme_minimal()
+```
+
+---
+
+## Cuali vs cuali: inferencia
+
+Tanto en las tablas de frecuencia como en los gráficos hemos visto que los repartos por sexos en cada estado civil divergen del 47%-53% (hombres-mujeres) que tenemos en el dataset a nivel global.
+
+Esa divergencia, con $n$ pequeño, siempre va a suceder. La pregunta es: ¿cómo cuantificar esa distancia entre lo obtenido y lo esperado (bajo la hipótesis de independencia)? ¿Es mucho o poco?
+
+. . .
+
+Para responder a ello tenemos la [**inferencia estadística**]{.hl-yellow}: un conjunto de métodos y técnicas que permite [**inferir conclusiones sobre una población a partir de una muestra**]{.hl-yellow} de datos.
+
+---
+
+## Cuali vs cuali: inferencia
+
+Haciendo uso de **estadísticos** - medida que describe una característica de la **muestra**, por ejemplo, la media muestral $\overline{x}$ de un conjunto de 100 personas - que aproximen una correcta estimación de los parámetros, los [**contraste de hipótesis**]{.hl-yellow} son procedimientos estadísticos para [**tomar decisiones sobre la validez de una afirmación acerca de una población**]{.hl-yellow} en función de los datos muestrales.
+
+. . .
+
+La idea es muy parecido a un **juicio**: con las pruebas (muestra) el jurado (estadístico) deben decidir sobre tu culpabilidad real (población), pudiendo ser declarado **culpable** o **no culpable**.
+
+. . .
+
+Este proceso implica formular
+
+-   [**Hipótesis nula** $H_0$]{.hl-green}: es una afirmación generalmente representa una **posición de no efecto o no diferencia** (ejemplo: entras siendo no culpable a un juicio)
+
+-   [**Hipótesis alternativa** $H_0$]{.hl-red}: es una afirmación que [**se acepta si se rechaza la hipótesis nula**]{.hl-yellow}. Representa un efecto o diferencia (ejemplo: culpable)
+
+---
+
+## Cuali vs cuali: inferencia
+
+-   [**Hipótesis nula** $H_0$]{.hl-green}: es una afirmación generalmente representa una **posición de no efecto o no diferencia** (ejemplo: entras siendo no culpable a un juicio)
+
+-   [**Hipótesis alternativa** $H_1$]{.hl-red}: es una afirmación que [**se acepta si se rechaza la hipótesis nula**]{.hl-yellow}. Representa un efecto o diferencia (ejemplo: culpable)
+
+La idea es similar a la del juicio: solo vamos a [**rechazar** $H_0$ (es decir, aceptar $H_1$) si hay MUCHAS EVIDENCIAS en la muestra]{.hl-yellow} (solo se condena culpable a una persona si hay muchas evidencias que demuestran su culpabilidad, pero el acusado no tiene que demostrar su inocencia).
+
+. . .
+
+Llamaremos [**nivel de significancia** $\alpha$]{.hl-yellow} a la probabilidad de [**rechazar la hipótesis nula cuando es verdadera**]{.hl-red} (condenar a un inocente, conocido como **error tipo I**. Normalmente $\alpha = 0.05$ aunque se pueden usar otros valores como 0.01 o 0.10 (a decidir ANTES de realizar el contraste.)
+
+---
+
+## Cuali vs cuali: inferencia
+
+[**Ejemplo**]{.hl-yellow}: supongamos que estamos probando si un nuevo medicamento tiene un efecto en la presión arterial $\mu$
+
+$$H_0:~\mu = \mu_0~\text{(medicamento no tiene efecto sobre la presión arterial)}$$ $$H_1:~\mu \neq \mu_0~\text{(medicamento SI tiene efecto sobre la presión arterial)}$$
+
+donde $\mu_0$ es la media de la presión arterial antes del tratamiento.
+
+
+| Decisión  | $H_0$ es cierta | $H_1$ es cierta |
+|:---------:|:---------------:|:---------------:|
+| Se decide rechazar $H_0$ | Error de tipo I   |  Acierto   |
+| Se decide no rechazar $H_0$ | Acierto   |  Error de tipo II  |
+
+---
+
+## Cuali vs cuali: inference
+
+### p-value
+
+El conocido como [**p-valor**]{.hl-yellow} es uno de los conceptos más importantes en estadística pero también peor usados. Puedes ver toda una revisión de qué significa y qué no en <https://pmc.ncbi.nlm.nih.gov/articles/PMC4877414/>
+
+. . .
+
+El [**p-valor es la probabilidad de obtener un resultado tan extremo o más extremo que el observado**]{.hl-yellow} SIEMPRE ASUMIENDO que la hipótesis nula es cierta.
+
+$$p-value = P(\text{data more extreme}~|~H_0 \text{ is true })$$
+
+Es una **probabilidad de un evento sobre datos hipotéticos** (los que podrían haber ocurrido bajo $H_0$), no sobre el mundo real: cuantifica la comaptibilidad entre los datos y $H_0$. Y siempre debe acompañarse del tamaño del efecto.
+
+---
+
+## p-value
+
+$$p-value = P(\text{data more extreme}~|~H_0 \text{ is true })$$
+
+❌ "El p-valor es la probabilidad de que $H_0$ sea cierta" → Falso. El p-valor no dice nada sobre la probabilidad de que una hipótesis sea verdadera o falsa (sería eso un marco bayesiano).
+
+❌ "El p-valor es la probabilidad de que H₀ sea cierta" → Falso. El p-valor no dice nada sobre la probabilidad de que una hipótesis sea verdadera o falsa (sería eso un marco bayesiano). De hecho se calcula ASUMIENDO que lo es.
+
+
+❌ "p < 0.05 significa que el efecto es importante" → Falso. Significación estadística ≠ relevancia práctica. Con muestras grandes, diferencias triviales pueden tener p < 0.001.
+
+❌ "p > 0.05 significa que no hay efecto" → Falso. Solo significa que no hay evidencia suficiente para rechazar $H_0$, que no es lo mismo. Con $n$ pequeña (o los datos tienen mucho ruido) el test tiene poco poder estadístico, y auqnue el efecto esté ahí, el experimento simplemente no tiene potencia para verlo. 
+
+El [**p-valor no distingue entre "no hay efecto" y "hay efecto pero mi estudio no tiene potencia suficiente para detectarlo"**]{.hl-red}
+
+---
+
+## Cuali vs cuali: inference
+
+En el caso de cuali vs cuali, el contraste más conocido es la conocida como [**prueba de $\chi^2$ (chi-cuadrado)**]{.hl-yellow}: dada una tabla de contigencia entre dos cualitativas, el contraste [**compara dicha tabla con la que deberíamos obtener bajo la hipótesis nula de independencia**]{.hl-yellow}
+
+Vamos a hacerlo con nuestras variables `genero` y `estado_civil`
+
+---
+
+## chi-square test
+
+$$H_0:~\text{genero y estado civil son independientes}$$
+
+$$H_1:~\text{genero y estado civil son dependientes}$$
+
+```{r}
+table(datos$genero, datos$estado_civil)
+```
+
+. . .
+
+[**Si la hipótesis nula fuese cierta**]{.hl-yellow}, ¿qué esperaríamos?
+
+---
+
+## chi-square test
+
+1. Elegimos uno de los factores y calculamos su **proporción en la tabla general** (53% vs 47% en este caso)
+
+```{r}
+prop.table(table(datos$genero))
+```
+
+. . .
+
+2. Calculamos la **tabla de contigencia**  de ambas variables obteniendo lo que denotaremos como [**frecuencias observadas $O_{ij}$**]{.hl-yellow}
+
+```{r}
+table(datos$genero, datos$estado_civil)
+```
+
+---
+
+## chi-square test
+
+
+3. **Si ambas variables fuesen independientes**, en cada columna tendríamos que tener **porcentajes parecidos a cuando lo hacemos sin desagregar** (53% mujeres y 47% hombres). Es decir, del total de casados (26) deberíamos tener $8.48$ mujeres y $7.52$ hombres; del total de divorciados (19) deberíamos tener $10.07$ mujeres y $8.93$ hombres; y así sucesivamente. Estas frecuencias las denotaremos como [**frecuencias esperadas $E_{ij}$**]{.hl-yellow}
+
+$$E_{ij} = \frac{\text{suma fila i * suma fila j}}{\text{total}}$$
+
+
+---
+
+## chi-square test
+
+
+4. [**Resumimos lo que se desvía una de otra**]{.hl-yellow} mediante el [**estadístico chi-cuadrado**]{.hl-yellow}:
+
+$$\begin{eqnarray}\chi^2 &=& \sum_{i,j} \frac{\left(O_{ij} - E_{ij} \right)^2}{E_{ij}} = \frac{(13.78 - 11)^2}{13.78} + \frac{(12.22 - 15)^2}{12.22} \nonumber \\
+&+& \frac{(10.07 - 11)^2}{10.07} + \ldots + \frac{(6.11 - 4)^2}{6.11} = 2.75731\end{eqnarray}$$
+
+. . .
+
+
+5. Calculamos [**cómo de extremo es el valor del estadístico si la hipótesis nula fuese cierta**]{.hl-yellow}, proporcionándonos un **p-valor**.
+
+---
+
+## chi-square test
+
+Este proceso podemos hacerlo directamente aplicando `chisq.test()`, indicándole las variables (o su tabla de frecuencias)
+
+```{r}
+contraste <- chisq.test(datos$genero, datos$estado_civil)
+```
+
+* `...$statistic`: tenemos guardado el valor del estadístico
+
+```{r}
+contraste$statistic
+```
+
+* `...$observed`: tenemos guardada la tabla de frecuencias observada
+
+```{r}
+contraste$observed
+```
+
+---
+
+## chi-square test
+
+
+* `...$expected`: tenemos guardada la tabla de frecuencias esperada
+
+```{r}
+contraste$expected
+```
+
+* `...$p.value`: tenemos guardado el p-valor.
+
+```{r}
+contraste$p.value
+```
+
+---
+
+## chi-square test
+
+
+¿Cómo [**interpretar el contraste**]{.hl-yellow}?
+
+```{r}
+contraste
+```
+
+Como $p.value = 0.4306 > \alpha = 0.05$, no podemos rechazar la hipótesis nula: [**no hay evidencias suficientes en la muestra para concluir que haya dependencia**]{.hl-yellow}.
+
+
+---
+
+## 💻 Tu turno {#tu-turno-2-3-1}
+
+[**Intenta realizar los siguientes ejercicios sin mirar las soluciones**]{style="color:#444442;"}
+
+::: panel-tabset
+### [**Ejercicio 1**]{.hl-yellow}
+
+📝 Calcula las tablas de frecuencias absoluta y relativa con las variables `genero` y `estado_salud`
+
+```{r}
+#| code-fold: true
+#| eval: false
+tabla_freq <- table(datos$genero, datos$estado_salud)
+prop.table(tabla_freq)
+prop.table(tabla_freq, margin = 1)
+prop.table(tabla_freq, margin = 2)
+```
+
+
+### [**Ejercicio 2**]{.hl-yellow}
+
+📝 Usando la tabla anterior:
+
+* ¿Qué porcentaje, de entre las mujeres, tiene un buen estado de salud?
+
+* ¿Qué porcentaje, de entre los hombres, tiene un estado de salud regular?
+
+* ¿Qué porcentaje de los que tienen estado de salud malo, son mujeres?
+
+```{r}
+#| code-fold: true
+# De entre las mujeres un 45.28% tiene un buen estado de salud
+# De entre los hombres un 34.04% tiene un estado de salud regular
+# Un 33.33% de los que tienen un estado de salud malo, son mujeres
+```
+
+
+### [**Ejercicio 3**]{.hl-yellow}
+
+📝 Realiza ambos contrastes e intenta razonar la respuesta a la pregunta: ¿están estas dos variables asociadas? ¿Existe algún tipo de dependencia entre ellas? Hazlo considerando $\alpha = 0.05$.
+
+```{r}
+#| code-fold: true
+#| eval: false
+chisq.test(tabla_freq)$p.value
+fisher.test(tabla_freq)$p.value
+
+# En ambos casos p-value > alpha: no podemos rechazar la  hipótesis nula de independencia: no hay evidencias suficientes CON LA MUESTRA QUE TENEMOS para concluir que haya alguna asociación
+```
+
+### [**Ejercicio 4**]{.hl-yellow}
+
+📝 Las funciones `chisq.test()` y `fisher.test()` proporcionan un objeto htest que dentro contiene el p-valor (accediendo con `$p.value` dentr de él). ¿Cómo guardar ambos p-valores en una tabla resumen en tidyverse? Exporta los resultados a un `.csv`
+
+
+
+```{r}
+#| code-fold: true
+resumen_dependencia <-
+  datos |> 
+  summarise("sig_chisq" = chisq.test(genero, estado_civil)$p.value,
+            "sig_fisher" = fisher.test(genero, estado_civil)$p.value)
+write_csv(resumen_dependencia, file = "./data/resumen_dependencia.csv")
+```
+
+:::
+
+---
+
+## Cuanti vs cuanti: summary
+
+¿Te acuerdas de la varianza?
+
+$$s^2 = \frac{\sum_{i=1}^n (x_i - \bar x)^2}{n-1}$$
+
+Esa una medida de dispersión que nos cuantificaba [**cuánto varían los datos respecto a la media**]{.hl-yellow}.
+
+. . .
+
+La [**varianza es el promedio de las desviaciones al cuadrado**]{.hl-yellow} (respecto a la media), apareciendo dos veces dicha desviación: puede ser entendida como una [**medida que cuantifica la relación de una variable CONSIGO MISMA**]{.hl-yellow}
+
+. . .
+
+¿Y si quiésemos [**medir la relación de una variable X respecto a otra variable Y (en lugar de consigo misma)**]{.hl-purple}?
+
+
+---
+
+## Covarianza y correlación
+
+$$s_{x}^{2} = \frac{1}{n} \sum_{i=1}^{n} \left(x_i - \overline{x} \right)^2 = \overline{x^2} - \overline{x}^2 \quad \text{(varianza)}$$
+
+
+La idea detrás de la [**covarianza**]{.hl-yellow} es justo esa: sustituir una de esas desviaciones de la X por la desviación de la Y.
+
+
+$$s_{xy} = \frac{1}{n} \sum_{i=1}^{n} \left(x_i - \overline{x} \right)\left(y_i - \overline{y} \right) = \overline{x*y} - \overline{x}*\overline{y}$$
+
+---
+
+## Covarianza y correlación
+
+Es importante entender algunas [**propiedades de la covarianza**]{.hl-yellow}
+
+. . .
+
+* [**Signo**]{.hl-purple}: la covarianza puede ser tanto positiva como negativa como 0: al eliminar el cuadrado de la varianza, ya no es necesario que sea positiva
+
+
+. . .
+
+* [**¿Qué cuantifica?**]{.hl-purple} La covarianza mide la [**relación LINEAL**]{.hl-red} (en torno a una recta) entre dos variables
+
+. . .
+
+* [**¿Qué dice su signo?**]{.hl-purple} El signo de la covarianza nos indicará la [**dirección de la dependencia lineal**]{.hl-yellow}: si es positiva, la relación será creciente (cuando X crece, Y crece); si es negativa, la relación será decreciente (cuando X crece, Y decrece)
+
+
+---
+
+## Covarianza y correlación
+
+Al igual que pasaba con la varianza, la [**covarianza depende de las unidades y magnitudes**]{.hl-yellow} de los datos, así que lo que haremos será [**estandarizar la covarianza**]{.hl-yellow}. Definiremos la [**coeficiente correlación lineal (de Pearson)**]{.hl-yellow} como la covarianza dividida entre el producto de las desviaciones típicas (adimensional)
+
+
+$$r_{xy} = \rho_{xy} = \frac{s_{xy}}{s_x s_y}$$
+
+. . .
+
+Tiene el [**mismo signo que la covarianza**]{.hl-yellow} (el denominador es siempre positivo) y sus [**valores siempre están entre -1 y 1**]{.hl-yellow}
+
+* más cerca de -1 o 1 → relación lineal más fuerte
+* más cerca de 0 → ausencia de relación **LINEAL**
+
+
+---
+
+## Correlación lineal
+
+
+Como decíamos, la idea detrás de la [**covarianza**]{.hl-yellow} es una "varianza" entre dos variales (la varianza es una covarianza de una variable consigo misma), midiendo el **promedio de lo que se desvía cada una respecto a su media**
+
+$$s_{xy} = \frac{1}{n} \sum_{i=1}^{n} \left(x_i - \overline{x} \right)\left(y_i - \overline{y} \right) = \overline{x*y} - \overline{x}*\overline{y}$$
+
+. . .
+
+Para calcularla en `R` basta con usar la función `cov()`
+
+```{r}
+starwars |> 
+  drop_na(mass, height) |> 
+  summarise(cov(mass, height))
+```
+
+
+---
+
+## Matriz de covarianzas
+
+
+```{r}
+starwars |> 
+  select(where(is.numeric)) |> 
+  drop_na() |>
+  cov()
+```
+
+Además de ser [**simétrica**]{.hl-yellow}...¿qué tenemos en la [**diagonal**]{.hl-yellow}?
+
+. . .
+
+La [**matriz de (cuasi)covarianzas**]{.hl-yellow} se denota como $\Sigma$ y sus elementos se define como $\Sigma_{ii} = s_{x_i}^{2}$ para la diagonal y $\Sigma_{ij} = \Sigma_{ji} = s_{x_i x_j}$ fuera de ella.
+
+. . .
+
+::: callout-important
+## Importante
+
+Recuerda que los softwares estadísticos nos devuelven siempre la [**cuasi covarianza**]{.hl-purple}, dividido entre $n-1$ y no entre $n$. La cuasivarianza y la cuasicovarianza son los [**mejores estimadores muestrales (insesgados)**]{.hl-yellow} de los respectivos parámetros poblaciones
+
+:::
+
+---
+
+## Matriz de correlaciones
+
+De la misma manera con `cor()` podemos [**calcular la matriz de correlaciones**]{.hl-yellow} (en este caso sin el `cuasi` ya que se cancelan denominadores)
+
+. . .
+
+```{r}
+starwars |> 
+  select(where(is.numeric)) |> 
+  drop_na() |>
+  cor()
+```
+
+. . .
+
+La [**matriz de correlaciones**]{.hl-yellow} se denota como $R$ y sus elementos se define como $r_{ii} = 1$ para la diagonal y $r_{ij} = r_{x_ix_j}$ fuera de ella, y nos proporciona la dependencia lineal entre variables ya de manera **estandarizada**.
+
+---
+
+
+## Correlación vs dependencia
+
+
+Podemos tener [**variables incorreladas**]{.hl-red}, con correlación nula, pero que [**exista dependencia entre ellas**]{.hl-green}: la covarianza/correlación [**SOLO CAPTURA relaciones lineales**]{.hl-yellow}, nada más.
+
+. . .
+
+Veamos un ejemplo sencillo con $X = \left\lbrace -1, 0, 1 \right\rbrace$ y $Y = X^2 =  \left\lbrace 1, 0, 1 \right\rbrace$. 
+
+* La media de ambas es nula
+* La media del producto es la media de $XY = \left\lbrace -1, 0, 1 \right\rbrace$, que es de nuevo nula
+* Así la covarianza $\overline{x*y} - \overline{x}*\overline{y}$ es nula a pesar de tener la mayor dependencia posible (dependencia funcional)
+
+---
+
+## Correlación vs dependencia
+
+
+En relaciones no lineales, la **correlación estará cercana a cero** (ya que no hay relación lineal) pero existe una [**dependencia**]{.hl-yellow}. Diremos que [**dos variables son dependientes entre sí**]{.hl-yellow} cuando existe un **patrón numérico que las relaciona**
+
+. . .
+
+* [**Independencia implica incorrelación**]{.hl-green}
+* [**Incorrelación NO implica independencia**]{.hl-red}
+
+El fenómeno conocido como [**correlaciones espúreas**]{.hl-yellow} aparece cuando dos variables presentan una [**relación matemática**]{.hl-green} pero sin [**ningún tipo de relación causal o lógica**]{.hl-red}. Puedes ver más en <https://www.tylervigen.com/spurious-correlations>
+
+
+---
+
+
+## Caso real: encuesta satisfacción
+
+Vamos a tomar de nuevo nuestros datos de satisfacción de pacientes
+
+```{r}
+library(readr)
+datos <-
+  read_csv(file = "./data/SatisfaccionPacientes.csv") |> 
+  janitor::clean_names()
+datos
+```
+
+---
+
+## Caso real: encuesta satisfacción
+
+¿Cómo obtener la **matriz de correlaciones**? Lo que haremos será primero seleccionar solo las numéricas para luego aplicar `cor()`, o bien `correlate()` del paquete `{corrr}`
+
+```{r}
+datos |> 
+  select(where(is.numeric)) |> 
+  corrr::correlate()
+```
+
+Vemos que por ejemplo `edad` no correla con `grado_satisfaccion` ($-0.0339$) pero `tiempo_espera` tiene una correlación negativa ($-0.586$) con `grado_satisfaccion`.
+
+---
+
+
+## Cuanti vs cuanti: dataviz
+
+El gráfico más habitual para cuanti vs cuanti sería un diagrama de densidad para cada variable por separado y un scatter plot entre las dos variables
+
+```{r}
+#| code-fold: true
+gg1 <- 
+  datos |> 
+  ggplot() +
+  geom_point(aes(x = edad, y = tiempo_espera, color = genero,
+                 size = grado_satisfaccion)) +
+  stat_smooth(aes(x = edad, y = tiempo_espera),
+              method = "lm", se = FALSE) +
+  ggthemes::scale_color_colorblind() +
+  theme_minimal()
+
+gg2 <- 
+  datos |> 
+  ggplot() +
+  geom_density(aes(x = edad, fill = genero), alpha = 0.4) +
+  ggthemes::scale_fill_colorblind() +
+  theme_minimal()
+
+gg3 <- 
+  datos |> 
+  ggplot() +
+  geom_density(aes(x = tiempo_espera, fill = genero), alpha = 0.4) +
+  ggthemes::scale_fill_colorblind() +
+  theme_minimal()
+gg1 + (gg2 / gg3)
+```
+
+
+---
+
+## Cuanti vs cuanti: dataviz
+
+Con el paquete `{ggcorrplot}` también podemos [**visualizar la propia matriz de correlaciones**]{.hl-yellow} de distintas formas (el tamaño y alpha indica su magnitud en valor absoluto, el color su signo)
+
+```{r}
+#| code-fold: true
+library(ggcorrplot)
+datos |> 
+  select(where(is.numeric)) |> 
+  cor() |> 
+  ggcorrplot(ggtheme = ggplot2::theme_minimal(),
+             colors = c("#6D9EC1", "white", "#E46726"))
+```
+
+---
+
+## Cuanti vs cuanti: inference
+
+¿Pero cómo saber que la correlación observada entre `edad` y `grado_satisfaccion` ($-0.0339$) es suficientemente pequeña para considerarse incorreladas? ¿Cómo saber si la correlación entre `tiempo_espera` y `grado_satisfaccion` ($-0.586$) es suficientemente grande para considerar que es **significativa**?
+
+. . .
+
+Con un [**contraste de correlaciones**]{.hl-yellow} haciendo uso de `cor.test()`
+
+:::: columns
+::: {.column width="50%"}
+
+```{r}
+cor.test(datos$edad, datos$grado_satisfaccion)
+```
+
+:::
+
+
+::: {.column width="50%"}
+
+```{r}
+cor.test(datos$tiempo_espera, datos$grado_satisfaccion)
+```
+
+:::
+::::
+
+---
+
+## Test de correlaciones
+
+:::: columns
+::: {.column width="50%"}
+
+```{r}
+cor.test(datos$edad, datos$grado_satisfaccion)
+```
+
+:::
+
+
+::: {.column width="50%"}
+
+```{r}
+cor.test(datos$tiempo_espera, datos$grado_satisfaccion)
+```
+
+:::
+::::
+
+En uno el p-valor es bastante alto (no rechazamos la hipótesis nula de incorrelación) y en otro el p-valor es prácticamente 0 (rechazamos la hipótesis nula ->  habría evidencias de correlación significativa).
+
+---
+
+## Cuanti vs cuanti: inference
+
+PERO HAY UN PROBLEMA
+
+Las correlaciones `cor()` y `cor.test()` que estamos usando es siempre basado en la correlación de Pearson: es un contraste PARAMÉTRICO, por lo que tiene hipótesis:
+
+> Las variables deben ser normales
+
+¿Lo son?
+
+---
+
+## Cuanti vs cuanti: inference
+
+Para comprobarlo debemos hacer un contraste de hipótesis no paramétrico sobre la distribución de las variables: ¿son las variables normales?
+
+$H_0$: variable es normal
+
+
+```{r}
+shapiro.test(datos$tiempo_espera)
+shapiro.test(datos$grado_satisfaccion)
+```
+
+---
+
+## Cuanti vs cuanti: inference
+
+También podemos visualizar la normalidad haciendo uso del conocido como Q-Q plot: compara los percentiles reales vs percentiles de una normal (si los datos son normales, los puntos deberían caer cerca de la diagonal)
+
+```{r}
+#| fig-height: 4
+datos |> 
+  ggplot(aes(sample = edad)) +
+  geom_qq() +
+  geom_qq_line() +
+  theme_minimal()
+```
+
+
+---
+
+## Cuanti vs cuanti: inference
+
+
+Ninguna lo es por lo que deberíamos hacer un contraste no paramétrico conocido como [**test de rangos**]{.hl-yellow} (Kendall o Spearman)
+
+
+```{r}
+cor.test(datos$tiempo_espera, datos$grado_satisfaccion, method = "kendall")
+```
+
+El contraste **mide si la relación es monótona**. Solo les importa el orden: cuando X sube, ¿Y tiende a subir también? No necesita que sea proporcional ni lineal, solo consistente en dirección. 
+
+
+# L4: [effect size and infer package]{.flow} {#clase-1-4}
+
+-   [🐣 Case study: tobaco vs bronquitis](#caso-practico-2-3-1)
+-   [🐣 Case study: mental health survey](#caso-practico-2-3-2)
+-   [📆 Planning](#planificacion-2)
+
+
+---
+
+
+## Fisher's test
+
+Otra alternativa es el [**test exacto de Fisher**]{.hl-yellow}, una prueba estadística utilizada para [**determinar si hay una asociación significativa entre dos variables cualitativas**]{.hl-yellow} especialmente útil cuando las [**frecuencias esperadas son bajas**]{.hl-yellow} en cada cualitativa (la tabla de frecuencias es $2 \times 2$). No entraremos en mucho detalle matemático pero usa la distribución real de una variable aleatoria que sigue lo que se conoce como distribución hipergeométrica.
+
+&nbsp;
+
+Como **curiosidad** dicha prueba nació cuando Fisher trataba de comprobar si una compañera, Muriel Birstol, era capaz de detectar en un té con leche si se había añadido primero el té o la leche en su taza (y del experiemnto del que nació la regla del $\alpha = 5%$).
+
+---
+
+## Fisher's test
+
+Para aplicarlo nos basta con usar `fisher.test()`.
+
+```{r}
+fisher.test(datos$genero, datos$estado_civil)
+```
+
+---
+
+## Fisher's test
+
+Dicha prueba es especialmente útil cuando tenemos solo 2 modalidades en cada cualitativa ya que nos proporciona además [**métricas de asociación**]{.hl-yellow}
+
+Veamos un ejemplo con la tabla `placebo_medicamento.csv`
+
+```{r}
+datos_placebo <- read_csv(file = "./data/placebo_medicamento.csv")
+datos_placebo
+```
+
+---
+
+## Cuali vs cuali: effect size
+
+
+```{r}
+fisher.test(datos_placebo$observado, datos_placebo$grupo_tratamiento)
+```
+
+Si te fijas ahora nos devuelve además un [**contraste de lo que se conoce como odds ratio (OR: razón de probabilidades)**]{.hl-yellow}
+
+`alternative hypothesis: true odds ratio is not equal to 1`
+
+
+---
+
+## Cuali vs cuali: effect size
+
+```{r}
+table(datos_placebo$observado, datos_placebo$grupo_tratamiento)
+```
+
+::: {style="font-size:85%"}
+
+La interpretación de [**Odds ratio (OR)**]{.hl-yellow} es cuantificar la [**asociación entre dos variables respecto a una asociación espúrea**]{.hl-yellow} ¿Cuánto [**mejoran los que tomaron medicamento respecto a una posible mejora basal**]{.hl-yellow} (aleatoria) del placebo?
+
+* [**Ratio mejora en tratados**]{.hl-purple}: $13/3 = 4.333$ (por cada persona que mejora, hay $3/13 = 0.23$ que no mejoran)
+* [**Ratio mejora en placebo**]{.hl-purple}: $6/11 = 0.545$ (por cada persona que mejora, hay $11/6 = 1.83$ que no mejoran)
+
+$$OR = \frac{13/3}{6/11} = \frac{13*11}{6*3} = 7.94$$
+
+En el grupo tratado, por cada persona que mejora hay muchas menos que no mejoran, comparado con el placebo. Concretamente, los pacientes sometidos a tratamiento mejoran 7.9 veces más si el placebo mejorase por azar
+
+:::
+
+---
+
+## Cuali vs cuali: effect size
+
+```{r}
+table(datos_placebo$observado, datos_placebo$grupo_tratamiento)
+```
+
+Otra de las métricas habituales es la conocida como [**razón de prevalencias (Risk Ratio, RR)**]{.hl-yellow} que nos proporciona un [**ratio entre la probabilidad de prevalencia**]{.hl-yellow} de un evento en dos grupos.
+
+
+* [**Prevalencia de mejora en tratados**]{.hl-purple}: $13/(3+13) = 0.8125$
+* [**Prevalencia de mejora en placebo**]{.hl-purple}: $6/(11+6) = 0.35294$
+
+$$RR = \frac{13/(3+13)}{6/(11+6)} = \frac{13*11}{6*3} = 2.30208$$
+
+
+---
+
+## Cuali vs cuali: effect size
+
+Ambas métricas podemos estimarlas también con el paquete `{epitools}`
+
+```{r}
+library(epitools)
+OR <- oddsratio(datos_placebo$observado, datos_placebo$grupo_tratamiento)
+OR$measure
+```
+
+* Si $OR = 1$ no hay asociación entre las variables.
+* Si $OR > 1$ hay una asociación positiva, es decir, la exposición está asociada con un mayor riesgo.
+* Si $OR < 1$ hay una asociación negativa, es decir, la exposición está asociada con un menor riesgo.
+
+
+---
+
+## Cuali vs cuali: effect size
+
+
+```{r}
+RR <- riskratio(datos_placebo$observado, datos_placebo$grupo_tratamiento)
+RR$measure
+```
+
+
+* Si $RR = 1$ no hay diferencias en el riesgo entre los grupos.
+* Si $RR > 1$ el grupo expuesto (en este caso medicado) tiene mayor riesgo (en este caso de mejorar)
+* Si $RR < 1$ el grupo expuesto tiene menor riesgo.
+
+---
+
+## Cuali vs cuali: effect size
+
+Cuando tenemos más de 2 categorías, el conocido como [**Cramer's V nos cuantifica el effect size**]{.hl-yellow} (en términos de fuerza de asociación global)
+
+¿Cómo de fuerte es la asociación entre las dos variables en general?
+
+```{r}
+library(effectsize)
+datos |>
+  select(genero, estado_civil) |>
+  table() |> 
+  cramers_v()
+```
+
+
+```{r}
+library(effectsize)
+datos_placebo |>
+  select(grupo_tratamiento, observado) |>
+  table() |> 
+  cramers_v()
+```
+
+
+---
+
+## Cuali vs cuali: effect size
+
+```{r}
+library(effectsize)
+datos |>
+  select(genero, estado_civil) |>
+  table() |> 
+  cramers_v()
+```
+
+
+```{r}
+library(effectsize)
+datos_placebo |>
+  select(grupo_tratamiento, observado) |>
+  table() |> 
+  cramers_v()
+```
+
+
+
+* Value = 0.44 -> asociación moderada-alta entre tratamiento y mejora.
+
+* IC = [0.02, 1.00] -> demasiado ancho, el efecto real podría ser casi nulo (0.02) o perfectamente máximo (1.00), porque la muestra es pequeña. El efecto puede ser real, pero necesitas más datos para estimarlo con precisió
+
+---
+
+## 🐣 Caso práctico I: bronquitis y tabaco {#caso-practico-2-3-1}
+
+En el fichero `fumadores.csv` tenemos datos de 96 pacientes sobre sí o fuman y quienes han desarrollado o no bronquitis.
+
+```{r}
+#| eval: false
+datos <- read_csv(file = "./data/fumadores.csv")
+```
+
+Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.quarto.pub/descriptiva-inferencia-isciii/#caso-pr%C3%A1ctico-ii-bronquitis-y-tabaco)
+
+---
+
+## 🐣 Caso práctico II: salud mental {#caso-practico-2-3-2}
+
+En el fichero `datos_salud_mental.csv` tenemos información recopilada de 100 pacientes que acuden a un centro de salud mental. Se quiere realizar un estudio para ver el impacto que tienen distintas características sobre la ansiedad y depresión en estos 100 pacientes. Los datos incluyen una variedad de variables relacionadas con la salud mental, así como características demográficas y de estilo de vida.
+
+```{r}
+#| eval: false
+datos <- read_csv(file = "./data/datos_salud_mental.csv")
+```
+
+
+Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.quarto.pub/descriptiva-inferencia-isciii/#caso-pr%C3%A1ctico-iii-salud-mental)
+
+
+## Cuanti vs cuanti: effect size
+
+En el caso de cuanti vs cuanti es más sencillo ya que el effect size viene cuantificado por los propios coeficientes de correlación (Pearson, Spearmano o Kendall)
+
+---
+
+## Infer package
+
+
+El paquete `{infer}` implementa inferencia estadística siguiendo una **gramática coherente y explícita**, alineada con el `tidyverse`.
+
+Su filosofía: hacer visible el proceso de inferencia, **no ocultarlo**.
+
+```{r}
+library(infer)
+library(tidyverse)
+```
+
+::: {.callout-note}
+Todos los análisis siguen **siempre el mismo flujo**, independientemente del tipo de variables.
+:::
+
+---
+
+## Flujo de `infer`
+
+| Paso | Función | ¿Qué hace? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declara variable respuesta y explicativa |
+| 2️⃣ | `hypothesize()` | Define $H_0$ (`"independence"` o `"point"`) |
+| 3️⃣ | `generate()` | Genera distribución nula por permutación o bootstrap |
+| 4️⃣ | `calculate()` | Calcula el estadístico de interés |
+| 5️⃣ | `visualize()` | Visualiza la distribución nula + p-valor |
+
+::: {.callout-tip}
+`specify()` y `hypothesize()` definen el **mundo bajo $H_0$**.  
+`generate()` y `calculate()` **simulan** ese mundo muchas veces.
+:::
+
+---
+
+## Cuali vs Cuali: ¿fuman más los hombres? 
+
+**$H_0$**: fumar (`Smoke100`) y género son **independientes**
+
+```{r}
+# Paso 1: definir las variables que enfrentas
+# (y que consideras "éxito", el objeto de estudio)
+# Paso 2: calcular el estadístico que resume la info
+obs_stat <-
+  NHANESraw |>
+  drop_na(Smoke100, Gender) |>
+  specify(Smoke100 ~ Gender, success = "Yes") |>
+  calculate(stat = "Chisq")
+obs_stat
+```
+
+---
+
+## Cuali vs Cuali
+
+El paquete `{infer}` usa una técnica muy habitual en estadística que es un [**test de permutaciones (`type = "permute"`)**]{.hl-yellow}: para calcular cómo de compatible son nuestras datos y $H_0$, lo que haremos será  barajar (`reps` veces) las etiquetas de fumadores y los reasigna aleatoriamente a los individuos, rompiendo cualquier relación real que pudiera existir y simulando un mundo donde fumar y género no tienen relación.
+
+
+```{r}
+# Paso 3: generar distribución nula por permutación
+null_dist <-
+  NHANESraw |> drop_na(Smoke100, Gender) |> 
+  specify(SmokeNow ~ Gender, success = "Yes") |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute")
+null_dist
+```
+
+---
+
+## Cuali vs Cuali
+
+**$H_0$**: fumar (`Smoke100`) y género son **independientes**
+
+Podemos entonces [**calcular un estadístico chi-cuadrado para cada permutación**]{.hl-yellow}...
+
+```{r}
+null_dist  <-
+  null_dist |> 
+  calculate(stat = "Chisq")
+null_dist
+```
+
+---
+
+## Cuali vs Cuali
+
+::: columns
+::: {.column width="60%"}
+
+... para luego [**visualizar la distribución de dicho estadístico**]{.hl-yellow}.
+
+```{r}
+# Visualizar distribución del p-valor
+null_dist |>
+  visualize()
+```
+
+:::
+
+::: {.column width="40%"}
+
+
+Bajo $H_0$ (independencia entre género y fumar), el estadístico chi-cuadrado esperado por azar ronda valores pequeños, entre 0 y 4 aproximadamente. La gran mayoría de las permutaciones generan valores cercanos a 0. Eso sería lo normal cuando no hay relación.
+
+:::
+:::
+
+---
+
+## Cuali vs Cuali
+
+De **todas las posibles combinaciones** de etiquetas, ¿en qué [**lugar está tu realidad respecto a todas las realidades posibles**]{.hl-yellow}?
+
+::: columns
+::: {.column width="60%"}
+
+```{r}
+# Visualizar + p-valor
+null_dist |>
+  visualize() +
+  shade_p_value(obs_stat, direction = "greater",
+                color = "#e76f51")
+```
+
+:::
+
+::: {.column width="40%"}
+
+```{r}
+# P-valor numérico
+null_dist |>
+  get_p_value(obs_stat,
+              direction = "greater")
+```
+
+La línea roja está en ~390 (el chi-cuadrado de tus datos reales). El valor observado está enormemente lejos de lo que ocurriría por azar. En las 1000 permutaciones, ninguna generó un chi-cuadrado tan grande como el observado --> El p-valor es esencialmente 0 --> si género y fumar fueran independientes, obtener una asociación tan fuerte como la que ves en los datos sería prácticamente imposible.
+
+Hay una asociación muy clara entre género y fumar.
+
+:::
+:::
+
+
+
+---
+
+## Cuali vs cuali
+
+Vamos a repetir el flujo con nuestros datos de satisfacción de pacientes
+
+**$H_0$**: estado civil y género son **independientes**
+
+```{r}
+obs_stat <-
+  datos |>
+  drop_na(genero, estado_civil) |>
+  specify(genero ~ estado_civil, success = "Femenino") |>
+  calculate(stat = "Chisq")
+obs_stat
+```
+
+```{r}
+null_dist <-
+  datos |>
+  drop_na(genero, estado_civil) |>
+  specify(genero ~ estado_civil, success = "Femenino") |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |> 
+  calculate(stat = "Chisq")
+```
+
+---
+
+## Cuali vs cuali
+
+
+```{r}
+#| code-fold: true
+null_dist |>
+  visualize() +
+  shade_p_value(obs_stat, direction = "greater",
+                color = "#e76f51") # fill = "#457b9d")
+null_dist |>
+  get_p_value(obs_stat, direction = "greater")
+```
+
+El estadístico observado (línea naranja está en ~3) no es nada raro bajo $H_0$: valores tan grandes o mayores ocurren con bastante frecuencia simplemente por azar. El p-valor es alto --> No tienes evidencia suficiente para rechazar $H_0$
+
+---
+
+
+## Cuanti vs Cuanti
+
+**H_0**: no hay correlación entre peso y `BPSysAve`
+
+```{r}
+# Estadístico observado
+obs_cor <-
+  NHANESraw |>
+  specify(BPSysAve ~ Weight) |>
+  calculate(stat = "correlation")
+
+# Distribución nula
+null_dist <-
+  NHANESraw |>
+  specify(BPSysAve ~ Weight) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "correlation")
+```
+
+## Cuanti vs Cuanti
+
+**H_0**: no hay correlación entre peso y `BPSysAve`
+
+```{r}
+#| code-fold: true
+# Visualizar
+null_dist |>
+  visualize() +
+  shade_p_value(obs_cor, direction = "two-sided", color = "#e76f51") 
+null_dist |>
+  get_p_value(obs_stat, direction = "greater")
+```
+
+::: {.callout-tip}
+Para dos variables cuantitativas, `stat = "correlation"` calcula la correlación de Pearson. ¿Son normales?
+:::
+
+---
+
+
+## Cuanti vs Cuanti
+
+
+Para [**muestras grandes debemos usar el Anderson-Darling normality**]{.hl-yellow} test
+
+```{r}
+library(nortest)
+ad.test(NHANESraw$BPSysAve)
+ad.test(NHANESraw$Weight)
+```
+
+Parece que no lo son pero...es que con n = 20000 la hipótesis nula es muy fácil de ser rechazada...¿la desviación es muy grande?
+
+---
+
+## Cuanti vs Cuanti
+
+Sí se aprecia mucha desviación
+
+```{r}
+#| code-fold: true
+library(patchwork)
+p1 <- ggplot(NHANESraw, aes(sample = BPSysAve)) +
+  stat_qq() + stat_qq_line(color = "red") +
+  labs(title = "BPSysAve") +
+  theme_minimal()
+
+p2 <- ggplot(NHANESraw, aes(sample = Weight)) +
+  stat_qq() + stat_qq_line(color = "red") +
+  labs(title = "Weight") +
+  theme_minimal()
+
+p1 + p2
+```
+
+---
+
+## Cuanti vs Cuanti
+
+**H_0**: no hay correlación entre peso y `BPSysAve`
+
+Para realizar el [**contraste no paramétrico (Spearman) vamos a convertir a rangos**]{.hl-yellow} nuestras variables
+
+```{r}
+# Estadístico observado
+obs_cor <-
+  NHANESraw  |> 
+  drop_na(BPSysAve, Weight) |>
+  mutate(across(c(BPSysAve, Weight), rank)) |> 
+  specify(BPSysAve ~ Weight) |>
+  calculate(stat = "correlation")
+
+# Distribución nula
+null_dist <-
+  NHANESraw |> 
+  drop_na(BPSysAve, Weight) |>
+  mutate(across(c(BPSysAve, Weight), rank)) |> 
+  specify(BPSysAve ~ Weight) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "correlation")
+```
+
+---
+
+## Cuanti vs Cuanti
+
+```{r}
+# Visualizar
+null_dist |>
+  visualize() +
+  shade_p_value(obs_cor, direction = "two-sided", color = "#e76f51") 
+null_dist |>
+  get_p_value(obs_stat, direction = "greater")
+```
+
+---
+
+## Intervalos de confianza
+
+Un IC al 95% **no** significa que el parámetro real esté dentro 
+del intervalo con probabilidad 0.95.
+
+El parámetro real es **fijo** — no tiene distribución, no es aleatorio, si estamos en un enfoque frecuentista. 
+
+No tiene sentido hablar de la probabilidad de que esté en algún sitio.
+
+::: {.callout-important}
+## Lo que realmente significa
+Si repitiéramos el experimento infinitas veces y calculáramos un IC 
+cada vez, el **95% de esos intervalos** contendrían el parámetro real.
+
+El 95% es una propiedad del **procedimiento**, no de un intervalo concreto.
+:::
+
+---
+
+## IC: errores más comunes
+
+❌ *"Hay un 95% de probabilidad de que la media real esté en [2.1, 3.4]"*
+→ Falso. La media real es un número fijo, no una variable aleatoria.
+
+❌ *"El 95% de los datos caen dentro del intervalo"*
+→ Eso es un intervalo de predicción, no de confianza. Son cosas distintas.
+
+❌ *"Si el IC no contiene al cero, el efecto es importante"*
+→ Significación estadística ≠ relevancia práctica. Un IC estrecho 
+lejos del cero con n enorme puede ser trivial en la práctica.
+
+
+
+---
+
+## About IC
+
+```{r}
+#| code-fold: true
+# Parámetro real conocido (mu = 5)
+mu_real <- 5
+n <- 30
+n_sims <- 100
+nivel <- 0.95
+
+set.seed(42)
+simulations <- tibble()
+for (i in 1:n_sims) {
+  
+  muestra <- rnorm(n, mean = mu_real, sd = 2)
+  ic <- t.test(muestra, conf.level = nivel)$conf.int
+  simulations <-
+    simulations |> 
+    bind_rows(tibble("sim" = i, "media" = mean(muestra),
+                     "lower" = ic[1], "upper" = ic[2],
+                     "cubre" = ic[1] <= mu_real & mu_real <= ic[2]))
+}
+
+ggplot(simulations, aes(y = sim, color = cubre)) +
+  geom_segment(aes(x = lower, xend = upper,
+                   y = sim,   yend = sim), linewidth = 0.6) +
+  geom_point(aes(x = media), size = 0.8) +
+  geom_vline(xintercept = mu_real, color = "white",
+             linetype = "dashed", linewidth = 0.8) +
+  scale_color_manual(values = c("TRUE" = "#10b981", "FALSE" = "#ef4444"),
+                     labels = c("TRUE" = "Cubre μ", "FALSE" = "No cubre μ")) +
+  labs(
+    x = NULL, y = "Simulación", color = NULL,
+    title    = "100 intervalos de confianza al 95%",
+    subtitle = glue::glue(
+      "{sum(simulations$cubre)} de 100 intervalos contienen μ = {mu_real}"
+    )
+  ) +
+  theme_minimal()
+```
+
+
+---
+
+## IC based on bootstrap
+
+En el paquete `{infer}` también podemos cuantificar con [**intervalos de confianza la incertidumbre del estadístico observado**]{.hl-yellow} 
+
+. . .
+
+La técnica se conoce como [**boostrap o remuestreo**]{.hl-yellow} y la idea es "replicar" ese "si repitiéramos el experimento 1000 veces y calculáramos un IC cada vez, el **95% de esos intervalos** contendrían el parámetro real"
+
+. . .
+
+Para ello vamos a generar 1000 submuestras a partir de la muestra original, realizando [**muestreos con reemplazamiento**]{.hl-yellow}
+
+
+---
+
+## IC based on bootstrap
+
+
+```{r}
+# Bootstrap: remuestreo con reemplazo
+boot_dist <- NHANESraw |>
+  specify(BPSysAve ~ Weight) |>
+  generate(reps = 1000, type = "bootstrap") |>  # sin hypothesize()
+  calculate(stat = "correlation")
+```
+
+Cada muestra bootstrap tiene el mismo n que el dataset original: cada una de las 1000 iteraciones remuestrea 10.000 observaciones con reemplazo del dataset original. No reduce el tamaño muestral.
+
+El reemplazo es lo que genera variabilidad entre muestras y permite estimar la incertidumbre del estadístico; en cada muestra bootstrap algunos individuos aparecen 0 veces, otros 1 vez, otros 2 o más, etc. 
+
+---
+
+
+## IC based on bootstrap
+
+```{r}
+# IC al 95%
+ci <- boot_dist |>
+  get_confidence_interval(level = 0.95, type = "percentile")
+
+# Visualizar
+boot_dist |>
+  visualize() +
+  shade_confidence_interval(ci)
+```
+
+::: {.callout-note}
+**Permutación** → distribución nula → p-valor  
+**Bootstrap** → distribución muestral → intervalo de confianza
+:::
