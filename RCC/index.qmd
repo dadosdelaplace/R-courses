@@ -110,8 +110,8 @@ Click here [Module 2](#module-2) to module 2.
 |:------:|:--------:|:--------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
 | [1-1](#clase-1-1) | S1 | 24 mar | Introduction to ggplot2 | [💻](#tu-turno-2-1-1)   |  |  | 
 | [1-2](#clase-1-2) | S1 | 26 mar | More about ggplot2 | [{#case-study-NHANES}](#case-study-NHANES) |   |  |
-| [1-3](#clase-1-3) | S3 | 7 apr | Association cuali vs cuali / cuanti vs cuanti | [💻](#tu-turno-2-3-1) |  |  |
-| [1-4](#clase-1-4) | S4 | 9 apr | Effect sizes and infer package | ... |  [🐣](#caso-practico-2-3-1) [🐣](#caso-practico-2-3-2) |  |
+| [1-3](#clase-1-3) | S3 | 7 apr | Association cuali vs cuali | [💻](#tu-turno-2-3-1) |  |  |
+| [1-4](#clase-1-4) | S4 | 9 apr | Association cuanti vs cuanti. Effect sizes | ... |  [🐣](#caso-practico-2-4-1) [🐣](#caso-practico-2-4-2) [🐣](#caso-practico-2-4-3) |  |
 
 :::
 :::
@@ -10020,7 +10020,23 @@ In the case of quanti vs quanti it is simpler since the effect size is quantifie
 
 ---
 
-## 🐣 Case study I: bronchitis and tobacco {#caso-practico-2-3-1}
+## 🐣 Case study I: dataviz with the patient satisfaction survey {#caso-practico-2-4-1}
+
+We will continue practising with the `SatisfaccionPacientes.csv` dataset
+```{r}
+library(readr) # dentro de tidyverse
+datos <-
+  read_csv(file = "./data/SatisfaccionPacientes.csv") |> 
+  janitor::clean_names()
+datos
+```
+
+Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html)
+
+
+---
+
+## 🐣 Case study II: bronchitis and tobacco {#caso-practico-2-4-2}
 
 En el fichero `fumadores.csv` tenemos datos de 96 pacientes sobre sí o fuman y quienes han desarrollado o no bronquitis.
 
@@ -10029,11 +10045,11 @@ En el fichero `fumadores.csv` tenemos datos de 96 pacientes sobre sí o fuman y 
 datos <- read_csv(file = "./data/fumadores.csv")
 ```
 
-Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.quarto.pub/descriptiva-inferencia-isciii/#caso-pr%C3%A1ctico-ii-bronquitis-y-tabaco)
+Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html)
 
 ---
 
-## 🐣 Case study II: mental health {#caso-practico-2-3-2}
+## 🐣 Case study III: mental health {#caso-practico-2-4-3}
 
 En el fichero `datos_salud_mental.csv` tenemos información recopilada de 100 pacientes que acuden a un centro de salud mental. Se quiere realizar un estudio para ver el impacto que tienen distintas características sobre la ansiedad y depresión en estos 100 pacientes. Los datos incluyen una variedad de variables relacionadas con la salud mental, así como características demográficas y de estilo de vida.
 
@@ -10043,7 +10059,7 @@ datos <- read_csv(file = "./data/datos_salud_mental.csv")
 ```
 
 
-Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.quarto.pub/descriptiva-inferencia-isciii/#caso-pr%C3%A1ctico-iii-salud-mental)
+Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html)
 
 
 # L5: [infer package and ANOVA]{.flow} {#clase-1-5}
