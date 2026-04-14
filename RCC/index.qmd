@@ -18,6 +18,8 @@ format:
     footer: "[<strong>Javier Álvarez Liébana</strong>](...) • Course at Real Colegio Complutense at Harvard University"
     slide-number: c/t
 execute:
+  # freeze: auto
+  # cache: true 
   echo: true
 ---
 
@@ -128,7 +130,7 @@ Click here [Module 2](#module-2) to module 2.
   - **workbooks** contained in `workbooks` folder.
   - **cheatsheets of packages** contained in `cheatsheets-packages` folder.
   
-* [🗃 **Data**]{.hl-yellow}: datasets that will be used, available on [**Google Drive**](https://drive.google.com/drive/folders/17TJJKu6vhcEfb99LtiVZZtTCy6xQ4DXf?usp=sharing)
+* [🗃 **Data**]{.hl-yellow}: datasets that will be used, available on [**Google Drive**](https://drive.google.com/drive/folders/1TcqeL4scZw0L2TCvB1_8VEba-f1K9Kpt?usp=sharing)
 
 * [📚 **Extra resources**]{.hl-yellow}:  <https://r4ds.had.co.nz/>, <https://cdr-book.github.io/> and <https://ivelasq.quarto.pub/intro-to-quarto/>.
 
@@ -10071,12 +10073,13 @@ Infer package and association between cuali vs cuanti
 
 ---
 
+
 ## Infer package
 
 
-El paquete `{infer}` implementa inferencia estadística siguiendo una **gramática coherente y explícita**, alineada con el `tidyverse`.
+The `{infer}` package implements statistical inference following a **coherent and explicit grammar**, aligned with the `tidyverse`.
 
-Su filosofía: hacer visible el proceso de inferencia, **no ocultarlo**.
+It does not yet have many tests implemented, but we will use it for its philosophy: making the inference process visible, **not hiding it**.
 
 ```{r}
 library(infer)
@@ -10084,53 +10087,121 @@ library(tidyverse)
 ```
 
 ::: {.callout-note}
-Todos los análisis siguen **siempre el mismo flujo**, independientemente del tipo de variables.
+All analyses always follow **the same workflow**, regardless of the type of variables.
 :::
 
 ---
 
-## Flujo de `infer`
+## Quali vs Quali: do men smoke more? 
 
-| Paso | Función | ¿Qué hace? |
-|------|---------|-----------|
-| 1️⃣ | `specify()` | Declara variable respuesta y explicativa |
-| 2️⃣ | `hypothesize()` | Define $H_0$ (`"independence"` o `"point"`) |
-| 3️⃣ | `generate()` | Genera distribución nula por permutación o bootstrap |
-| 4️⃣ | `calculate()` | Calcula el estadístico de interés |
-| 5️⃣ | `visualize()` | Visualiza la distribución nula + p-valor |
-
-::: {.callout-tip}
-`specify()` y `hypothesize()` definen el **mundo bajo $H_0$**.  
-`generate()` y `calculate()` **simulan** ese mundo muchas veces.
-:::
-
----
-
-## Cuali vs Cuali: ¿fuman más los hombres? 
+We will use the `NHANESraw` dataset from before:
 
 **$H_0$**: fumar (`Smoke100`) y género son **independientes**
 
+
 ```{r}
-# Paso 1: definir las variables que enfrentas
-# (y que consideras "éxito", el objeto de estudio)
-# Paso 2: calcular el estadístico que resume la info
-obs_stat <-
+# Eliminamos ausentes de ambas variables
+NHANESraw <-
   NHANESraw |>
-  drop_na(Smoke100, Gender) |>
-  specify(Smoke100 ~ Gender, success = "Yes") |>
-  calculate(stat = "Chisq")
-obs_stat
+  drop_na(Smoke100, Gender)
 ```
 
 ---
 
-## Cuali vs Cuali
+## `infer`: workflow
 
-El paquete `{infer}` usa una técnica muy habitual en estadística que es un [**test de permutaciones (`type = "permute"`)**]{.hl-yellow}: para calcular cómo de compatible son nuestras datos y $H_0$, lo que haremos será  barajar (`reps` veces) las etiquetas de fumadores y los reasigna aleatoriamente a los individuos, rompiendo cualquier relación real que pudiera existir y simulando un mundo donde fumar y género no tienen relación.
+**$H_0$**: fumar (`Smoke100`) y género son **independientes**
+
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+
+:::
+
+```{r}
+# Paso 1: definir las variables que enfrentas
+# (y que consideras "éxito", el objeto de estudio)
+NHANES_specify <-
+  NHANESraw |>
+  specify(Smoke100 ~ Gender, success = "Yes")
+```
+
+---
+
+## `infer`: workflow
+
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| * | `calculate()` | Computes the statistic of interest |
+
+:::
+
+```{r}
+#| warning: false
+# Calcular el estadístico (observado) que queramos para resumir la info
+NHANESraw |>
+  specify(Smoke100 ~ Gender, success = "Yes") |> 
+  calculate(stat = c("Chisq"))
+
+NHANESraw |>
+  specify(Smoke100 ~ Gender, success = "Yes") |> 
+  calculate(stat = "odds ratio")
+```
+
+In our case, for the independence test, the statistic of interest is `Chisq`
+
+---
+
+## `infer`: workflow
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| 2️⃣ | `hypothesize()` | Defines $H_0$ (`"independence"`, `"point"`) |
+
+:::
+
+```{r}
+# Definir hipótesis nula
+NHANES_hypothesis <-
+  NHANESraw |>
+  specify(Smoke100 ~ Gender, success = "Yes") |>
+  hypothesize(null = "independence")
+NHANES_hypothesis 
+```
+
+---
+
+## `infer`: workflow
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| 2️⃣ | `hypothesize()` | Defines $H_0$ (`"independence"`, `"point"`) |
+| 3️⃣ | `generate(reps = ..., type = ...)` | Simulates the distribution of the statistic under the null hypothesis |
+
+::: {.callout-tip}
+`specify()` and `hypothesize()` define the **world under $H_0$**.
+`generate()` and `calculate()` **simulate** that world many times.
+:::
+
+
+:::
 
 
 ```{r}
-# Paso 3: generar distribución nula por permutación
+# Generar distribución nula por permutación
 null_dist <-
   NHANESraw |> drop_na(Smoke100, Gender) |> 
   specify(SmokeNow ~ Gender, success = "Yes") |>
@@ -10141,27 +10212,109 @@ null_dist
 
 ---
 
-## Cuali vs Cuali
+## `infer`: workflow
 
-**$H_0$**: fumar (`Smoke100`) y género son **independientes**
+::: {style="font-size:70%"}
 
-Podemos entonces [**calcular un estadístico chi-cuadrado para cada permutación**]{.hl-yellow}...
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| 2️⃣ | `hypothesize()` | Defines $H_0$ (`"independence"`, `"point"`) |
+| 3️⃣ | `generate(reps = ..., type = ...)` | Simulates the distribution of the statistic under the null hypothesis |
+
+:::
+
+[**How to simulate the p-value?**]{.hl-red} How to simulate the **null distribution** of the statistic?
+
+. . .
+
+As we said, the [**p-value is the probability of obtaining a result as extreme or more extreme than the one observed**]{.hl-yellow}, so what we will do is:
+
+1. Simulte a lot of scenarios **ALWAYS UNDER NULL HYPOTHESIS**
+2. Compute the statistic (`ChiSq`) for each one
+3. Check whether our observed statistic (computed from the real data) falls within what is "expected" (at the center) or was an extreme result
+
+Goal: assess how compatible our data are with $H_0$
+
+---
+
+## `infer`: workflow
+
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| 2️⃣ | `hypothesize()` | Defines $H_0$ (`"independence"`, `"point"`) |
+| 3️⃣ | `generate(reps = ..., type = ...)` | Simulates the distribution of the statistic under the null hypothesis |
+
+:::
+
+To [**generate scenarios under the null hypothesis**]{.hl-yellow}, the `{infer}` package uses a well-known technique called a [**permutation test (`type = "permute"`)**]{.hl-yellow}: it shuffles (`reps` times) the smoker labels and randomly reassigns them to individuals, breaking any real relationship that may exist and **simulating a world where smoking and gender are unrelated**.
+
 
 ```{r}
-null_dist  <-
-  null_dist |> 
+# Generar distribución nula por permutación
+null_dist <-
+  NHANESraw |> drop_na(Smoke100, Gender) |> 
+  specify(SmokeNow ~ Gender, success = "Yes") |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute")
+```
+
+---
+
+## `infer`: workflow
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| 2️⃣ | `hypothesize()` | Defines $H_0$ (`"independence"`, `"point"`) |
+| 3️⃣ | `generate(reps = ..., type = ...)` | Simulates the distribution of the statistic under the null hypothesis |
+| 4️⃣ | `calculate()` | Computes the statistic of interest |
+
+:::
+
+::: {style="font-size:92%"}
+
+With `calculate()` we can then [**compute a chi-squared statistic for each permutation/simulation**]{.hl-yellow}
+
+:::
+
+```{r}
+# Generar distribución nula por permutación
+null_dist <-
+  NHANESraw |>
+  specify(SmokeNow ~ Gender, success = "Yes") |>
+  hypothesize(null = "independence") |>
+  generate(reps = 1000, type = "permute") |> 
   calculate(stat = "Chisq")
 null_dist
 ```
 
 ---
 
-## Cuali vs Cuali
+## `infer`: workflow
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 5️⃣ | `visualize()` | Visualizes the null distribution + p-value |
+
+:::
 
 ::: columns
 ::: {.column width="60%"}
 
-... para luego [**visualizar la distribución de dicho estadístico**]{.hl-yellow}.
+::: {style="font-size:90%"}
+
+And with `visualize()` [**visualize the distribution of that statistic**]{.hl-yellow}.
+
+:::
 
 ```{r}
 # Visualizar distribución del p-valor
@@ -10173,28 +10326,48 @@ null_dist |>
 
 ::: {.column width="40%"}
 
+::: {style="font-size:90%"}
+Under $H_0$ (independence between gender and smoking), the [**chi-squared statistic expected by chance**]{.hl-yellow} takes small values, roughly between 0 and 4 (that is what we would expect when there is no relationship).
 
-Bajo $H_0$ (independencia entre género y fumar), el estadístico chi-cuadrado esperado por azar ronda valores pequeños, entre 0 y 4 aproximadamente. La gran mayoría de las permutaciones generan valores cercanos a 0. Eso sería lo normal cuando no hay relación.
-
+Out of **all possible label combinations**, where does [**your observed result stand relative to all possible outcomes**]{.hl-yellow}?
+:::
 :::
 :::
 
 ---
 
-## Cuali vs Cuali
+## `infer`: workflow
 
-De **todas las posibles combinaciones** de etiquetas, ¿en qué [**lugar está tu realidad respecto a todas las realidades posibles**]{.hl-yellow}?
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 5️⃣ | `visualize()` | Visualizes the null distribution + p-value |
+| 6️⃣ | `shade_p_value()` | Places your observed stat vs the simulated universe |
+
+:::
 
 ::: columns
 ::: {.column width="60%"}
 
 ```{r}
+#| echo: false
+obs_stat <- # observado
+  NHANESraw |>
+  specify(Smoke100 ~ Gender, success = "Yes") |> 
+  calculate(stat = c("Chisq"))
+```
+
+```{r}
 # Visualizar + p-valor
 null_dist |>
   visualize() +
+  # obs_stat --> # observado
   shade_p_value(obs_stat, direction = "greater",
                 color = "#e76f51")
 ```
+
+* [**red line ~390**]{.hl-red}: observed chi-squared statistic from your real data
 
 :::
 
@@ -10207,107 +10380,143 @@ null_dist |>
               direction = "greater")
 ```
 
-La línea roja está en ~390 (el chi-cuadrado de tus datos reales). El valor observado está enormemente lejos de lo que ocurriría por azar. En las 1000 permutaciones, ninguna generó un chi-cuadrado tan grande como el observado --> El p-valor es esencialmente 0 --> si género y fumar fueran independientes, obtener una asociación tan fuerte como la que ves en los datos sería prácticamente imposible.
-
-Hay una asociación muy clara entre género y fumar.
 
 :::
 :::
+
+The [**observed value is enormously far from what would occur by chance**]{.hl-yellow} → the p-value is essentially 0, since in the 1000 permutations almost none generated a chi-squared as large as the observed one → if gender and smoking were independent, obtaining an association as strong as the one seen in the data would be virtually impossible.
+
+There is a very clear association between gender and smoking.
+
 
 
 
 ---
 
-## Cuali vs cuali
+## SatisfaccionPacientes.csv
 
-Vamos a repetir el flujo con nuestros datos de satisfacción de pacientes
+Let us repeat the workflow with our patient satisfaction data
 
-**$H_0$**: estado civil y género son **independientes**
+**$H_0$**: marital status and gender are **independents**
 
 ```{r}
+datos <-
+  read_csv(file = "./data/SatisfaccionPacientes.csv") |> 
+  janitor::clean_names() |>
+  drop_na(genero, estado_civil)
+datos
+```
+
+---
+
+## SatisfaccionPacientes.csv
+
+::: {style="font-size:80%"}
+
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 1️⃣ | `specify()` | Declares the response and explanatory variable |
+| 2️⃣ | `hypothesize()` | Defines $H_0$ (`"independence"`, `"point"`) |
+| 3️⃣ | `generate(reps = ..., type = ...)` | Simulates the distribution of the statistic under the null hypothesis |
+| 4️⃣ | `calculate()` | Computes the statistic of interest |
+
+:::
+
+```{r}
+# estadístico observado
 obs_stat <-
   datos |>
-  drop_na(genero, estado_civil) |>
   specify(genero ~ estado_civil, success = "Femenino") |>
   calculate(stat = "Chisq")
 obs_stat
 ```
 
 ```{r}
+# Generamos distribución bajo la nula
 null_dist <-
   datos |>
-  drop_na(genero, estado_civil) |>
   specify(genero ~ estado_civil, success = "Femenino") |>
   hypothesize(null = "independence") |>
   generate(reps = 1000, type = "permute") |> 
   calculate(stat = "Chisq")
+null_dist
 ```
 
 ---
 
-## Cuali vs cuali
+
+## SatisfaccionPacientes.csv
 
 
-```{r}
-#| code-fold: true
-null_dist |>
-  visualize() +
-  shade_p_value(obs_stat, direction = "greater",
-                color = "#e76f51") # fill = "#457b9d")
-null_dist |>
-  get_p_value(obs_stat, direction = "greater")
-```
+::: {style="font-size:80%"}
 
-El estadístico observado (línea naranja está en ~3) no es nada raro bajo $H_0$: valores tan grandes o mayores ocurren con bastante frecuencia simplemente por azar. El p-valor es alto --> No tienes evidencia suficiente para rechazar $H_0$
+| Step | Function | What does it do? |
+|------|---------|-----------|
+| 5️⃣ | `visualize()` | Visualizes the null distribution + p-value |
+| 6️⃣ | `shade_p_value()` | Places your observed stat vs the simulated universe |
 
----
-
-
-## Cuanti vs Cuanti
-
-**H_0**: no hay correlación entre peso y `BPSysAve`
-
-```{r}
-# Estadístico observado
-obs_cor <-
-  NHANESraw |>
-  specify(BPSysAve ~ Weight) |>
-  calculate(stat = "correlation")
-
-# Distribución nula
-null_dist <-
-  NHANESraw |>
-  specify(BPSysAve ~ Weight) |>
-  hypothesize(null = "independence") |>
-  generate(reps = 1000, type = "permute") |>
-  calculate(stat = "correlation")
-```
-
-## Cuanti vs Cuanti
-
-**H_0**: no hay correlación entre peso y `BPSysAve`
-
-```{r}
-#| code-fold: true
-# Visualizar
-null_dist |>
-  visualize() +
-  shade_p_value(obs_cor, direction = "two-sided", color = "#e76f51") 
-null_dist |>
-  get_p_value(obs_stat, direction = "greater")
-```
-
-::: {.callout-tip}
-Para dos variables cuantitativas, `stat = "correlation"` calcula la correlación de Pearson. ¿Son normales?
 :::
 
+::: columns
+::: {.column width="60%"}
+
+
+```{r}
+# Visualizar + p-valor
+null_dist |>
+  visualize() +
+  # obs_stat --> # observado
+  shade_p_value(obs_stat, direction = "greater",
+                color = "#e76f51")
+```
+
+* [**red line ~3**]{.hl-red}: observed chi-squared statistic from your real data
+
+
+:::
+
+::: {.column width="40%"}
+
+```{r}
+# P-valor numérico
+null_dist |>
+  get_p_value(obs_stat,
+              direction = "greater")
+```
+
+
+:::
+:::
+
+
+
+The [**observed statistic is not unusual**]{.hl-yellow} under $H_0$: values as large or larger occur quite frequently by chance alone. The p-value is high → there is not enough evidence to reject $H_0$
+
+
 ---
 
 
 ## Cuanti vs Cuanti
 
+Repeat the workflow on your own to test whether there is a correlation between weight and `BPSysAve` in `NHANESraw` (assuming normality)
 
-Para [**muestras grandes debemos usar el Anderson-Darling normality**]{.hl-yellow} test
+
+**H_0**: no correlation between weight and `BPSysAve`
+
+&nbsp;
+
+**Tip**: now our variables are continuous, so even though the null hypothesis is the same, the statistic can no longer be `"ChiSq"`. Check the help `? calculate()` from the `{infer}` package
+
+---
+
+
+## Cuanti vs Cuanti
+
+By default `infer` only computes the Pearson correlation, which is only valid assuming normality. Are they normal?
+
+&nbsp;
+
+For [**large samples we should use the Anderson-Darling normality**]{.hl-yellow} test
 
 ```{r}
 library(nortest)
@@ -10315,13 +10524,13 @@ ad.test(NHANESraw$BPSysAve)
 ad.test(NHANESraw$Weight)
 ```
 
-Parece que no lo son pero...es que con n = 20000 la hipótesis nula es muy fácil de ser rechazada...¿la desviación es muy grande?
+It seems they are not, but with n = 20000 the null hypothesis is very easy to reject... **is the deviation very large?**
 
 ---
 
 ## Cuanti vs Cuanti
 
-Sí se aprecia mucha desviación
+Yes, there is substantial deviation
 
 ```{r}
 #| code-fold: true
@@ -10343,9 +10552,7 @@ p1 + p2
 
 ## Cuanti vs Cuanti
 
-**H_0**: no hay correlación entre peso y `BPSysAve`
-
-Para realizar el [**contraste no paramétrico (Spearman) vamos a convertir a rangos**]{.hl-yellow} nuestras variables
+To perform the [**non-parametric test (Spearman) we will convert our variables to ranks**]{.hl-yellow}
 
 ```{r}
 # Estadístico observado
@@ -10384,35 +10591,37 @@ null_dist |>
 
 ## Intervalos de confianza
 
-Un IC al 95% **no** significa que el parámetro real esté dentro 
-del intervalo con probabilidad 0.95.
+In the `{infer}` package we can also quantify with [**confidence intervals the uncertainty of the observed statistic**]{.hl-yellow}
 
-El parámetro real es **fijo** — no tiene distribución, no es aleatorio, si estamos en un enfoque frecuentista. 
+**What does it mean that the 95% CI for the mean is [2, 3]?**
 
-No tiene sentido hablar de la probabilidad de que esté en algún sitio.
+. . .
 
-::: {.callout-important}
-## Lo que realmente significa
-Si repitiéramos el experimento infinitas veces y calculáramos un IC 
-cada vez, el **95% de esos intervalos** contendrían el parámetro real.
+❌ *"There is a 95% probability that the true mean lies in [2, 3]"*
+→ False. The true mean is a fixed number, not a random variable.
 
-El 95% es una propiedad del **procedimiento**, no de un intervalo concreto.
-:::
+❌ *"95% of the data fall within the interval"*
+→ That is a prediction interval, not a confidence interval. They are different things.
+
+❌ *"If the CI does not contain zero, the effect is important"*
+→ Statistical significance ≠ practical relevance. A narrow CI
+far from zero with a huge n may be trivial in practice.
 
 ---
 
-## IC: errores más comunes
+## Intervalos de confianza
 
-❌ *"Hay un 95% de probabilidad de que la media real esté en [2.1, 3.4]"*
-→ Falso. La media real es un número fijo, no una variable aleatoria.
+A 95% CI does **not** mean that the true parameter lies within the interval
+with probability 0.95. The [**true parameter is FIXED even if unknown**]{.hl-yellow} — it has no distribution, it is not random, under a frequentist approach.
 
-❌ *"El 95% de los datos caen dentro del intervalo"*
-→ Eso es un intervalo de predicción, no de confianza. Son cosas distintas.
+It makes no sense to speak of the probability that it lies somewhere.
 
-❌ *"Si el IC no contiene al cero, el efecto es importante"*
-→ Significación estadística ≠ relevancia práctica. Un IC estrecho 
-lejos del cero con n enorme puede ser trivial en la práctica.
+::: {.callout-important}
+## What it really means
+If we repeated the experiment infinitely many times and computed a CI each time, **95% of those intervals** would contain the true unknown parameter.
 
+It describes a property of the **procedure**, not of a specific interval.
+:::
 
 
 ---
@@ -10463,33 +10672,49 @@ ggplot(simulations, aes(y = sim, color = cubre)) +
 
 ## IC based on bootstrap
 
-En el paquete `{infer}` también podemos cuantificar con [**intervalos de confianza la incertidumbre del estadístico observado**]{.hl-yellow} 
+In the `{infer}` package we can also quantify with [**confidence intervals the uncertainty of the observed statistic**]{.hl-yellow} 
 
 . . .
 
-La técnica se conoce como [**boostrap o remuestreo**]{.hl-yellow} y la idea es "replicar" ese "si repitiéramos el experimento 1000 veces y calculáramos un IC cada vez, el **95% de esos intervalos** contendrían el parámetro real"
+The technique is known as [**bootstrap or resampling**]{.hl-yellow} and the idea is to "replicate" the "if we repeated the experiment 1000 times and computed a CI each time, **95% of those intervals** would contain the true parameter"
 
 . . .
 
-Para ello vamos a generar 1000 submuestras a partir de la muestra original, realizando [**muestreos con reemplazamiento**]{.hl-yellow}
+To do so, we will generate 1000 subsamples from the original sample, using [**sampling with replacement**]{.hl-yellow}
 
 
 ---
 
 ## IC based on bootstrap
 
+We do not want to assume any null hypothesis, so we skip `hypothesize()` — we simply want to estimate the CI of a parameter
 
 ```{r}
 # Bootstrap: remuestreo con reemplazo
-boot_dist <- NHANESraw |>
+boot_dist <-
+  NHANESraw |>
   specify(BPSysAve ~ Weight) |>
   generate(reps = 1000, type = "bootstrap") |>  # sin hypothesize()
   calculate(stat = "correlation")
 ```
 
-Cada muestra bootstrap tiene el mismo n que el dataset original: cada una de las 1000 iteraciones remuestrea 10.000 observaciones con reemplazo del dataset original. No reduce el tamaño muestral.
+Each bootstrap sample has the same size (n) as the original dataset: each of the 1000 iterations resamples 10,000 observations with replacement from the original dataset. It does not reduce the sample size.
 
-El reemplazo es lo que genera variabilidad entre muestras y permite estimar la incertidumbre del estadístico; en cada muestra bootstrap algunos individuos aparecen 0 veces, otros 1 vez, otros 2 o más, etc. 
+Replacement is what generates variability between samples and allows us to estimate the uncertainty of the statistic; in each bootstrap sample some individuals appear 0 times, others 1 time, others 2 or more, etc. 
+
+---
+
+## Permutation vs bootstrap
+
+* [**Hypothesis test**]{.hl-yellow}: you want to simulate "what would the data look like if $H_0$ were true?"
+
+The way to break the relationship between variables while keeping the original data is to **permute** the labels. You are not creating new samples, just redistributing the existing ones.
+
+&nbsp;
+
+* [**Confidence interval**]{.hl-yellow}: you do not assume any $H_0$, you simply want to simulate "how much would the statistic vary if we repeated the sampling?"
+
+And since you cannot resample from the real population, you simulate that process by **resampling with replacement** (bootstrap) from your original sample. Replacement is key because without it you would always get the same reordered sample.
 
 ---
 
@@ -10500,10 +10725,8 @@ El reemplazo es lo que genera variabilidad entre muestras y permite estimar la i
 # IC al 95%
 ci <- boot_dist |>
   get_confidence_interval(level = 0.95, type = "percentile")
-
-# Visualizar
 boot_dist |>
-  visualize() +
+  visualize() + # visualizar
   shade_confidence_interval(ci)
 ```
 
@@ -10511,3 +10734,1031 @@ boot_dist |>
 **Permutación** → distribución nula → p-valor  
 **Bootstrap** → distribución muestral → intervalo de confianza
 :::
+
+
+---
+
+## Case study: t-test
+
+
+We’ll make use of the `gss` dataset supplied by `{infer}` package, which contains a sample of data from the **General Social Survey**. See `? gss` for more information on the variables included and their source. 
+
+. . .
+
+[**Does the average American adult works 40 hours a week?**]{.hl-yellow}
+
+
+```{r}
+gss
+```
+
+---
+
+## Case study: t-test
+
+[**Does the average American adult works 40 hours a week?**]{.hl-yellow}
+
+
+&nbsp;
+
+* What type of variable(s) are of interest? Qualitative? Quantitative? Quali vs quali? Quanti vs quali?
+
+* What type of test is the t-test: parametric or non-parametric?
+
+* How would you formulate the null and alternative hypothesis?
+
+---
+
+## Case study: t-test
+
+[**Does the average American adult works 40 hours a week?**]{.hl-yellow}
+
+&nbsp;
+
+* What type of variable(s) are of interest? Qualitative? Quantitative? Quali vs quali? Quanti vs quali?
+
+We only have one continuous variable (`hours`)
+
+. . .
+
+* What type of test is the t-test: parametric or non-parametric?
+
+The t-test is a parametric test since we want to ask about a specific value of a parameter (the population mean $\mu$)
+
+. . .
+
+* How would you formulate the null and alternative hypothesis?
+
+$$H_0:~\mu = 40, \quad H_1:~\mu \neq 40$$
+
+---
+
+## Case study: t-test
+
+With `infer` the parametric test would use `t_test()` (which is equivalent to using `t.test()` from base `R`)
+
+
+```{r}
+gss |>
+  t_test(response = hours, mu = 40)
+```
+
+. . .
+
+[**WARNING!**]{.hl-red} This approach assumes that the statistic follows a `t-Student` distribution because it [**assumes that the variable is normal**]{.hl-red}. Is it?
+
+---
+
+## Case study: t-test
+
+```{r}
+shapiro.test(gss$hours)
+```
+
+```{r}
+#| code-fold: true
+gss |> 
+  ggplot() +
+  geom_density(aes(x = hours), fill = "steelblue", alpha = 0.75) +
+  theme_minimal()
+```
+
+```{r}
+gss |> 
+  ggplot(aes(sample = hours)) +
+  geom_qq() +
+  geom_qq_line() +
+  theme_minimal()
+```
+
+It is not.
+
+---
+
+## Case study: t-test
+
+$$H_0:~\mu = 40, \quad H_1:~\mu \neq 40$$
+When our variables do not meet the assumptions, one alternative is — even while keeping the parameter in the null hypothesis — to use a non-parametric method that does not require knowing the true distribution: bootstrap
+
+```{r}
+obs_mean <-
+  gss |> 
+  specify(response = hours) |>
+  calculate(stat = "mean")
+set.seed(123)
+null_dist <-
+  gss |> 
+  specify(response = hours) |> 
+  hypothesize(null = "point", mu = 40) |> 
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "mean")
+null_dist 
+```
+
+---
+
+## Case study: t-test
+
+```{r}
+# Visualizar
+null_dist |>
+  visualize() +
+  shade_p_value(obs_mean, direction = "two-sided", color = "#e76f51") 
+null_dist |>
+  get_p_value(obs_mean, direction = "two-sided")
+```
+
+There is sufficient evidence to reject the null hypothesis.
+
+---
+
+## Case study: t-test
+
+We can repeat the previous process to [**compute and visualize CIs via bootstrap**]{.hl-yellow}
+
+```{r}
+# IC al 95%
+ci <-
+  null_dist |>
+  get_confidence_interval(level = 0.95, type = "percentile")
+null_dist |>
+  visualize() + # visualizar
+  shade_confidence_interval(ci) +
+  shade_p_value(obs_mean, direction = "two-sided", color = "#e76f51") 
+```
+
+---
+
+## About t-test and Wilcoxon test
+
+The advantage of the bootstrap methodology is that:
+
+1) You can always apply it
+
+2) It visualizes the process and the uncertainty
+
+3) You keep your parametric hypothesis $H_0$
+
+. . .
+
+In many programs the alternative used is known as the [**Wilcoxon signed-rank test**]{.hl-yellow}
+
+$$H_0:~\text{data around value} = 40$$
+
+(if we assume that **variable is symmetric, data around median = around mean**)
+
+```{r}
+wilcox.test(x = gss$hours, mu = 40)
+```
+
+---
+
+## About t-test and Wilcoxon test
+
+[**THE RESULT DIFFERS!**]{.hl-red}
+
+```{r}
+wilcox.test(x = gss$hours, mu = 40)
+```
+
+---
+
+## About t-test and Wilcoxon test
+
+
+```{r}
+#| code-fold: true
+ggplot(gss, aes(x = hours)) + 
+    geom_density() +
+    geom_vline(xintercept = mean(gss$hours), color = "red") +
+    geom_vline(xintercept = median(gss$hours), color = "blue") +
+  theme_minimal()
+```
+
+The [**main problem with the Wilcoxon test**]{.hl-red} is that, although it does not assume a specific distribution for the data (non-parametric), it does assume that the [**data are symmetric**]{.hl-red} (so if the median is $\mu$, so is the mean). [**Without symmetry, Wilcoxon is a bad idea**]{.hl-red}
+
+---
+
+## About t-test and Wilcoxon test
+
+* [**Parametric t-test**]{.hl-yellow}: assumes that the data are normal and uses that known form to compute exact probabilities using the `t` statistic. Fast, precise and elegant, but fragile when normality fails.
+
+* [**t-test via bootstrap**]{.hl-yellow}: the question is still about the mean in the null hypothesis and **assumes nothing about the shape of the data**, directly resamples your data thousands of times and empirically builds the distribution of the statistic. More flexible and more faithful to what you want to estimate (the mean, not the ranks), but computationally more expensive.
+
+* [**Wilcoxon test**]{.hl-yellow}: **forgets the actual values and works only with their order (ranks)**. Does not require normality but **does require the distribution to be symmetric**
+
+```{r}
+library(lawstat)
+symmetry.test(gss$hours, boot = FALSE)
+```
+
+---
+
+## t-test with 2 samples
+
+::: {style="font-size:90%"}
+
+We can repeat the idea but instead of comparing a mean against a constant, we compare one mean against another: [**Do Americans work the same number of hours a week regardless of whether they have a college degree or not?**]{.hl-yellow}
+
+$$H_0:~\mu_{degree} = \mu_{non-degree}, \quad H_1:~\mu_{degree} \neq \mu_{non-degree}$$
+
+:::
+
+
+```{r}
+#| code-fold: true
+gg1 <- 
+  gss |> 
+  ggplot() +
+  geom_boxplot(aes(x = college, y = hours, fill = college,
+                   color = college),
+               alpha = 0.75) +
+  scale_color_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  scale_fill_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  theme_minimal()
+
+gg2 <-
+  gss |>
+  ggplot(aes(x = college, y = hours, color = college)) +
+  geom_jitter(width = 0.2, alpha = 0.4, size = 1.5) +
+  stat_summary(fun = mean, geom = "point", size = 6,
+               shape = 18) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25, linewidth = 1.2) +
+  scale_color_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  scale_fill_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  theme_minimal()
+gg1 + gg2
+```
+
+---
+
+## t-test with 2 samples
+
+* [**Parametric t-test**]{.hl-yellow}
+
+
+```{r}
+gss |>
+  t_test(formula = hours ~ college, order = c("degree", "no degree"))
+```
+
+---
+
+## t-test with 2 samples
+
+**Are they normal?**
+
+```{r}
+gss |>
+  summarise("p_shapiro" = shapiro.test(hours)$p.value, .by = college)
+```
+
+```{r}
+#| code-fold: true
+# visual — más honesto
+ggplot(gss, aes(sample = hours, color = college)) +
+  geom_qq() +
+  geom_qq_line() +
+  scale_color_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  facet_wrap(~college) +
+  theme_minimal()
+```
+
+It does not seem so
+
+---
+
+## t-test with 2 samples
+
+
+* [**t-test via boostrap**]{.hl-yellow}: now we fixed `calculate(stat = "diff in means")`, and we **exchange again the values of group variable** via permutation.
+
+```{r}
+obs_diff_means <-
+  gss |> 
+  specify(hours ~ college) |>
+  calculate(stat = "diff in means", order = c("degree", "no degree"))
+set.seed(123)
+null_dist <-
+  gss |> 
+  specify(hours ~ college) |> 
+  hypothesize(null = "independence") |> 
+  generate(reps = 1000, type = "permute") |>
+  calculate(stat = "diff in means", order = c("degree", "no degree"))
+null_dist 
+```
+
+---
+
+## t-test with 2 samples
+
+```{r}
+null_dist |>
+  get_p_value(obs_diff_means, direction = "two-sided")
+```
+  
+```{r}
+#| code-fold: true
+# Visualizar
+ci <-
+  gss |> 
+  specify(hours ~ college) |>
+  generate(type = "bootstrap", reps = 1000) |>
+  calculate(stat = "diff in means", order = c("degree", "no degree")) |>
+  get_confidence_interval(level = 0.95, type = "percentile")
+null_dist |>
+  visualize() +
+  shade_confidence_interval(ci) +
+  shade_p_value(obs_diff_means, direction = "two-sided", color = "#e76f51")
+```
+
+There is not enough evidence to reject independence → there is not enough evidence to say that having a degree has an effect on working hours
+
+---
+
+## Mann-Whitney
+
+* [**Non-parametric alternative (Mann-Whitney)**]{.hl-yellow}: does not assume symmetry, only the same shape in both distributions (similar densities), but [**says nothing about means, only about medians**]{.hl-red}, testing that **neither group tends to produce higher values than the other**
+
+$$H_0:~P(X_A > X_B) = 0.5 \quad \text{[under the same shape => medians are equal] }$$
+
+
+```{r}
+# Mann-Whitney / Wilcoxon rank-sum (dos muestras)
+wilcox.test(hours ~ college, data = gss)
+```
+
+---
+
+## ANOVA: quanti vs quali
+
+We already know basic tools to analyze the dependence between two variables:
+
+* [**Quali vs quali**]{.hl-yellow}: Fisher's test or $\chi^2$ test, contingency tables, bar charts, OR/RR, etc.
+* [**Quanti vs quanti**]{.hl-yellow}: correlations and linear correlation tests (Pearson), rank correlations and tests (Spearman), scatter plots.
+
+. . .
+
+But what happens with [**quali vs quanti**]{.hl-red} association?
+
+---
+
+## Quanti vs quali
+
+
+::: columns
+::: {.column width="58%"}
+
+![](https://bookdown.org/edsaul_perez/bioestadaistica_avanzada/Figuras/Imagenes%20del%20libro_page-0006.jpg)
+
+:::
+
+::: {.column width="42%"}
+
+If there were **no real effect**, all groups would look like they're drawn from the same population -> their **means would be close together**
+
+:::
+
+:::
+
+. . .
+
+[**Main idea**]{.hl-yellow}: how much means vary between groups for each group (**between-group** variance) in comparison with how much each group varies internally (**within-group** variance). [**Is this separation between groups large relative to the noise in data?**]{.hl-green}
+
+
+---
+
+## Quanti vs quali
+ 
+Imagine we have **$n$ students** whose **grades $y_{ij}$** are available for $j=1,2$ courses
+
+```{r}
+datos <- read_csv(file = "./data/notas_1factor_2cat.csv")
+datos
+```
+
+&nbsp;
+
+Is there [**dependence between the grade and the course variable (qualitative)**]{.hl-yellow}? Are [**the grades similar (on average) across courses**]{.hl-green} or is one of them easier than the other?
+
+---
+
+## ANOVA: one factor
+
+We have
+
+* [**Cuanti variable**]{.hl-yellow}: grades of $n$ students denoted as $y_{ij}$, with $i=1,\ldots, n$
+
+* [**Cuali variable (factor)**]{.hl-yellow}: two subjects $j=1,2$
+
+The goal is to assess the possible [**association between the outcome variable and the factor**]{.hl-yellow}, i.e., to determine whether there is an **effect of the factor on the expected value of the continuous variable**.
+
+&nbsp;
+
+This is known as [**analysis of variance (ANOVA) or factorial analysis**]{.hl-yellow}, developed by R. Fisher in 1930. We will start with the simplest case of **one factor** (a single qualitative variable).
+
+---
+
+## ANOVA: one factor
+
+Imagine we model the grade $y_{ij}$ of student $i$ in course $j$ as follows
+
+$$y_{ij} =  \mu_j + \varepsilon_{ij}, \quad \varepsilon_{ij} \sim N (0, \sigma^2)$$
+
+* $\mu_j$ is the [**average grade of students in course**]{.hl-yellow} $j$
+* $\varepsilon_{ij}$ is a random perturbation around that mean: how much [**each student deviates from that mean**]{.hl-yellow} (intrinsic variability across individuals).
+
+. . .
+
+We will assume that these deviations satisfy [**assumptions**]{.hl-green}
+
+
+::: {style="font-size:90%"}
+
+1. [**Zero-mean**]{.hl-green}: $E[\varepsilon_{ij}] = 0$ (positive and negative deviations cancel each other out)
+
+2. [**Constant variance (Homoscedasticity)**]{.hl-green}: $V[\varepsilon_{ij}] = cte = \sigma^2$  (equal variance for each group)
+
+3. [**Normality**]{.hl-green}: $\varepsilon_{ij} \sim N$
+
+4. [**Incorrelation**]{.hl-green}: one student's deviation gives no information about another's — observations are independent of each other
+
+
+:::
+
+---
+
+## ANOVA: one factor
+
+
+::: columns
+::: {.column width="45%"}
+
+$$y_{ij} =  \mu_j + \varepsilon_{ij}, \quad \varepsilon_{ij} \sim N (0, \sigma^2)$$
+
+Note that the **model below states**: the possible [**differences (variability) between scores**]{.hl-yellow} are due to
+
+i) belonging to a different group: something [
+**EXPLAINED by the groups**]{.hl-red}
+
+ii) a **random component**: something [**NOT EXPLAINED**]{.hl-purple} by the groups)
+
+&nbsp;
+
+[**Goal**]{.hl-yellow}: are there **differences between means** $\mu_j$?
+
+:::
+
+::: {.column width="55%"}
+
+```{r}
+#| code-fold: true
+ggplot(datos) +
+    geom_density(aes(x = notas, color = asignatura, fill = asignatura),
+                 alpha = 0.5) +
+   geom_point(aes(x = notas, y = 0, color = asignatura),
+              size = 1.7, alpha = 0.85) +
+  geom_vline(data = datos |> summarise("notas" = mean(notas), .by = asignatura),
+             aes(xintercept = notas, color = asignatura),
+             linetype = "dashed") +
+    MetBrewer::scale_color_met_d(palette_name = "Renoir") +
+    MetBrewer::scale_fill_met_d(palette_name = "Renoir") +
+    theme_minimal()
+```
+
+:::
+
+:::
+
+---
+
+## ANOVA: one factor
+
+
+[**Goal**]{.hl-yellow}: are there **differences between means** $\mu_j$?
+
+
+```{r}
+#| code-fold: true
+ggplot(datos) +
+    geom_density(aes(x = notas, color = asignatura, fill = asignatura),
+                 alpha = 0.5) +
+   geom_point(aes(x = notas, y = 0, color = asignatura),
+              size = 1.7, alpha = 0.85) +
+  geom_vline(data = datos |> summarise("notas" = mean(notas), .by = asignatura),
+             aes(xintercept = notas, color = asignatura),
+             linetype = "dashed") +
+    MetBrewer::scale_color_met_d(palette_name = "Renoir") +
+    MetBrewer::scale_fill_met_d(palette_name = "Renoir") +
+    theme_minimal()
+```
+
+
+Although **distribution B is more shifted to the left, the highest grade belongs to course B**. **Is that enough** to say that A is different from B? How can we quantify this relative to the intrinsic variability of the data?
+
+---
+
+## ANOVA: one factor
+
+
+$$y_{ij} =  \mu_j + \varepsilon_{ij}, \quad \varepsilon_{ij} \sim N (0, \sigma^2)$$
+
+If we would have $c$ groups, the test that we want to perform is:
+
+$$H_0:~\mu_1 = \mu_2 = \ldots = \mu_c = cte \text{ (no group effect)} \quad vs \quad H_1:~\text{any of them is different}$$
+
+
+&nbsp;
+
+Do all courses have the same average grade, or [**is there an effect of the course on the grade**]{.hl-yellow}? And to answer this question [**we do not need to check pairwise**]{.hl-red}: it suffices that [**we find one that is different**]{.hl-yellow}, with the fewest possible comparisons
+
+
+---
+
+
+## ANOVA: one factor
+
+$$y_{ij} =  \mu_j + \varepsilon_{ij}, \quad \varepsilon_{ij} \sim N (0, \sigma^2)$$
+
+
+What does it mean for a [**series of values to be constant**]{.hl-yellow}? If we had a variable $x$ in a table, how could we easily check that all values are identical?
+
+. . .
+
+The most immediate way is to [**compute its variance**]{.hl-yellow} since it quantifies **variability**: the **variance/variability of a variable is zero** if and only if the variable takes constant values.
+
+```{r}
+var(c(2, 2, 2, 2, 2, 2))
+```
+
+Imagine that this vector of numbers were the group means.
+
+---
+
+## ANOVA: one factor
+
+$$H_0:~\text{no effect} \rightarrow \mu_1 = \mu_2 = cte \quad vs \quad H_1:~\text{any of them is different}$$
+
+So we can [**reformulate the null hypothesis**]{.hl-green} in terms of variance: if the means are equal, the null hypothesis is equivalent to saying that the [**variance of the means $Var(\mu = (\mu_1, \ldots, \mu_c))$**]{.hl-yellow} is statistically zero.
+
+$$H_0:~\text{variance of means is small enough} \equiv \text{between-groups variability} \approx 0$$
+
+. . .
+
+So we need to define:
+
+* Which is the estimation of the variance of means?
+* What does mean «small enough»?
+
+
+---
+
+## ANOVA: one factor
+
+The **variance of the means** measures how much each group mean deviates from the global mean.
+
+
+$$\color{red}{\frac{1}{c}\sum_{j=1}^{c}  \left(\overline{y}_j - \overline{y} \right)^2}$$
+This quantity quantifies the [**variability of the group means**]{.hl-red} (how the mean fluctuates across groups), giving **each group the same weight $1/c$**. What if we weighted **each group according to its size**?
+
+
+---
+
+## ANOVA: one factor
+ 
+
+
+$$\color{red}{\sum_{j=1}^{c} \frac{n_j}{n} \left(\overline{y}_j - \overline{y} \right)^2}$$
+
+
+The quantity above quantifies the [**variability (WEIGHTED) of the group means**]{.hl-red}, giving more weight to larger groups.
+
+. . .
+
+In other words: it is the [**variability EXPLAINED by the groups**]{.hl-red} (BETWEEN-group variability), whose **best estimator** (said to be unbiased) is
+
+$$\color{red}{\widehat{s}_{e}^2= \frac{1}{n-c}\sum_{j=1}^{c}n_j \left(\overline{y}_j - \overline{y} \right)^2 = \frac{1}{n-c} SSE}$$
+
+::: {.callout-note}
+
+We will call $SSE$ the sum of the deviations of each group mean (with respect to the global mean), weighted by the size of each group. The number $n - c$ is the degrees of freedom.
+
+:::
+
+---
+
+## ANOVA: one factor
+
+
+$$\color{red}{\widehat{s}_{e}^2= \frac{1}{n-c}\sum_{j=1}^{c} n_j \left(\overline{y}_j - \overline{y} \right)^2 = \frac{1}{n-c} SSE}$$
+
+**What does mean «small enough»?**
+ 
+Imagine that the result is, for example, $\widehat{s}_{e}^2 = 2$ or $\widehat{s}_{e}^2 = 0.5$ — **is that a lot? A little?** Is it far enough from 0 to conclude that the variance is non-zero, and therefore the means are different? What does it depend on?
+
+. . .
+
+As always with variance per se, it tells us nothing on its own, so **it must be compared against another quantity**. We will use as a "reference variance" the [**variability inherent to the variable itself**]{.hl-yellow}: if the baseline variance of the data is $2.9$, then $\widehat{s}_{e}^2 = 2$ is probably small; if the variance of the data is $0.001$, then $\widehat{s}_{e}^2 = 0.5$ is enormous (between-group variability is 500 times larger than within-group variability).
+
+---
+
+## ANOVA: one factor
+
+How can we [**quantify the inherent variability of the variable (variability NOT EXPLAINED by the groups, the one the data has per se)**]{.hl-purple}?
+
+. . .
+
+The best estimator of such variance would be to compute **how much each observation deviates from its group mean** (corrected by degrees of freedom as before), defining what is known as the [**residual variance**]{.hl-yellow}
+
+$$\color{purple}{\widehat{s}_{r}^2 =  \frac{1}{n-c} \sum_{j=1}^{c}\sum_{i=1}^{n_j} \left(y_{ij} - \overline{y}_j \right)^2  = \frac{1}{n-c}  \sum_{j=1}^{c} n_j s_{j}^2 =  \frac{1}{n-c}SSR}$$
+
+
+that is, the [**average of the squared deviations with respect to each group mean**]{.hl-purple} (also expressed as a weighted average of the variance of each group). Note that here we do not weight within the summation, since we are completely ignoring the group membership of each observation.
+
+---
+
+## ANOVA: one factor
+
+So we have something that [**quantifies the explained variance**]{.hl-red} (variability attributed to the groups)
+
+$$\color{red}{\widehat{s}_{e}^2= \frac{1}{n-c}\sum_{j=1}^{c} n_j \left(\overline{y}_j - \overline{y} \right)^2 = \frac{1}{n-c} SSE}$$
+
+and something that quantifies [**the unexplained or residual variance**]{.hl-purple} (intrinsic variability of the variable)
+
+$$\color{purple}{\widehat{s}_{r}^2 = \frac{n}{n-c}\widehat{\sigma}^2 = \frac{1}{n-c} \sum_{j=1}^{c}\sum_{i=1}^{n_j} \left(y_{ij} - \overline{y}_j \right)^2 = \frac{1}{n-c}SSR}$$
+
+What would have to happen if the [**null hypothesis were true**]{.hl-green} (all observations come from the same population with the same variance and mean, no group effect)?
+
+---
+
+## ANOVA: one factor
+
+If the [**null hypothesis were true**]{.hl-green} (all observations come from the same population with the same variance and mean), the [**between-group variance (explained by the group) would be the same as the inherent variance of the data**]{.hl-yellow} (computed as the average of the within-group variances).
+
+```{r}
+#| code-fold: true
+library(tidyverse)
+set.seed(123)
+n <- 50
+# Plot 1: misma población
+tb1 <- 
+  tibble("x" = 1:(n*3),
+         "y" = c(rnorm(n, mean = 1, sd = 1),
+                 rnorm(n, mean = 1, sd = 1),
+                 rnorm(n, mean = 1, sd = 1)),
+         "group" = rep(c("A", "B", "C"), each = n))
+means1 <- tb1 |> summarise("m" = mean(y), .by = group)
+xranges <- tibble("group" = c("A","B","C"), "xmin" = c(1, 51, 101), "xmax" = c(50, 100, 150))
+
+gg1 <- 
+  ggplot(tb1, aes(x = x, y = y, color = group)) +
+  geom_point(size = 2.5, alpha = 0.75) +
+  geom_hline(yintercept = mean(tb1$y), color = "black", linewidth = 1) +
+  geom_segment(data = left_join(means1, xranges, by = "group"),
+               aes(x = xmin, xend = xmax, y = m, yend = m, color = group),
+               linewidth = 1.5) +
+  scale_color_manual(values = c("A" = "#f4a582", "B" = "#4dac26", "C" = "#92c5de")) +
+  labs(title = "Three samples from the same population with mean 1") +
+  theme_minimal()
+
+# Plot 2: poblaciones distintas
+tb2 <-
+  tibble("x" = 1:(n*3),
+         "y" = c(rnorm(n, mean = -2, sd = 1),
+                 rnorm(n, mean =  1, sd = 1),
+                 rnorm(n, mean =  3, sd = 1)),
+         "group" = rep(c("A", "B", "C"), each = n))
+means2 <- tb2 |> summarise("m" = mean(y), .by = group)
+
+gg2 <-
+  ggplot(tb2, aes(x = x, y = y, color = group)) +
+  geom_point(size = 2.5, alpha = 0.75) +
+  geom_hline(yintercept = mean(tb2$y), color = "black", linewidth = 1) +
+  geom_segment(data = left_join(means2, xranges, by = "group"),
+               aes(x = xmin, xend = xmax, y = m, yend = m, color = group),
+               linewidth = 1.5) +
+  scale_color_manual(values = c("A" = "#f4a582", "B" = "#4dac26", "C" = "#92c5de")) +
+  labs(title = "Three samples from three different populations with means -2, 1, 3") +
+  theme_minimal()
+gg1 + gg2
+```
+
+
+---
+
+## ANOVA: one factor
+
+
+```{=html}
+<iframe src="anova_simulator.html" width="100%" height="650px" frameborder="0" style="border:none;"></iframe>
+```
+
+---
+
+## ANOVA: one factor
+
+It can be shown that both are related since their sum equals the [**total variability (SST) or variance**]{.hl-green} of the quantitative variable ($y$)
+
+
+$$\begin{eqnarray}\color{green}{SST} &=&  \color{purple}{\sum_{j=1}^{c} \sum_{i=1}^{n_j} \left(y_{ij} - \overline{y}_j \right)^2} +  \color{red}{\sum_{j=1}^{c} n_j \left(\overline{y}_j - \overline{y} \right)^2} \nonumber \\ &=& \color{purple}{SSR} + \color{red}{SSE} = \color{purple}{(n-c)\widehat{s}_{r}^2} + \color{red}{(c-1)\widehat{s}_{e}^2}\end{eqnarray}$$
+
+
+
+The [**first term**]{.hl-purple} is what we called the [**inherent variability of the data (not explained by the groups, or residual)**]{.hl-purple}. The [**second term**]{.hl-red} is what we called the [**variability explained by the groups**]{.hl-red} (BETWEEN groups)
+
+
+. . .
+
+
+ [**Both are related!**]{.hl-green}. The goal will be to build a **statistic** to quantify whether $\widehat{s}_{e}^2$ is much larger than $\widehat{s}_{r}^2$, knowing that when one increases the other decreases.
+
+
+---
+
+
+## ANOVA: one factor
+
+This statistic is defined as the following ratio (whose distribution we know → we can do inference)
+
+$$F = \frac{\frac{SSE}{c-1}}{\frac{SSR}{n-c}} = \frac{\widehat{s}_{e}^2}{\widehat{s}_{r}^2} \sim F_{c-1, n-c}, \quad \text{if } F \gg 1 \rightarrow H_0 \text{ must be rejected}$$
+
+
+If the numerator (how much the data vary due to the groups) is much larger than the denominator (how much the data vary per se) relative to what would be expected (if the means were equal), i.e., $F>>1$, the null hypothesis is false.
+
+---
+
+
+## ANOVA: one factor
+
+Vamos a ver el ejemplo en `R` haciendo uso de la función `aov()`
+
+* `data = ...`: dataset
+* `formula = ...`: indicado como `var_objetivo ~ factor` (donde `~` representa un "vs")
+* `|> summary()`: para obtener un resumen
+
+```{r}
+aov(data = datos, formula = notas ~ asignatura) |> summary()
+```
+
+---
+
+## ANOVA: one factor
+
+
+```{r}
+aov(data = datos, formula = notas ~ asignatura) |> summary()
+```
+
+Si [**analizamos por filas**]{.hl-yellow} tenemos
+
+* `asignatura`: la parte correspondiente la [**variabilidad explicada o entre grupos**]{.hl-red}
+
+* `Residuals`: la parte correspondiente la [**variabilidad no explicada o intra grupos**]{.hl-purple}
+
+
+---
+
+## ANOVA: one factor
+
+
+```{r}
+aov(data = datos, formula = notas ~ asignatura) |> summary()
+```
+
+
+* `Df`: degrees of freedom, defined as $c-1 = 1$ for $SSE$ (since $\frac{SSE}{\sigma^2} \sim \chi^2_{c-1}$) and $n-c = 998$ for $SSR$ (since $\frac{SSR}{\sigma^2} \sim \chi^2_{n-c}$). 
+
+* `Sum Sq`: sum of squares, i.e., $SSE$ and $SSR$.
+
+* `Mean Sq`: mean of squares (sum of squares divided by `Df`), i.e., $\widehat{s}_{e}^{2}$ and $\widehat{s}_{r}^{2}$.
+
+* `F value` and `Pr(>F)`: value of the statistic $F = \frac{\widehat{s}_{e}^{2}}{\widehat{s}_{r}^{2}}$ and p-value of the test
+
+. . .
+
+In this case: [**we reject the null hypothesis**]{.hl-yellow} of equal means, i.e., [**there is sufficient evidence to conclude that the group has an effect on grades**]{.hl-yellow}
+
+
+
+---
+
+## ANOVA: one factor
+
+In the case where we **only have two groups** the solution is straightforward
+
+&nbsp;
+
+The ANOVA (one factor) with 2 groups is EXACTLY THE SAME AS [**mean comparison test known as the t-test**]{.hl-yellow}
+
+. . .
+
+Why do we need ANOVA then? Why not just run many t-tests?
+
+
+
+---
+
+
+## ANOVA: one factor
+
+
+The [**problem with pairwise tests**]{.hl-red} is that, if we had for example $c = 6$ groups, we would need to perform ${6 \choose 2} = 15$ comparisons (1-1, 1-2, ..., 1-6, 2-3, ..., 5-6).
+
+. . .
+
+Not only are there many tests, but if each test is performed with an **individual Type I error probability** of $\alpha = 0.05$, and assuming all comparisons are independent, the [**probability that all 15 equalities hold jointly**]{.hl-yellow} is no longer 0.95 but $0.95^{15} = 0.463$: **if we run many tests, it is very likely that, by chance, some will be significant** (even if there is truly no difference in means)
+
+
+---
+
+## Bonferroni correction
+
+To address the [**multiple comparisons problem**]{.hl-red}, a common solution (the simplest though not always the best) is the so-called [**Bonferroni correction**]{.hl-yellow}
+
+. . .
+
+Let $A_i$ be the event "the equality of means in comparison $i$ is rejected" (which occurs with probability $\alpha$ when the null hypothesis is true). And let $B = \bigcup_i A_i$ be the event of rejecting at least one comparison (i.e., not all means are equal). Then, for $c$ comparisons
+
+$$P(B) = P(\bigcup_i A_i) \leq \sum_i P(A_i) = c \alpha := \alpha_T$$
+
+
+. . .
+
+If we want that **overall $\alpha_T$ to be (at least) 0.05**, we need each individual $\alpha$ to be $\alpha = \alpha_T/c$ (very small as $c$ grows), or equivalently define an **adjusted p-value** $pvalue_{j}^{adj} = c \times pvalue_j$
+
+---
+
+## ANOVA: one factor
+
+But not only is there a [**multiple comparisons problem**]{.hl-red} — we do not even need those comparisons!
+
+. . .
+
+For now, **we do not want to know which course has a higher or lower average grade**; we simply want to answer: do all courses have the same average grade, or [**is there an effect of the course on the grade**]{.hl-yellow}?
+
+. . .
+
+And to answer this question [**we do not need to check pairwise**]{.hl-red}: it suffices that [**we find one that is different**]{.hl-yellow}
+
+
+
+---
+
+
+## Post-hoc tests
+
+After obtaining a [**significant result in ANOVA**]{.hl-green}, the next goal is to determine [**which of the groups under study contributes to this statistical significance**]{.hl-yellow} (post-hoc tests). 
+
+. . .
+
+But as we have explained, the strategy of [**repeatedly applying t-Student tests**]{.hl-yellow} can lead to a [**dramatic inflation of the Type I error probability**]{.hl-red} (detecting differences purely by chance)
+
+. . .
+
+&nbsp;
+
+Some of the [**most common post-hoc methods**]{.hl-yellow} (see [**more**](https://journals.lww.com/jspinaldisorders/abstract/2022/06000/the_role_of_family_wise_error_rate_in_determining.7.aspx)) are **Bonferroni**, **Tukey** and **Dunnett**.
+
+---
+
+## Post-hoc: Bonferroni
+
+The [**Bonferroni correction method**]{.hl-yellow} has already been explained and can be implemented using `pairwise.t.test()` 
+
+* `pool.sd = FALSE`: for each comparison, a separate standard deviation is computed per group
+* `pool.sd = TRUE`: the pooled standard deviation is a weighted average of the group SDs. Use only when group sizes are very different
+
+```{r}
+#| eval: false
+pairwise.t.test(datos$weight, datos$group, p.adjust.method = "bonferroni", pool.sd = FALSE)
+```
+
+
+
+---
+
+## Post-hoc tests
+
+* [**Bonferroni**]{.hl-yellow}:
+  - [**Advantages**]{.hl-green}: simplicity and **non-parametric**
+  - [**Disadvantages**]{.hl-red}: by trying to control Type I error so tightly, it is a **very conservative method** → it is hard to reject $H_0$ → [**high Type II error rate as the number of comparisons grows**]{.hl-red}
+  
+. . .
+
+To avoid the problems of Bonferroni when there are many comparisons, an alternative known as the [**Tukey test**]{.hl-yellow} exists. 
+
+```{r}
+#| eval: false
+aov(data = datos, formula = weight ~ group) |> TukeyHSD()
+```
+
+
+---
+
+
+## post-hoc: Tukey
+
+```{r}
+#| eval: false
+aov(data = datos, formula = weight ~ group) |> TukeyHSD()
+```
+
+
+* [**Tukey**]{.hl-yellow}:
+  - [**Advantages**]{.hl-green}: effectively controls the Type I error rate, very useful for **many comparisons** and [**higher statistical power vs Bonferroni**]{.hl-yellow}
+  - [**Disadvantages**]{.hl-red}: sensitive to outliers and [**parametric (requires normality, similar group sizes and equal variances)**]{.hl-red}
+  
+[**Statistical power**]{.hl-pruple}: probability of rejecting $H_0$ when that hypothesis is false (probability of not committing a Type II error). 
+
+---
+
+## Post-hoc: Dunnett
+
+In many cases **we do not want all pairwise comparisons indiscriminately** but rather we want to [**compare the remaining groups against a control group**]{.hl-yellow} (in our case: 2 treatments vs control, not the treatments against each other).
+
+. . .
+
+For this we have the [**Dunnett test**]{.hl-yellow}
+
+$$H_0:~\mu_{tr_{j}} = \mu_{ctrl}, \quad H_1:~\mu_{tr_{j}} \neq \mu_{ctrl}$$
+
+* [**Dunnett**]{.hl-yellow}:
+  - [**Advantages**]{.hl-green}: the most powerful test when comparing against a control group
+  - [**Disadvantages**]{.hl-red}: [**parametric (requires normality, equal variances and independence between groups)**]{.hl-red}
+  
+---
+
+
+## Post-hoc tests
+
+To implement it, we **first check equality of variances between groups** (for example with `car::leveneTest()`)
+
+
+```{r}
+#| eval: false
+car::leveneTest(datos$weight ~ datos$group)
+```
+
+. . .
+
+Then `DunnettTest()` from the `{DescTools}` package
+
+```{r}
+#| eval: false
+DescTools::DunnettTest(x = datos$weight, g = datos$group, control = "ctrl")
+```
+
+
+---
+
+## Real case study: baby growth
+
+We will use the `leche_materna.csv` table, which compiles the results of **2 different powdered milk treatments for the growth of premature babies** (whose weight is measured after the treatment, starting from similar baseline characteristics, including a **control group**).
+
+[**The goal?**]{.hl-yellow} To check whether any of the treatments was effective.
+
+```{r}
+datos <-
+    read_csv(file = "./data/leche_materna.csv") |> 
+    janitor::clean_names()
+datos
+```
+
+
+---
+
+
+## 🐣 Case study I: turnout vs candidates {#caso-practico-4-4}
+
+The file `blackturnout.csv` contains data on turnout in the US midterm elections of 2006, 2008 and 2010: `turnout` proportion of Black voter turnout (relative to Black voting-age population), `cvap` proportion of Black residents in the district, and `candidate` 1 if the candidate is Black.
+
+
+```{r}
+datos <- read_csv(file = "./data/blackturnout.csv") |> janitor::clean_names()
+datos |> slice_head(n = 5)
+```
+
+
+Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-i-participaci%C3%B3n-vs-candidatos)
+
+---
+
+
+## 🐣 Case study II: attractiveness vs alcohol {#caso-practico-4-5}
+
+The data are loaded directly from `beer_goggles_effect.csv` 
+
+```{r}
+datos <- read_csv(file = "./data/beer_goggles_effect.csv") |> janitor::clean_names()
+datos |> slice_head(n = 5)
+```
+
+We have the gender of 48 students, divided into 3 alcohol consumption groups, who found an attractive partner in a bar. We also have the **measured attractiveness (score from 0 to 100)**, rated by external "judges", of the partner found by each participant.
+
+
+Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-ii-atractivo-vs-alcohol)
