@@ -18,11 +18,10 @@ format:
     footer: "[<strong>Javier Álvarez Liébana</strong>](...) • Course at Real Colegio Complutense at Harvard University"
     slide-number: c/t
 execute:
-  # freeze: auto
-  # cache: true 
+  freeze: auto
+  cache: true 
   echo: true
 ---
-
 
 ## Hi!
 
@@ -10064,7 +10063,7 @@ datos <- read_csv(file = "./data/datos_salud_mental.csv")
 Intenta responder a las preguntas planteadas en el [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html)
 
 
-# L5: [infer package and ANOVA]{.flow} {#clase-1-5}
+# L5 and L6: [infer package and t-test]{.flow} {#clase-1-5-6}
 
 Infer package and association between cuali vs cuanti
 
@@ -10589,7 +10588,7 @@ null_dist |>
 
 ---
 
-## Intervalos de confianza
+## CI
 
 In the `{infer}` package we can also quantify with [**confidence intervals the uncertainty of the observed statistic**]{.hl-yellow}
 
@@ -10609,7 +10608,7 @@ far from zero with a huge n may be trivial in practice.
 
 ---
 
-## Intervalos de confianza
+## CI
 
 A 95% CI does **not** mean that the true parameter lies within the interval
 with probability 0.95. The [**true parameter is FIXED even if unknown**]{.hl-yellow} — it has no distribution, it is not random, under a frequentist approach.
@@ -10670,7 +10669,7 @@ ggplot(simulations, aes(y = sim, color = cubre)) +
 
 ---
 
-## IC based on bootstrap
+## CI based on bootstrap
 
 In the `{infer}` package we can also quantify with [**confidence intervals the uncertainty of the observed statistic**]{.hl-yellow} 
 
@@ -10685,7 +10684,7 @@ To do so, we will generate 1000 subsamples from the original sample, using [**sa
 
 ---
 
-## IC based on bootstrap
+## CI based on bootstrap
 
 We do not want to assume any null hypothesis, so we skip `hypothesize()` — we simply want to estimate the CI of a parameter
 
@@ -10719,7 +10718,7 @@ And since you cannot resample from the real population, you simulate that proces
 ---
 
 
-## IC based on bootstrap
+## CI based on bootstrap
 
 ```{r}
 # IC al 95%
@@ -10952,7 +10951,305 @@ library(lawstat)
 symmetry.test(gss$hours, boot = FALSE)
 ```
 
+
 ---
+
+## The core inference question
+
+> **Same situation, four possible tools** How do you choose?
+
+
+🟣 [**Parametric test**]{.hl-purple}: t-test (one sample, two sample), ANOVA, Pearson correlation test, Welch test
+
+🔵 [**Nonparametric tests**]{.hl-blue} (no assumptions about distribution): Wilcoxon (pointwise cuanti), normality test (goodness-of-fit test), Chi-sq test (cuali vs cuali), Mann-Whitney U test (cuali vs cuanti, 2 factors), Kruskal-Wallis (cuali vs cuanti, > 2 factors), Spearman (cuanti vs cuanti)
+
+🟠 [**Permutation tests**]{.hl-orange} (shuffle the groups)
+
+🟢 [**Bootstrap**]{.hl-green} (resampling with replacement)
+
+::: {.callout-note}
+
+## 💡 Key idea
+
+They are not alternative answers to the same question, as **they usually address different questions** — and you often need more than one.
+
+
+:::
+
+---
+
+## A brief classification
+
+::: {style="font-size:70%"}
+
+| Question | Parametric test | Nonparametric test |
+|-----------------|--------|------------------|
+| Does a **sample mean differs** from a known value $\mu_0$? | t-test<br>[$H_0:\mu = \mu_0$. Assume normality]{style="font-size:65%"} | Wilcoxon Signed-Rank Test<br>[$H_0: X \text{ symmetric around } \mu_0$]{style="font-size:70%"}<br>[Forgets values and works only with ranks, not ask about means. To be equivalent to t-test, symmetry is required (median = mean)]{style="font-size:65%"} |
+| Is there an **effect between cuali vs cuali**? Independence | ... | chi-squared test (+ OR/RR/Cramer's V for effect sizes)<br>[Requires sufficient expected cell counts (≥ 5)]{style="font-size:65%"}
+| Is there an **effect between cuanti vs cuanti**? | Pearson correlation<br>[$H_0:\rho = 0$. Assume normality]{style="font-size:70%"} | Spearman<br>[$H_0:\text{no monotonic association between X and Y}$]{style="font-size:70%"}<br>[Forgets values and works only with ranks, not ask about Pearson correlation. Only sensitive to monotonic patterns — fails to detect non-monotonic dependence (e.g. U-shaped) even if strong]{style="font-size:65%"} |
+| Is there a **difference between means of two groups**? Is there an **effect between X and Y (cuanti vs cuali, 2 groups)**? | t-test (2 samples)<br>[$H_0:\mu_X = \mu_Y$. Assume normality and equal variances]{style="font-size:70%"} | Mann-Whitney<br>[$H_0:~P(X > Y) = 0.5$]{style="font-size:70%"}<br>[Not ask about means or medians. Assume same shape in both variables]{style="font-size:65%"} |
+| Is there a **difference between means of several groups**? Is there an effect between X and Y? (cuanti vs cuali, > 2 groups) | ANOVA<br>[$H_0:\mu_1=\mu_2=\ldots = \mu_k$. Assume normality and equal variances]{style="font-size:70%"} | Kruskal-Wallis<br>[$H_0:~P(X_i > X_j) = 0.5$]{style="font-size:70%"}<br>[Not ask about means or medians. Assume same shape in all variables]{style="font-size:65%"} |
+
+
+:::
+
+---
+
+## Decision map
+
+::: {style="font-size:60%"}
+
+
+🟣 [**PARAMETRIC TESTS**]{.hl-purple}
+
+  ✅ They are the most powerful (smaller $n$ to detect effects) and best options when assumptions are verified 
+  
+  ❎ Assumptions should be verified (normality, homoscedasticity, sample size)
+  
+  ⚠️ If assumptions are not verified, p-values are approx (when $n$ is enough), but convergence is not guaranteed for heavy-tailed or skewed.
+
+🔵 [**NONPARAMETRIC TESTS**]{.hl-blue} 
+
+  ✅ Assumptions about distribution of data are not required
+  
+  ❎ Questions to be asked in $H_0$ are different (assumptions can be required to be equivalent to parametric tests)
+  
+  ⚠️ Less powerful since data will be transformed (usually ranks)
+  
+🟠 [**PERMUTATION TESTS**]{.hl-orange} (shuffle the groups)
+
+  ✅ It preserves the (parametric) statistic (t, F, $R^2$, etc)
+  
+  ✅ Universal and powerful: it works with any test statistic (even ad hoc statistic). Not limited to tests with closed-form formula.
+  
+  ❎ Observations must be exchangeable under $H_0$ (breaks down with repeated measures → permute residuals)
+  
+  ⚠️ Computational cost. The precision of the p-value is limited by the number of permutations
+  
+🟢 [**BOOSTRAP**]{.hl-green} (resampling with replacement)
+
+  ✅ Quantifies the uncertainty of any statistic → allows building CI even when the statistic has no closed-form formula
+  
+  ❎ Its natural output is a confidence interval, not a p-value — it does not generate data under $H_0$. Requires a reasonable sample size: with very small $n$ the empirical distribution poorly represents the population
+  
+  ⚠️ «Garbage in, garbage out»: bootstrap amplifies sampling bias — if your sample is not representative, neither are your intervals
+  
+:::
+
+---
+
+
+## Permutation vs bootstrap
+
+::: {style="font-size:67%"}
+
+|  | **Permutation** | **Bootstrap** |
+|---|---|---|
+| **Core question** | What would the data look like if $H_0$ were true? | How much would the statistic vary if we repeated the sampling? |
+| **Key assumption** | Observations must be **exchangeable** under $H_0$ | Sample size must be large enough ($n \geq 20$–$30$) |
+| **Mechanism** | **Shuffle labels** and measure how extreme the observed result is — no new data is created, existing observations are just redistributed | **Resample with replacement from your sample**, treating it as a proxy for the population |
+| **Primary output** | **Is there an effect?** (p-value) | **How large is the effect?** (confidence interval) |
+| **What it builds** | Empirical distribution of the statistic under $H_0$ | Empirical sampling distribution of the statistic |
+| **Why it works** | Shuffling labels guarantees $H_0$ is true by construction | Approximates the null hypothesis — which is why p-values are less reliable than with permutations |
+:::
+
+::: {.callout-note}
+
+Report **effect size + CI** (bootstrap)  alongside the **p-value** (permutation or parametric). A p-value alone is never enough. Package `{effectsize}` allows us to obtain effect size.
+:::
+
+---
+
+## Effect sizes
+
+::: {style="font-size:70%"}
+
+As noted before, report **effect size + CI** (bootstrap)  alongside the **p-value** (permutation or parametric). Package `{effectsize}` allows us to obtain effect size.
+
+:::
+
+::: {style="font-size:57%"}
+
+| Test | Effect size | Interpretation | R |
+|---|---|-----|------|
+| **Chi-squared** | Cramér's $V$ | Strength of association between two categorical variables | `cramers_v(table(...))` |
+| **Pearson/Spearman correlation** | $\rho$/$\rho_s$ (effect size itself) | Strength of linear/monotonic association | ... |
+| **t-test one sample** | Cohen's $d$ | Distance between $\bar{x}$ and $\mu_0$ in terms of SDs | `cohens_d(x, mu = μ0)` |
+| **Wilcoxon signed-rank test** | Rank-biserial correlation $r_{rb} = \frac{W^{+} - W^{-}}{W^{+} - W^{-}}$ | Dominance of values over $\mu_0$ | `rank_biserial(x, mu = μ0)` |
+| **t-test two samples** | Hedges' $g$ (preferred) or Cohen's $d$ | Distance between the two means in SDs | `cohens_d(score ~ group)` or  corrected `hedges_g(score ~ group)` |
+| **Mann-Whitney** | Rank-biserial correlation $r_{rb} = 2⋅P(X>Y)−1)$ | Probability that group 1 > group 2 | `rank_biserial(score ~ group)` |
+| **ANOVA** | $\omega^2$ (preferred) or $\eta^2$ | % variance explained by the factor | `eta_squared(aov(score ~ group, data = df))  ` or corrected `omega_squared(aov(...))` |
+| **Kruskal-Wallis** | $\epsilon^2$ (epsilon squared)  $\epsilon^2$ or non-parametric equivalent of $\eta^2$ | % variance of ranks explained by the factor | `rank_epsilon_squared(score ~ group)` |
+:::
+
+Since **permutation tests work on the original data** — not on ranks — they are naturally paired with parametric effect sizes (Cohen's $d$, $\eta^2$, $\omega^2$, etc): the p-value is assumption-free, but the effect size remains on the original scale.
+
+---
+
+## Case study: Yellowstone
+
+We will analyse the `yellowstone` dataset, about the **waiting time between eruptions and the duration of the eruption for the Old Faithful geyser in Yellowstone National Park**
+
+[**Does the average waiting time between eruptions equal to $\mu_0 = 70$?**]{.hl-yellow}
+
+
+$$H_0:~\mu_0 = 70$$
+
+```{r}
+yellowstone_tb <- read_csv(file = "./data/yellowstone.csv")
+yellowstone_tb
+```
+
+
+---
+
+## Case study: Yellowstone
+
+
+
+```{r}
+#| code-fold: true
+gg1 <- 
+  yellowstone_tb |> 
+  ggplot() +
+  geom_density(aes(x = waiting), fill = "gold", alpha = 0.5) +
+  geom_vline(aes(xintercept = 70), color = "steelblue", linetype = "dashed", linewidth = 1.2) +
+  geom_vline(aes(xintercept = mean(waiting)), color = "darkred", linetype = "dashed", linewidth = 1.2) +
+  annotate("text", x = mean(c(70, mean(yellowstone_tb$waiting))), 
+           y = 0.038, label = glue::glue("d = {round(cohens_d(x = yellowstone_tb$waiting, mu = 70)$Cohens_d, 2)}"), size = 3.1) +
+  theme_minimal()
+m <- round(mean(yellowstone_tb$waiting), 2)
+s <- round(sd(yellowstone_tb$waiting), 2)
+cohen_effect <- round(cohens_d(x = yellowstone_tb$waiting, mu = 70)$Cohens_d, 2)
+gg2 <-
+  yellowstone_tb |> 
+  ggplot() +
+  geom_boxplot(aes(y = waiting), fill = "gold", alpha = 0.5) +
+  theme_minimal()
+(gg1 + gg2) +
+  plot_annotation(title = "Does the average waiting time between eruptions in Yellowstone equal to 70?",
+                  subtitle = glue::glue("Mean = {m}, sd = {s}, Cohen's d = {cohen_effect}"))
+```
+
+---
+
+## Case study: Yellowstone
+
+[**Does the average waiting time between eruptions equal to $\mu_0 = 70$?**]{.hl-yellow}
+
+
+$$H_0:~\mu_0 = 70$$
+
+🟣 [**Parametric test**]{.hl-purple}
+
+
+::: columns
+::: {.column width="35%"}
+
+```{r}
+shapiro.test(yellowstone_tb$waiting)
+```
+
+:::
+
+::: {.column width="65%"}
+
+```{r}
+#| fig-height: 5
+yellowstone_tb |> 
+  ggplot(aes(sample = waiting)) +
+  geom_qq() + geom_qq_line() +
+  theme_minimal()
+```
+
+:::
+:::
+
+. . .
+
+Distribution is not normal --> alternatives: wilcoxon vs parametric
+
+---
+
+## Case study: Yellowstone
+
+::: {style="font-size:80%"}
+
+::: columns
+::: {.column width="30%"}
+
+
+🔵 **Nonparametric tests**
+
+```{r}
+wilcox.test(yellowstone_tb$waiting, mu = 70)
+```
+
+According to this: no enough evident to say that $\mu \neq 70$ but...the Cohen's effect d was not small. [**But distribution is not symmetric and sample size is small!**]{.hl-red}
+
+:::
+
+::: {.column width="70%"}
+
+🟢 **Bootstrap**
+
+```{r}
+obs_mean <-
+  yellowstone_tb |> specify(response = waiting) |> calculate(stat = "mean")
+null_dist <-
+  yellowstone_tb |> specify(response = waiting) |>
+  hypothesize(null = "point", mu = 70) |> 
+  generate(reps = 5000, type = "bootstrap") |>
+  calculate(stat = "mean")
+null_dist |> get_p_value(obs_mean, direction = "two-sided")
+```
+
+```{r}
+#| code-fold: true
+#| fig-height: 3
+null_dist |>
+  visualize() +
+  shade_p_value(obs_mean, direction = "two-sided") +
+  theme_minimal()
+```
+
+According to that, we must refuse null hypothesis, so **there is evidence that $\mu \neq 70$**
+
+
+:::
+
+:::
+
+:::
+
+---
+
+## Case study: Yellowstone
+
+**What about effect size?**
+
+```{r}
+ci <-
+  yellowstone_tb |> 
+  specify(response = waiting) |>
+  generate(reps = 5000, type = "bootstrap") |>
+  calculate(stat = "mean") |> 
+  get_confidence_interval(level = 0.95, type = "percentile")
+ci
+```
+
+
+```{r}
+library(effectsize)
+# moderate and positive (direction of the differences)
+cohens_d(yellowstone_tb$waiting, mu = 70)
+```
+
+
+Cohen's benchmarks (small < 0.2, medium = 0.2 - 0.6, large > 0.6) - are useful starting points but always interpret effect sizes in the context of your field.
+
+---
+
 
 ## t-test with 2 samples
 
@@ -10998,10 +11295,52 @@ gg1 + gg2
 
 ## t-test with 2 samples
 
-* [**Parametric t-test**]{.hl-yellow}
+Actually the null hypothesis to be tested is
+
+$$H_0:~\mu_{1} - \mu_{2} = 0, \quad H_1:~\mu_{1} - \mu_{2} \neq 0$$
+
+So our **statistic will be build around the difference of means**.
 
 
 ```{r}
+#| code-fold: true
+gg1 <- 
+  gss |> 
+  ggplot() +
+  geom_boxplot(aes(x = college, y = hours, fill = college,
+                   color = college),
+               alpha = 0.75) +
+  scale_color_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  scale_fill_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  theme_minimal()
+
+gg2 <-
+  gss |>
+  ggplot(aes(x = college, y = hours, color = college)) +
+  geom_jitter(width = 0.2, alpha = 0.4, size = 1.5) +
+  stat_summary(fun = mean, geom = "point", size = 6,
+               shape = 18) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.25, linewidth = 1.2) +
+  scale_color_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  scale_fill_manual(values = c("no degree" = "#f4a582",
+                                "degree" = "#92c5de")) +
+  theme_minimal()
+gg1 + gg2
+```
+
+---
+
+## t-test with 2 samples
+
+* [**Parametric t-test**]{.hl-yellow}
+
+Now `order = ...` is important since the **sign of effect** could be also crucial.
+
+```{r}
+# t_test from infer package (t.test from R base)
 gss |>
   t_test(formula = hours ~ college, order = c("degree", "no degree"))
 ```
@@ -11036,7 +11375,7 @@ It does not seem so
 ## t-test with 2 samples
 
 
-* [**t-test via boostrap**]{.hl-yellow}: now we fixed `calculate(stat = "diff in means")`, and we **exchange again the values of group variable** via permutation.
+* [**t-test via permutation**]{.hl-yellow}: now we fixed `calculate(stat = "diff in means")`, and we **exchange again the values of group variable** via permutation (if $H_0$ is true - both populations have the same mean - observations could be exchangeable)
 
 ```{r}
 obs_diff_means <-
@@ -11077,7 +11416,32 @@ null_dist |>
   shade_p_value(obs_diff_means, direction = "two-sided", color = "#e76f51")
 ```
 
-There is not enough evidence to reject independence → there is not enough evidence to say that having a degree has an effect on working hours
+There is **not enough evidence to reject independence** → there is **not enough evidence to say that having a degree has an effect on working hours**
+
+
+---
+
+## Effect size
+
+$$d = \frac{\bar{x}_1 - \bar{x}_2}{s_{pooled}}, \qquad
+s_{pooled} = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}}$$
+
+if `pooled_sd = TRUE` (default value). If `pooled_sd = FALSE` we obtain the Glass's $\Delta$** $\Delta = \frac{\bar{x}_1 - \bar{x}_2}{s_{control}}$
+
+
+```{r}
+cohens_d(hours ~ college, data = gss, pooled_sd = TRUE)
+```
+
+. . .
+
+Cohen's $d$ overestimates the true effect with small samples, Hedges' $g$ applies a correction factor $J < 1$ to fix this:
+
+$$g = d \times J, \qquad J = 1 - \frac{3}{4n - 9}$$
+
+```{r}
+hedges_g(hours ~ college, data = gss, pooled_sd = TRUE)
+```
 
 ---
 
@@ -11093,7 +11457,47 @@ $$H_0:~P(X_A > X_B) = 0.5 \quad \text{[under the same shape => medians are equal
 wilcox.test(hours ~ college, data = gss)
 ```
 
+. . .
+
+Here the **effect size** is defined by **Rank-biserial correlation** $r_{rb} = 2⋅P(X>Y)−1)$ as the probability that group 1 > group 2 
+
+```{r}
+rank_biserial(hours ~ college, data = gss)
+```
+
 ---
+
+## 🐣 Case study I: mammals sleep {#caso-practico-6-1}
+
+infer package
+
+---
+
+## 🐣 Case study II: turnout vs candidates {#caso-practico-6-2}
+
+The file `blackturnout.csv` contains data on turnout in the US midterm elections of 2006, 2008 and 2010: `turnout` proportion of Black voter turnout (relative to Black voting-age population), `cvap` proportion of Black residents in the district, and `candidate` 1 if the candidate is Black.
+
+
+```{r}
+datos <-
+  read_csv(file = "./data/blackturnout.csv") |>
+  janitor::clean_names()
+```
+
+
+Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-i-participaci%C3%B3n-vs-candidatos)
+
+---
+
+
+## 🐣 Case study III: Bechdel test
+
+---
+
+## 🐣 Case study IV: age problem
+
+# L7:
+
 
 ## ANOVA: quanti vs quali
 
@@ -11730,26 +12134,12 @@ datos
 ```
 
 
----
 
-
-## 🐣 Case study I: turnout vs candidates {#caso-practico-4-4}
-
-The file `blackturnout.csv` contains data on turnout in the US midterm elections of 2006, 2008 and 2010: `turnout` proportion of Black voter turnout (relative to Black voting-age population), `cvap` proportion of Black residents in the district, and `candidate` 1 if the candidate is Black.
-
-
-```{r}
-datos <- read_csv(file = "./data/blackturnout.csv") |> janitor::clean_names()
-datos |> slice_head(n = 5)
-```
-
-
-Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-i-participaci%C3%B3n-vs-candidatos)
 
 ---
 
 
-## 🐣 Case study II: attractiveness vs alcohol {#caso-practico-4-5}
+## 🐣 Case study I: attractiveness vs alcohol {#caso-practico-7-1}
 
 The data are loaded directly from `beer_goggles_effect.csv` 
 
@@ -11762,3 +12152,4 @@ We have the gender of 48 students, divided into 3 alcohol consumption groups, wh
 
 
 Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-ii-atractivo-vs-alcohol)
+
