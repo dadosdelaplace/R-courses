@@ -11469,7 +11469,16 @@ rank_biserial(hours ~ college, data = gss)
 
 ## 🐣 Case study I: mammals sleep {#caso-practico-6-1}
 
-infer package
+
+We will work on an updated and expanded version of the mammals sleep dataset. Updated sleep times and weights were taken from V. M. Savage and G. B. West. A quantitative, theoretical framework for understanding mammalian sleep. Proceedings of the National Academy of Sciences, 104 (3):1051-1056, 2007.
+
+```{r}
+library(tidyverse)
+msleep
+```
+Try to answer the questions in the [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html#infer-package)
+
+
 
 ---
 
@@ -11485,19 +11494,29 @@ datos <-
 ```
 
 
-Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-i-participaci%C3%B3n-vs-candidatos)
+Try to answer the questions in the [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html#case-study-ii-turnout-vs-candidates)
 
 ---
 
 
 ## 🐣 Case study III: Bechdel test
 
+
+The bechdel dataset from the `{fivethirtyeight}` R package contains information on 1,794 films released between 1970 and 2013, originally compiled for a FiveThirtyEight article on gender representation in Hollywood. Each row is a movie, and the key variables include whether the film passes the Bechdel test — a minimal bar for female representation requiring (1) at least two named women, (2) who talk to each other, (3) about something other than a man — along with financial data such as budget, domestic and international gross revenue, and return on investment (ROI).
+```{r}
+library(fivethirtyeight)
+bechdel
+```
+
+
+Try to answer the questions in the [**workbook**](https://javieralvarezliebana.es/R-courses/RCC/workbooks/association-effects.html#case-study-iii-bechdel-test)
+
+
+# L7: [ANOVA]{.flow} {#clase-1-7}
+
+ANOVA (one-way)
+
 ---
-
-## 🐣 Case study IV: age problem
-
-# L7:
-
 
 ## ANOVA: quanti vs quali
 
@@ -12139,7 +12158,7 @@ datos
 ---
 
 
-## 🐣 Case study I: attractiveness vs alcohol {#caso-practico-7-1}
+## 🐣 Case study I: attractiveness vs alcohol {#caso-practico-1-7-1}
 
 The data are loaded directly from `beer_goggles_effect.csv` 
 
@@ -12153,3 +12172,1707 @@ We have the gender of 48 students, divided into 3 alcohol consumption groups, wh
 
 Try to answer the questions in the [**workbook**](https://dadosdelaplace-workbook-supervisado.share.connect.posit.cloud/#caso-pr%C3%A1ctico-ii-atractivo-vs-alcohol)
 
+
+# L8: [ANOVA]{.flow} {#clase-1-8}
+
+ANOVA (two-way)
+
+---
+
+## ANOVA: one-way
+
+So far we have seen that the variability of the data has two sources:
+
+* $\mu_j$ is the [**average for each group**]{.hl-yellow} $j$
+* $\varepsilon_{ij}$ is a random perturbation around that mean: how much [**individuals intrinsically differ between them**]{.hl-yellow}?
+
+$$y_{ij} =  \mu_j + \varepsilon_{ij}, \quad \varepsilon_{ij} \sim N (0, \sigma^2), \quad y_{ij} \sim N(\mu_j, \sigma^2)$$
+
+. . .
+
+The above can be translated as
+
+$$y_{ij} =  \mu + \alpha_j + \varepsilon_{ij}, \quad \widehat{y}_{ij} = \widehat{\mu} + \widehat{\alpha}_{j}, \quad \varepsilon_{ij} \sim N (0, \sigma^2)$$
+
+* $\mu$: mean of the reference group (e.g., group 1)
+* $\alpha_j$: differential average effect (deviation) of group $j$ relative to $\mu$
+
+---
+
+## ANOVA: one-way
+
+In the case of `beer_goggles_effect.csv` we have
+
+$$y_{ij} =  \mu + \alpha_j + \varepsilon_{ij}, \quad \widehat{y}_{ij} = \widehat{\mu} + \widehat{\alpha}_{j},\quad \varepsilon_{ij} \sim N (0, \sigma^2),  \quad j=1,2,3$$
+
+```{r}
+datos <- datos |> mutate("alcohol" = factor(alcohol, levels = c("None", "2 Pints", "4 Pints")))
+output <- aov(data = datos, attractiveness ~ alcohol)
+output$coefficients
+```
+
+::: {.incremental}
+
+* $\widehat{\mu} = 63.614$: estimation of mean of attractiveness for «none pints» group ($\alpha_1 = 0$)
+* $\widehat{\alpha}_2 = 1.236$: estimation of differential average effect (deviation) for «2 Pints» group relative to «none pints» group -> its estimation of mean is $\widehat{\mu}_2 = \widehat{\mu} + \widehat{\alpha}_2 = 64.850$
+* $\widehat{\alpha}_3$: estimation of differential average effect (deviation) for «4 Pints» group relative to «none pints» group -> its estimation of mean is $\widehat{\mu}_3 = \widehat{\mu} + \widehat{\alpha}_3 = 54.350$
+
+:::
+
+
+---
+
+## ANOVA: one-way
+
+The [**effect size**]{.hl-yellow} in the case of the parametric one-way ANOVA is defined as $\eta^2$
+
+$$\eta^2 = \frac{SS_{between}}{SS_{total}} = \frac{SS_{alcohol}}{SS_{alcohol} + SS_{residuals}}$$
+being the [**proportion of information (= variability) of $y$ explained by the factor**]{.hl-yellow}
+
+```{r}
+library(effectsize)
+anova_one_way <- aov(data = datos, attractiveness ~ alcohol)
+eta_squared(anova_one_way)
+```
+
+* **Small effect**: $\eta^2 \approx 0.05$ (5% of variance)
+* **Medium effect**: $\eta^2 \approx 0.1$  (10% of variance)
+* **Large effect**: $\eta^2 \approx 0.15$  (15% of variance)
+
+---
+
+## ANOVA: one-way
+
+$\eta^2$ increases mechanically as you add groups or with small sample sizes, even when the true effect is zero, so there exists an alternative (analogous to $R^2_{adj}$) that penalizes for the number of groups
+
+$$\omega^2 = \frac{SS_{between} - penalty}{SS_{total} + penalty}$$
+
+where $penalty = (k-1)*\frac{SS_{residuals}}{df_{residuals}}$ it discounts what $SS_{between}$ would "gain" by chance simply from having $k−1$ groups
+
+```{r}
+omega_squared(anova_one_way)
+```
+
+
+---
+
+
+
+## ANOVA: one-way
+
+To **visualize the estimated marginal effects**, their CIs, and the post-hoc contrasts, we can use the `{ggeffects}` package (as long as we have fitted a parametric model)
+
+```{r}
+library(ggeffects)
+anova_one_way <- aov(data = datos, attractiveness ~ alcohol)
+ggpredict(anova_one_way, terms = "alcohol") |> 
+  plot(connect_lines = TRUE) + theme_minimal()
+```
+
+---
+
+## ANOVA: one-way
+
+We can also add some extras using the `{ggpubr}` package
+
+
+```{r}
+#| code-fold: true
+library(ggeffects)
+library(ggpubr)
+anova_one_way <- aov(data = datos, attractiveness ~ alcohol)
+ggpredict(anova_one_way, terms = "alcohol") |> 
+  plot(connect_lines = TRUE) +
+  geom_bracket(xmin = 1, xmax = 2-0.02, y.position = 70,
+               label = "alpha_2 = +1.236 (p = 0.919)", tip.length = 0.05,
+               color = "#5e548e", label.size = 5) +
+  geom_bracket(xmin = 2+0.02, xmax = 3, y.position = 67.5,
+               label = "mu_3 - mu_2 = alpha_3 - alpha_2 = -10.500 (p = 0.005)", tip.length = 0.05,
+               color = "#E8DA2D", label.size = 3.7) +
+  geom_bracket(xmin = 1, xmax = 3, y.position = 48,
+               label = "alpha_3 = -9.264 (p = 0.014)", tip.length = -0.05,
+               color = "#E84C2D", label.size = 5) +
+  theme_minimal() +
+  labs(title = "ANOVA one-way attractiveness vs alcohol",
+       subtitle = glue::glue("Effect size: {round(eta_squared(anova_one_way), 3)}"))
+```
+
+---
+
+## ANOVA: non parametric
+
+If assumptions are not met, the [**Kruskal-Wallis test is a non-parametric alternative**]{.hl-yellow}, BUT it does not test the same thing: $H_0:~P(X_i > X_j) = 0.5$. **Not ask about means or medians** and assume same shape in all variables. 
+
+```{r}
+kruskal.test(x = datos$attractiveness, g = datos$alcohol)
+rank_epsilon_squared(attractiveness ~ alcohol, data = datos) # effect size
+```
+
+. . .
+
+The appropriate **post-hoc test in this case is Dunn's test**
+
+```{r}
+library(rstatix)
+datos |> dunn_test(attractiveness ~ alcohol, p.adjust.method = "bonferroni")
+```
+
+
+---
+
+## ANOVA one-way: permute
+
+We can (should) use as before the idea under `{infer}` package, permuting the F statistic
+
+```{r}
+library(infer)
+null_dist <-
+  datos |> 
+  specify(attractiveness ~ alcohol) |> 
+  hypothesize(null = "independence") |> 
+  generate(reps = 5000, type = "permute") |> 
+  calculate(stat = "F")
+obs_stat <-
+  datos |> 
+  specify(attractiveness ~ alcohol) |> 
+  calculate(stat = "F")
+null_dist |> 
+  get_p_value(obs_stat, direction = "greater")
+```
+
+---
+
+## ANOVA one-way: permute
+
+```{r}
+null_dist |> 
+  visualize() +
+  shade_p_value(obs_stat, direction = "greater")
+```
+
+---
+
+## ANOVA: two-way
+
+We have already seen how to measure effects between quali vs quali, quanti vs quanti and quali vs quanti. But what happens when we have **two factors or grouping variables**? For example, in the previous exercise we only worked with `alcohol`l but...is the effect of `alcohol` uniform or does it differ across gender? How could we make gender play a role as a factor?
+
+**What should we add to our model?**
+
+
+```{r}
+datos <- read_csv(file = "./data/beer_goggles_effect.csv") |> janitor::clean_names()
+datos
+```
+
+
+---
+
+
+## ANOVA: two-way
+
+To include it as a factor we have 3 options:
+
+* Include it as the **only factor (without alcohol), fitting a one-way ANOVA**
+
+. . .
+
+* Include both factors $(A,B)$ (two-way ANOVA) but without allowing them to interact
+
+$$y_{ijk} =  \mu + \alpha_j + \beta_k + \varepsilon_{ijk}, \quad \widehat{y}_{ijk} = \widehat{\mu} + \widehat{\alpha}_{j} + \widehat{\beta}_k$$
+
+* $\mu$: mean of the reference group (e.g., $j=1$ in factor A and $k = 1$ in factor B)
+* $\alpha_j$: differential average effect of group $j$ in factor A (relative to $j=1$)
+* $\beta_k$: differential average effect of group $k$ in factor B (relative to $k=1$)
+
+. . .
+
+[**IMPORTANT**]{.hl-red}. Note that $\alpha_j$ and $\beta_k$ are **marginal effects**: $\alpha_j$ measures the differential average effect of a level $j$ of factor $A$, **regardless of the level of B**. The **main assumption** is that the effect of $A$ has the same impact for each level of $B$ (and vice versa).
+
+---
+
+## ANOVA: two-way
+
+In the case of `beer_goggles_effect.csv` we have $A = alcohol$ and $B = gender$
+
+$$y_{ijk} =  \mu + \alpha_j + \beta_k + \varepsilon_{ijk}, \quad \widehat{y}_{ijk} = \widehat{\mu} + \widehat{\alpha}_{j} + \widehat{\beta}_k$$
+
+* $\widehat{\mu}$: estimation of mean for «female» with «none Pints» ($\alpha_1 = 0$ and $\beta_1 = 0$, reference group)
+* $\widehat{\alpha_2}$: estimation of average marginal effect of moving from «none Pints» to «2 Pints» **regardless of gender**
+* $\widehat{\alpha_3}$: estimation of average marginal effect of moving from «none Pints» to «4 Pints» **regardless of gender**
+* $\widehat{\beta_2}$: estimation of average marginal effect of moving from «Female» to «Male» **regardless of alcohol**
+
+```{r}
+#| eval: false
+datos <- datos |> mutate("alcohol" = factor(alcohol, levels = c("None", "2 Pints", "4 Pints")),
+                         "gender" = factor(gender, levels = c("Female", "Male")))
+aov(data = datos, attractiveness ~ alcohol + gender) |> summary()
+```
+
+---
+
+
+## ANOVA: two-way
+
+```{r}
+#| echo: false
+datos <- datos |> mutate("alcohol" = factor(alcohol, levels = c("None", "2 Pints", "4 Pints")),
+                         "gender" = factor(gender, levels = c("Female", "Male")))
+aov(data = datos, attractiveness ~ alcohol + gender) |> summary()
+```
+
+```{r}
+#| eval: false
+aov(data = datos, attractiveness ~ alcohol + gender) |> summary()
+```
+
+* `Mean Sq`: quantify the variability coming from each source
+  - `alcohol = 526.9`: variability due to levels of `alcohol` (between variance)
+  - `gender = 2.3`: variability due to levels of `gender` (between variance)
+  - `Residuals = 81.2`: within variance
+
+* `F value`: ratio of each of `Mean sq` divided by `Residuals`
+* `Pr(>F)`: p-value for each null hypothesis:
+  - $H_{0}^A:~\alpha_1 = \alpha_2 = \alpha_3 = 0$ (p = 0.003 --> there is a marginal effect of alcohol)
+  - $H_{0}^B:~\beta_1 = \beta_2 = 0$ (p = 0.866 --> there is no variability due to gender --> there is no a marginal effect of gender
+
+---
+
+## ANOVA: two-way
+
+$$y_{ijk} =  \mu + \alpha_j + \beta_k + \varepsilon_{ijk}, \quad \widehat{y}_{ijk} = \widehat{\mu} + \widehat{\alpha}_{j} + \widehat{\beta}_k$$
+
+
+```{r}
+#| echo: false
+anova_two_way <- aov(data = datos, attractiveness ~ alcohol + gender)
+anova_two_way$coefficients
+```
+
+::: {.incremental}
+
+* $\widehat{\mu} = 63.393$: estimation of mean for «females» with «none Pints» ($\alpha_1 = 0$)
+* $\widehat{\alpha}_2 = 1.236$: estimation of average marginal effect from «none Pints» to «2 Pints» **regardless of gender**
+* $\widehat{\mu}_2 = \widehat{\mu} + \widehat{\alpha}_2 = 63.393-9.263 = 64.629$ (mean of attractiveness for 2 pints)
+* $\widehat{\alpha}_3 = -9.263$: estimation of average marginal effect from «2 Pints» to «4 Pints» **regardless of gender**
+* $\widehat{\mu}_3 = \widehat{\mu} + \widehat{\alpha}_3 = 63.393-9.263 = 54.13$ (mean of attractiveness for 4 pints)
+* $\widehat{\beta}_2 \approx 0$: none, there is no effect!
+
+:::
+
+---
+
+## ANOVA: two-way
+
+In the same way we can use `eta_squared()` from the `{effectsize}` package to compute the [**(partial) effect size**]{.hl-yellow}, except that now it returns 2 partial effects `(partial = TRUE)` without interaction for now (discounting the variance explained by the remaining factors)
+
+$$\eta_{gender}^2 = \frac{SS_{between-gender}}{SS_{between-gender} + SS_{residuals}},\quad \eta_{alcohol}^2 = \frac{SS_{between-alcohol}}{SS_{between-alcohol} + SS_{residuals}}$$
+
+```{r}
+#| echo: false
+effectsize::eta_squared(anova_two_way, partial = TRUE)
+effectsize::omega_squared(anova_two_way, partial = TRUE)
+```
+
+---
+
+## ANOVA: two-way
+
+
+In this case the visualization from `ggpredict()` will be extremely useful as it will allow us to see whether the differences of each level of factor A are the same across each level of factor B. Since there are no interactions the slopes are equal (parallel traces) as we are not allowing the effect of A to vary across the levels of B
+
+::: columns
+::: {.column width="50%"}
+
+```{r}
+ggpredict(anova_two_way,
+          terms = c("gender", "alcohol")) |> 
+  plot(connect_lines = TRUE) +
+  scale_color_manual(values = c("#5e548e", "#E0C84A", "#7a8f3a")) +
+  theme_minimal()
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+ggpredict(anova_two_way,
+          terms = c("alcohol", "gender")) |> 
+  plot(connect_lines = TRUE) +
+  theme_minimal()
+```
+
+:::
+:::
+
+---
+
+## ANOVA: two-way (interactions)
+
+The [**full model with interactions**]{.hl-yellow} would be as follows:
+
+$$y_{ijk} =  \mu + \alpha_j + \beta_k + \left(\alpha \beta \right)_{jk} + \varepsilon_{ijk}, \quad \widehat{y}_{ijk} = \widehat{\mu} + \widehat{\alpha}_{j} + \widehat{\left(\alpha \beta \right)}_{jk} + \widehat{\beta}_k$$
+
+
+* $\mu$: mean of the reference group (e.g., $j=1$ in factor A and $k = 1$ in factor B)
+* $\alpha_j$: differential average effect of group $j$ vs reference group ($j=1$) in factor A **BUT WHEN** $k=1$ in factor B
+* $\beta_k$: differential average effect of group $k$ vs reference group ($k=1$) in factor B **BUT WHEN** $j=1$ in factor A
+* $\left(\alpha \beta \right)_{jk}$: additional effect deviation specific to the combination $(j,k)$ with respect to what the main effects $\alpha_j$ and $\beta_k$ would predict under additivity -> it **captures how much the effect of level $j$ in A at  differs across levels of B (and vice versa)**
+
+[**IMPORTANT**]{.hl-red}. Note that now $\alpha_j$ and $\beta_k$ are not average effects  **regardless of the level of A or B**: they are effects of factor $A$ when **we fix a level in B** (and vice versa)
+
+---
+
+
+## ANOVA: two-way (interactions)
+
+
+In the case of `beer_goggles_effect.csv` we have $A = alcohol$ and $B = gender$
+
+$$y_{ijk} =  \mu + \alpha_j + \beta_k + \left(\alpha\beta\right)_{jk} + \varepsilon_{ijk}, \quad \widehat{y}_{ijk} = \widehat{\mu} + \widehat{\alpha}_{j} + \widehat{\beta}_k + \widehat{\left(\alpha\beta\right)}_{jk}$$
+
+```{r}
+aov(data = datos, attractiveness ~ alcohol + gender)$coefficients
+```
+
+::: {.incremental}
+
+::: {style="font-size:90%"}
+
+* $\widehat{\mu} = 60.866$: estimation of mean for «females» with «none Pints» ($\alpha_1 = 0$ and $\beta_1 = 0$)
+* $\widehat{\alpha_2} = 2.696$: estimation of average effect of moving from «none Pints» to «2 Pints» **BUT when we mantain fix  `gender = "female"`**
+* $\widehat{\alpha_3} = -3.144$: estimation of average effect of moving from «none Pints» to «4 Pints» **BUT when we mantain fix  `gender = "female"`**
+* $\widehat{\beta_2} = 5.494$: estimation of effect of moving from «Female» to «Male» **BUT when we mantain fix  `alcohol = "none"`**
+
+* $\widehat{\left(\alpha \beta\right)_{2,2}} = -2.921$: the effect of «2 pints vs none» is $2.921$ units smaller for males
+
+* $\widehat{\left(\alpha \beta\right)_{3,2}} = -12.239$: the effect of «4 pints vs none» is $12.239$ units smaller for males
+
+:::
+
+:::
+
+
+
+
+---
+
+## ANOVA: two-way (interactions)
+
+
+Let focus on the interactions
+
+* $\widehat{\left(\alpha \beta\right)_{2,2}} = -2.921$: the effect of «2 pints vs none» is $2.921$ units smaller for males than for females
+
+$$\left(\alpha \beta\right)_{2,2} = \text{effect 2 pints}_{males} - \text{effect 2 pints}_{females} = \left(\mu_{2pints} - \mu_{none} \right)_{male} - \left(\mu_{2pints} - \mu_{none} \right)_{female}$$
+
+
+::: {.incremental}
+
+::: {style="font-size:87%"}
+
+* $\mu_{none, f} =  60.866$ intercept
+* $\alpha_{2} = 2.696 = \mu_{2p, f} - \mu_{none, f}$ (alcohol2Pints) effect of 2 pints in female
+* $\mu_{2p, f} = \mu_{none, f} + \alpha_{2} = 60.866 + 2.696 = 63.562$
+
+* $\beta_2 = 5.494$ (genderMale) effect of gender (male) when none pints (group reference)
+* $\mu_{none, m} = \mu_{none,f} + \beta_2 = 60.866 +5.494 = 66.360$
+* $\left(\alpha \beta \right)_{2, 2} = -2.920$ the difference between effect of 2 pints in male less effect of 2 pints in female
+* effect of 2 pints in male = $\left(\alpha \beta \right)_{2, 2} + \alpha_{2} = -2.920 + 2.696 = -0.224$
+* $\mu_{2p, m} = \mu_{none,m} + \text{effect of 2 pints in male} = 66.360 -0.224 = 66.136$
+:::
+:::
+
+---
+
+## ANOVA: two-way (interactions)
+
+```{r}
+anova_two_way_interactions <- aov(data = datos, attractiveness ~ alcohol + gender + alcohol:gender)
+anova_two_way_interactions$coefficients
+```
+
+::: columns
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggpredict(anova_two_way_interactions, terms = c("gender", "alcohol")) |> 
+  plot(connect_lines = TRUE) +
+  scale_color_manual(values = c("#5e548e", "#E0C84A", "#7a8f3a")) +
+  scale_y_continuous(breaks = seq(44, 70, by = 2)) +
+  theme_minimal()
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggpredict(anova_two_way_interactions, terms = c("alcohol", "gender")) |> 
+  plot(connect_lines = TRUE) +
+  scale_y_continuous(breaks = seq(44, 70, by = 2)) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1, xmax = 2, y.position = 53,
+               label = "alpha_2 = 2.696", tip.length = -0.05,
+               color = "red", label.size = 5) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1, xmax = 3, y.position = 50,
+               label = "alpha_3 = -3.144", tip.length = -0.05,
+               color = "red", label.size = 5) +
+  theme_minimal()
+```
+
+:::
+:::
+
+
+---
+
+## ANOVA: two-way (interactions)
+
+```{r}
+anova_two_way_interactions <- aov(data = datos, attractiveness ~ alcohol + gender + alcohol:gender)
+anova_two_way_interactions$coefficients
+```
+
+
+::: columns
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggpredict(anova_two_way_interactions, terms = c("gender", "alcohol")) |> 
+  plot(connect_lines = TRUE) +
+  scale_color_manual(values = c("#5e548e", "#E0C84A", "#7a8f3a")) +
+  scale_y_continuous(breaks = seq(44, 70, by = 2)) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1-0.08, xmax = 2-0.08, y.position = 75,
+               label = "beta_2 = 5.494", tip.length = 0.05,
+               color = "#5e548e", label.size = 5) +
+  theme_minimal()
+```
+
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggpredict(anova_two_way_interactions, terms = c("alcohol", "gender")) |> 
+  plot(connect_lines = TRUE) +
+  scale_y_continuous(breaks = seq(44, 70, by = 2)) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1, xmax = 2, y.position = 53,
+               label = "alpha_2 = 2.696", tip.length = -0.05,
+               color = "red", label.size = 5) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1, xmax = 3, y.position = 50,
+               label = "alpha_3 = -3.144", tip.length = -0.05,
+               color = "red", label.size = 5) +
+  theme_minimal()
+```
+
+:::
+:::
+
+---
+
+
+## ANOVA: two-way (interactions)
+
+
+**What about interactions?** The interaction term captures how much effect of A changes as we move from the reference level of B to level $k$ (**diff of differences**)
+
+```{r}
+anova_two_way_interactions$coefficients
+```
+
+
+::: columns
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggpredict(anova_two_way_interactions, terms = c("gender", "alcohol")) |> 
+  plot(connect_lines = TRUE) +
+  scale_color_manual(values = c("#5e548e", "#E0C84A", "#7a8f3a")) +
+  scale_y_continuous(breaks = seq(44, 70, by = 2)) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1-0.08, xmax = 2-0.08, y.position = 75,
+               label = "beta_2 = 5.494", tip.length = 0.05,
+               color = "#5e548e", label.size = 5) +
+  theme_minimal()
+```
+
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+#| code-fold: true
+ggpredict(anova_two_way_interactions, terms = c("alcohol", "gender")) |> 
+  plot(connect_lines = TRUE) +
+  scale_y_continuous(breaks = seq(44, 70, by = 2)) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1, xmax = 2, y.position = 53,
+               label = "alpha_2 = 2.696", tip.length = -0.05,
+               color = "red", label.size = 5) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1, xmax = 3, y.position = 50,
+               label = "alpha_3 = -3.144", tip.length = -0.05,
+               color = "red", label.size = 5) +
+  geom_bracket(inherit.aes = FALSE, xmin = 1+0.05, xmax = 2+0.05, y.position = 73.5,
+               label = "effect 2p in male -2.92 units less than female (2.696 -2.92 = -0.224)", tip.length = 0.05,
+               color = "steelblue", label.size = 4) +
+  theme_minimal()
+```
+
+:::
+:::
+
+---
+
+## Assumptions ANOVA two-way
+
+Now we haven then 3 **(partial) effect size**
+
+```{r}
+eta_squared(anova_two_way_interactions)
+omega_squared(anova_two_way_interactions)
+```
+
+---
+
+## Assumptions ANOVA two-way
+
+As before, [**ANOVA two-way should verify some parametric assumptions**]{.hl-yellow} (on the residuals!):
+
+1. [**Zero-mean**]{.hl-green}: $E[\varepsilon_{ijk}] = 0$ (positive and negative deviations cancel each other out)
+
+2. [**Constant variance (Homoscedasticity)**]{.hl-green}: $V[\varepsilon_{ijk}] = cte = \sigma^2$  
+
+3. [**Normality**]{.hl-green}: $\varepsilon_{ijk} \sim N$
+
+4. [**Incorrelation**]{.hl-green}: one individual deviation gives no information about another's
+
+. . .
+
+When the assumptions are not met, the non-parametric two-way option gets very complicated, so **we will always use a permutation test** via `{lmPerm}`
+
+```{r}
+library(lmPerm)
+
+# Sin interacción
+aovp(attractiveness ~ alcohol + gender, data = datos)
+aovp(attractiveness ~ alcohol + gender + alcohol:gender, data = datos)
+```
+
+
+# L8: [LINEAR REGRESSION]{.flow} {#clase-1-9}
+
+Linear Regression
+
+---
+
+## Linear regression
+
+
+Hemos visto ya que el ANOVA se puede escribir como
+
+$$y_{ij} =  \mu + \alpha_j + \varepsilon_{ij}, \quad \widehat{y}_{ij} = \widehat{\mu} + \widehat{\alpha}_{j}, \quad \varepsilon_{ij} \sim N (0, \sigma^2)$$
+
+
+
+```{r}
+#| echo: false
+set.seed(42)
+n <- 700
+x <- c(rep(-0.75, n/2), rep(1.25, n/4), rep(0, n/4))
+y <- 2 + x^2 + rnorm(n, sd = 1)
+datos <-
+  tibble(x, y,
+         bin = c(rep("g1", n/2), rep("g2", n/4),
+                 rep("g3", n/4)))
+
+# --- Bins (ANOVA sobre x) ---
+medias_bin <- datos |>
+    group_by(bin) |>
+    summarise(
+        x_mid  = mean(x),   # centro del bin (para posicionar el punto)
+        y_mean = mean(y),
+        y_lo   = y_mean - sd(y),  # media ± 1 SD como barras de error
+        y_hi   = y_mean + sd(y)
+    )
+
+# --- Plot ---
+ggplot(datos, aes(x, y)) +
+    # 1) Scatter
+    geom_point(alpha = 0.25, color = "#5B8DB8", size = 1.8) +
+    # 2) Franjas de color por bin (para visualizar la agrupación)
+    # geom_rect(
+    #     data = medias_bin,
+    #     aes(xmin = -1, xmax = 2,
+    #         ymin = -Inf, ymax = Inf),
+    #     fill = "#F0F4F8", color = NA, inherit.aes = FALSE,
+    #     alpha = 0.5
+    # ) +
+    # 
+    # 3) Medias de bin (= lo que estima ANOVA)
+    geom_errorbar(
+        data = medias_bin,
+        aes(x = x_mid, ymin = y_lo, ymax = y_hi),
+        width = 0.2, color = "#E07B39", linewidth = 0.8, inherit.aes = FALSE
+    ) +
+    geom_point(
+        data = medias_bin,
+        aes(x = x_mid, y = y_mean),
+        color = "#E07B39", size = 4, shape = 18, inherit.aes = FALSE
+    ) +
+    # 4) Recta de regresión
+    geom_smooth(method = "lm", se = TRUE,
+                color = "#2D6A4F", linewidth = 1.2,
+                fill  = "#2D6A4F", alpha = 0.15) +
+    
+    # --- Etiquetas ---
+    annotate("text", x = 0.5, y = max(y) - 0.5,
+             label = "Medias por grupo",
+             color = "#E07B39", hjust = 0, size = 4.5, fontface = "italic") +
+    annotate("text", x = 0.5, y = min(y) + 0.5,
+             label = "Recta (¿relación lineal entre medias?)",
+             color = "#2D6A4F", hjust = 0, size = 4.5, fontface = "italic") +
+    labs(title = "ANOVA con 3 grupos (medias = -1, 0 y 3)",
+         subtitle = "Las medias de grupo están libres",
+         x = "x", y = "y") +
+    theme_minimal(base_size = 13)
+```
+
+
+
+---
+
+## Linear regression
+
+Linear regression is a special case of ANOVA where
+
+
+::: columns
+::: {.column width="35%"}
+
+::: {style="font-size:87%"}
+
+* [**Extra assumption**]{.hl-yellow}: the group means must have a linear relationship, they **must lie around a straight line**
+
+$$\alpha_j = \beta_1\bar{x}_j$$
+
+$$E[y|group = j] = \mu + \alpha_j := \beta_0 + \beta_1\bar{x}_j$$
+
+* The groups are no longer arbitrary labels and become **levels of a variable with a numerical scale**, that is, $C_j$ is indexed by a numerical value $x_j$ (the "groups" are of size $n=1$)
+
+$$E[y|x] = \beta_0 + \beta_1x, \quad \widehat{y}_i = \widehat{\beta}_0 + \widehat{\beta}_1 x_i$$
+
+:::
+:::
+
+::: {.column width="65%"}
+
+```{r}
+#| echo: false
+library(tidyverse)
+
+# --- Datos simulados ---
+set.seed(42)
+n <- 600
+x <- runif(n, 0, 10)
+y <- 2 + 1.5 * x + rnorm(n, sd = 2)
+datos <- tibble(x, y)
+
+# --- Bins (ANOVA sobre x) ---
+k <- 3  # número de grupos
+datos <- datos |>
+  mutate(bin = cut(x, breaks = k, include.lowest = TRUE))
+
+medias_bin <- datos |>
+  group_by(bin) |>
+  summarise(
+    x_mid  = mean(x),   # centro del bin (para posicionar el punto)
+    y_mean = mean(y),
+    y_lo   = y_mean - sd(y),  # media ± 1 SD como barras de error
+    y_hi   = y_mean + sd(y)
+  )
+
+# --- Plot ---
+ggplot(datos, aes(x, y)) +
+
+  # 1) Scatter
+  geom_point(alpha = 0.25, color = "#5B8DB8", size = 1.8) +
+  # 3) Medias de bin (= lo que estima ANOVA)
+  geom_errorbar(
+    data = medias_bin,
+    aes(x = x_mid, ymin = y_lo, ymax = y_hi),
+    width = 0.2, color = "#E07B39", linewidth = 0.8, inherit.aes = FALSE
+  ) +
+  geom_point(
+    data = medias_bin,
+    aes(x = x_mid, y = y_mean),
+    color = "#E07B39", size = 4, shape = 18, inherit.aes = FALSE
+  ) +
+
+  # 4) Recta de regresión
+  geom_smooth(method = "lm", se = TRUE,
+              color = "#2D6A4F", linewidth = 1.2,
+              fill  = "#2D6A4F", alpha = 0.15) +
+
+  # --- Etiquetas ---
+  annotate("text", x = 0.5, y = max(y) - 0.5,
+           label = "Medias por grupo\n(ANOVA sobre bins)",
+           color = "#E07B39", hjust = 0, size = 4.5, fontface = "italic") +
+  annotate("text", x = 6.5, y = min(y) + 0.5,
+           label = "Recta de regresión",
+           color = "#2D6A4F", hjust = 0, size = 4.5, fontface = "italic") +
+
+  labs(
+    title    = "ANOVA sobre bins vs. Regresión lineal simple",
+    subtitle = "Las medias de grupo  quedan forzadas sobre la recta cuando la relación es lineal",
+    x = "x (variable continua)",
+    y = "y"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+:::
+:::
+
+---
+
+## Linear regression
+
+Let's consider the example of 2 groups
+
+$$y_{i} =  \beta_0 +  \alpha_1\mathbb{1}_{i \in C_1} + \alpha_2\mathbb{1}_{i \in C_2} + \varepsilon_{i}, \quad \varepsilon_{i} \sim N (0, \sigma^2)$$
+
+where $\mathbb{1}_{i \in C_j}$ is a dummy variable: 1 if observation $i$ belongs to $C_j$; 0 otherwise. Since $\alpha_1 = 0$, we have that
+
+* $\widehat{y}_i = \widehat{\beta}_0$ if $i$ belongs to group 1
+* $\widehat{y}_i = \widehat{\beta}_0 + \alpha_2$ if $i$ belongs to group 2
+
+. . .
+
+Let's imagine that observations 1 and 2 belong to group 1, and observations 3 and 4 belong to group 2
+
+$$y_{i} =  \beta_0 + \alpha_2 x_i = \beta_0 +  \beta_1 x_i + \varepsilon_{i}, \quad \varepsilon_{i} \sim N (0, \sigma^2)$$
+
+* $x_1 = x_2 = 0$
+* $x_3 = x_4 = 1$
+
+---
+
+## Linear regression
+
+$$y_{i} =  \beta_0 + \alpha_2 x_i = \beta_0 +  \beta_1 x_i + \varepsilon_{i}, \quad \varepsilon_{i} \sim N (0, \sigma^2)$$
+
+* $x_1 = x_2 = 0$
+* $x_3 = x_4 = 1$
+
+What if instead of having a **binary predictor we had a continuous predictor**?
+
+. . .
+
+
+$$y_{i} =  \beta_0 + \alpha_2 x_i = \beta_0 +  \beta_1 x_i + \varepsilon_{i}, \quad \varepsilon_{i} \sim N (0, \sigma^2)$$
+
+Here we go: linear regression
+
+---
+
+## Linear regression
+
+
+La regresión lineal es lo que se conoce como en el aprendizaje estadístico como [**predicción (continua)**]{.hl-yellow}: dada una [**variable objetivo (variable dependiente)**]{.hl-yellow}, y con la información aportada por un conjunto de [**variables predictoras (covariables)**]{.hl-yellow}, el objetivo será obtener una estimación/predicción lo «mejor posible»
+
+&nbsp;
+
+
+[**modelo supervisado**]{.hl-yellow} de [**predicción**]{.hl-purple} [**lineal**]{.hl-green} (conocido como regresión lineal)
+
+
+---
+
+## Aprendizaje ¿supervisado?
+
+
+[**modelo supervisado**]{.hl-yellow}
+
+
+![](./img/unsupervised-learning.jpg)
+
+
+---
+
+## Aprendizaje ¿supervisado?
+
+
+:::: columns
+::: {.column width="50%"}
+
+* [**Aprendizaje supervisado**]{.hl-yellow}: tendremos dos tipos de variables, la [**variable dependiente (output/target)**]{.hl-yellow} que se quiere predecir/clasificar, normalmente denotada como $Y$, y las [**variables independientes (inputs) o explicativas o predictoras**]{.hl-yellow}, que contienen la información disponible. Ejemplos: regresión, knn, árboles, etc.
+ 
+
+:::
+
+::: {.column width="50%"}
+
+![](./img/supervised.jpg)
+:::
+::::
+
+---
+
+## Aprendizaje ¿supervisado?
+
+
+:::: columns
+::: {.column width="50%"}
+
+* [**Aprendizaje no supervisado**]{.hl-yellow}: no existe la distinción entre target y variables explicativas ya que [**no tenemos etiquetados los datos**]{.hl-yellow}, no sabemos a priori la respuesta correcta. El aprendizaje no supervisado [**buscará patrones**]{.hl-yellow} basados en similitudes/diferencias. Ejemplos: PCA, clustering, redes neuronales, etc.
+
+:::
+
+
+::: {.column width="50%"}
+
+![](./img/unsupervised.jpg)
+
+:::
+::::
+
+---
+
+
+## Clasificación vs predicción
+
+
+La **regresión lineal** se enmarca dentro del [**predicción**]{.hl-purple} supervisada
+
+* [**Predicción**]{.hl-purple}: la [**variable objetivo es una variable cuantitativa continua**]{.hl-purple} (por ejemplo, precio, glucosa, peso, etc).
+
+* [**Clasificación**]{.hl-purple}: la [**variable objetivo es una variable cualitativa**]{.hl-purple} o **cuantitativa discreta**. La etiqueta tomará un valor dentro del conjunto de modalidades permitidas, pudiendo ser **binaria** (si/no) o **multiclase** (A, B, C, D).
+
+![](./img/vitro-fuego-discretas.jpg)
+
+
+---
+
+
+## ¿Qué es la linealidad?
+
+
+modelo de predicción [**lineal**]{.hl-green}
+
+&nbsp;
+
+
+En estadística llamamos [**modelo de predicción lineal**]{.hl-yellow} a un modelo que usa la información de covariables $X_1, X_2, \ldots, X_p$, de manera que su información siempre [**se relacionen entre sí con sumas y restas**]{.hl-yellow}.
+
+- [**Ejemplos lineales**]{.hl-green}: $y = 2*x_1 - 3$ o  $y = 4 - \frac{x_1}{2} + 3*x_2$
+
+- [**Ejemplos no lineales**]{.hl-red}: $y = 2*\frac{1}{x_1}$ o  $y = 4 - x_{1}^{2} - x_2$ o $y = ln(x_1) + cos(x_2)$
+
+
+
+---
+
+
+## Historia de la reg
+
+> Hay una regla universal: cualquier pariente tuyo es probablemente más mediocre que tú»
+
+La [**historia de regresión**]{.hl-yellow} se remonta a **Francis Galton**, primo de Charles Darwin, que además de **estadístico fue psicólogo**, geógrafo y, por desgracia, el **primer eugenésico** (de hecho acuñó el termino). También fue el primero en proponer métodos de clasificación de huellas en medicina forense e incluso se le atribuye el primer mapa meteorológico de la historia
+
+. . .
+
+Galton mostró fascinación por «El origen de la especies» de su primo. Sin embargo, [**Galton no se centraba en los mejor adaptados sino en los que él llama mediocres**]{.hl-yellow}
+
+. . .
+
+Según Galton, las sociedades estaban fomentando la mediocridad, interfiriendo en la selección natural, así que empezó a **estudiar si el talento era o no hereditario**.
+
+
+. . .
+
+¿Su conclusión? El [**talento se disipaba**]{.hl-yellow} a lo largo de las generaciones
+
+---
+
+## Regresión a la mediocridad
+
+En 1886 publicó «Regression towards mediocrity in hereditary stature», un artículo que cambiaría la estadística: fue el [**primer uso documentado de lo que hoy conocemos como recta de regresión**]{.hl-yellow} 
+
+. . .
+
+:::: columns
+::: {.column width="38%"}
+
+![](img/reg_dalton.jpg)
+
+:::
+
+::: {.column width="62%"}
+
+Galton analizó la estatura de 205 hijos y padres, observando que, de nuevo, los valores extremos se disipaban: a lo largo de las generaciones había una [**regresión (un retroceso) a la mediocridad (entendida como la media)**]{.hl-yellow} 
+
+
+:::
+::::
+
+Hijos de altos eran algo más bajitos, e hijos de bajitos eran algo más altos.
+
+---
+
+## Regresión a la mediocridad
+
+:::: columns
+::: {.column width="60%"}
+
+![](img/reg-galton-coef.jpg)
+
+:::
+
+::: {.column width="40%"}
+
+Galton no solo observó que las [**estaturas «regresaban» a un valor medio sino que lo hacían con un patrón**]{.hl-yellow}, con un factor constante de $2/3$: si los padres se desviaban $+3$ por encima de la media, los hijos se desviaban solo $(2/3)*3 = +2$ por encima de la media.
+
+:::
+::::
+
+---
+
+## Linear regression
+
+La **regresión lineal** es el modelo más simple de lo que se conoce como aprendizaje estadístico (Machine Learning), en concreto del conocido como [**aprendizaje supervisado**]{.hl-yellow}
+
+Un modelo siempre tendrá la siguiente forma:
+
+$$Y = f\left(X_1, \ldots, X_p \right) + \varepsilon, \quad E \left[Y | \boldsymbol{X} = x \right] =f\left(X_1, \ldots, X_p \right) $$
+
+* $X_1, \ldots, X_p$ serán los [**datos**]{.hl-yellow}
+
+* $f(\cdot)$ será nuestro [**modelo**]{.hl-yellow}
+
+* $E \left[Y | \boldsymbol{X} = x \right]$ es el [**valor esperado de $Y$**]{.hl-yellow} con la información que tenemos, lo que queremos predecir.
+
+* $\varepsilon$ será el [**error o ruido**]{.hl-yellow}, una [**variable aleatoria de media 0**]{.hl-yellow} (en estadística SIEMPRE nos vamos a equivocar).
+
+---
+
+## Linear regression
+
+En el caso concreto de la [**regresión lineal univariante**]{.hl-yellow}
+se asumirá que el modelo es una recta, es decir, las estimación promedio tiene que caer dentro de dicha recta tendremos por tanto $E \left[Y | \boldsymbol{X} = x \right] = \beta_0 + \beta_1X$ 
+
+$$E \left[Y | \boldsymbol{X} = x \right] =  \beta_0 + \beta_1 x, \quad \widehat{y}_i = \widehat{\beta}_0 + \widehat{\beta}_1 x_i$$
+
+
+El objetivo es intentar [**estimar dicha variable objetivo pero no a nivel individual sino su promedio**]{.hl-yellow} minimizando al máximo el error cometido (la parte que podemos evitar).
+
+El error cometido será $\varepsilon_i = y_i - \left(\beta_0 + \beta_1 x_i \right)$ y el error estimado es
+
+$$\widehat{\varepsilon}_i = y_i - \widehat{y}_i = y_i - \left(\widehat{\beta}_0 + \widehat{\beta}_1 x_i \right)$$
+
+
+---
+
+## Linear regression
+
+
+El objetivo será que, de todas las rectas posibles que podrías definir, elrgir aquella que [**explique el máximo de información (variabilidad) de Y con la información de X**]{.hl-yellow}, es decir, aquella que **minimice los errores** o la conocida como [**varianza residual o varianza no explicada (o error cuadrático medio)**]{.hl-green} (varianza del error). De todos los posibles valores $\left(\beta_0, \beta_1 \right)$ usaremos aquellos que hagan $s_{r}^2$ lo más pequeño posible (es una función que depende de $\left(\beta_0, \beta_1 \right)$ --> derivamos e igualamos a cero)
+
+$$s_{r}^{2} = \frac{1}{n} \displaystyle \sum_{i=1}^{n} \left( \widehat{\varepsilon}_{i} - \overline{\widehat{\varepsilon}}_{i}\right)^2 = \frac{1}{n} \displaystyle \sum_{i=1}^{n} \widehat{\varepsilon}_{i}^{2} $$
+---
+
+
+
+## Estimación reg. univariante
+
+
+Los [**estimadores de los parámetros de una regresión lineal univariante**]{.hl-yellow} serán por tanto $\widehat{\beta}_1 = \frac{s_{xy}}{s_{x}^{2}}$ ([**pendiente de la recta**]{.hl-purple}) y $\widehat{\beta}_0 = \overline{y} - \widehat{\beta}_1 \overline{x}$ ([**ordenada en el origen**]{.hl-purple})
+
+. . .
+
+Se puede demostrar cómo los [**estimadores mínimos cuadrados**]{.hl-yellow} coincide con los [**estimadores de máxima verosimilitud**]{.hl-yellow}: condicionada a la muestra obtenida, ¿cuál es el valor más probable/verosímil de los parámetros?
+
+
+. . .
+
+Es importante [**distinguir lo población de lo muestral**]{.hl-yellow}
+
+* Los parámetros $\left( \beta_0, \beta_1 \right)$ son desconocidos, los [**parámetros poblacionales**]{.hl-yellow}
+
+* Los parámetros $\left( \widehat{\beta}_0, \widehat{\beta}_1 \right)$ son estimados a partir de los datos, son [**variables aleatorias**]{.hl-yellow} ya que han sido calculados en función de una muestra aleatoria $\left\lbrace \left(x_i, y_i \right) \right\rbrace_{i=1}^{n}$
+
+---
+
+## Estimación reg. univariante
+
+Los [**estimadores de los parámetros de una regresión lineal univariante**]{.hl-yellow} serán por tanto $\widehat{\beta}_1 = \frac{s_{xy}}{s_{x}^{2}}$ ([**pendiente de la recta**]{.hl-purple}) y $\widehat{\beta}_0 = \overline{y} - \widehat{\beta}_1 \overline{x}$ ([**ordenada en el origen**]{.hl-purple})
+
+¿Cuál es su [**interpretación**]{.hl-yellow}?
+
+. . .
+
+* [**Ordenada en el origen**]{.hl-yellow}: también llamado **intercepto**, y denotado como $\beta_0$ su valor real, es el valor de $Y$ cuando $X=0$. Es decir, $\widehat{\beta}_0$ se puede interpretar como la estimación $\widehat{Y}$ cuando $X = 0$ (cuando dicha estimación tenga sentido).
+
+
+. . .
+
+* [**Pendiente**]{.hl-yellow}: denotado com $\beta_1$ su valor real, cuantifica el incremento de $Y$ cuando $X$ aumenta una unidad. Es decir, $\widehat{\beta}_1$ se puede interpretar como la variación de la **estimación $\widehat{Y}$ cuando $X$ tiene un incremento unitario**.
+
+---
+
+## Case study: wine
+
+Vamos llevalro a la práctica con el dataset `wine.csv`
+
+```{r}
+datos <- read_csv(file = "./data/wine.csv")
+datos
+```
+
+---
+
+## Case study: wine
+
+
+El conjunto de datos está formado por 27 observaciones (cosechas de vino rojo Burdeos) y 7 variables
+
+* `Year`, `Age`: año de la cosecha y número de años en barrica.
+* `Price`: precio en 1990-1991 de cada cosecha (en **escala log**)
+* `WinterRain`: lluvia (en mm) que cayó ese año en invierno.
+* `AGST`: temperatura media durante la temporada de crecimiento de la uva (aproximadamente de abril a septiembre), medida en grados Celsius
+* `HarvestRain`: lluvia (en mm) que cayó ese año durante la cosecha.
+* `FrancePop`: población (miles de habitantes) de Francia.
+
+Ver más en detalles en <https://doi.org/10.1080/09332480.1995.10542468>
+
+. . .
+
+[**El objetivo: predecir el precio**]{.hl-yellow}
+
+
+---
+
+## Case study: wine
+
+```{r}
+datos
+```
+
+Para predecir el precio vamos a usar (de momento) una [**regresión lineal univariante**]{.hl-yellow}, donde $Y = precio$ y deberemos elegir la predictora $X$ más apropiada.
+
+---
+
+## Case study: wine
+
+Una vez que hayamos hecho un [**análisis exploratorio inicial**]{.hl-yellow} (variables continuas? tienen problemas rango? ausentes? ¿cómo se distribuyen las variables? hay outliers?) la primera pregunta a hacerse es
+
+¿Qué [**predictora es la más adecuada para, con un modelo de regresión lineal univariante, predecir la variable objetivo**]{.hl-yellow}?
+
+. . .
+
+Dado que vamos a usar el concepto de recta de regresión, la mejor variable será aquella que esté más correlada (linealmente) con la variable objetivo
+
+```{r}
+library(corrr)
+# cor(datos) también sirve
+datos |> correlate()
+```
+
+---
+
+## Case study: wine
+
+
+```{r}
+#| code-fold: true
+datos_tidy <-
+  datos |>
+  pivot_longer(cols = -Price, names_to = "variable",
+               values_to = "values")
+ggplot(datos_tidy, aes(x = values, y = Price)) + 
+  geom_point(aes(color = variable), size = 3.5, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  MetBrewer::scale_color_met_d("Renoir") +
+  facet_wrap(~variable, scales = "free_x") +
+  theme_minimal()
+```
+
+* [**Respecto a Y**]{.hl-yellow}: predictoras con mayor cor lineal son `AGST` (más calor, sube el precio) y `HarvestRain` (más lluvias, baja el precio)
+
+* [**Dependencia entre predictoras**]{.hl-yellow}: las variables `Age`, `Year` y `FrancePop` presentan la misma información.
+
+
+---
+
+## Case study: wine
+
+También podemos usar `ggcorrplot()` del paquete `{ggcorrplot}`, al que le pasamos una matriz de correlaciones clásica y nos la [**visualiza**]{.hl-yellow}.
+
+```{r}
+#| code-fold: true
+library(ggcorrplot)
+datos |>
+  cor() |>
+  ggcorrplot()
+```
+
+---
+
+## Case study: wine
+
+
+Las **rectas con más correlación lineal (más pendiente)** son `AGST` y `HarvestRain`. ¿Es suficientemente significativa dicha correlación?
+
+```{r}
+shapiro.test(datos$Price)
+shapiro.test(datos$AGST)
+cor.test(datos$Price, datos$AGST)
+```
+
+---
+
+## Case study: wine
+
+
+Una vez que hemos decidido que predictora usar (y que existe un efecto significativo entre x vs y), vamos a plantear [**el modelo de reg lineal univariante**]{.hl-yellow}
+
+$$Price = \beta_0 + \beta_1*AGST + \varepsilon$$
+
+¿Cuánto valen los [**parámetros estimados**]{.hl-purple}? ¿Qué [**interpretación**]{.hl-purple} tienen?
+
+
+&nbsp;
+
+Para ello ejecutaremos el modelo con `lm(data = ..., y ~ x_1 + x_2 + ...)`
+
+```{r}
+ajuste_AGST <- lm(data = datos, formula = Price ~ AGST)
+```
+
+---
+
+
+## Case study: wine
+
+```{r}
+ajuste_AGST |> summary()
+```
+
+**estimate column in Coefficients table**
+
+* $\beta_0=$ `r round(ajuste_AGST$coefficients[1], 3)`: predicción del precio (log) cuando $AGST = 0$ ->  cuando la temperatura (durante la temporada de crecimiento de la uva) es 0ºC, la predicción de precio (escala log) es de $-3.547$ --> la predicción de precio es $0.0288 = exp(-3.5467)$ dolares
+
+---
+
+## Case study: wine
+
+```{r}
+#| echo: false
+ajuste_AGST |> summary()
+```
+
+**estimate column in Coefficients table**
+
+
+* $\beta_1=$ `r round(ajuste_AGST$coefficients[2], 3)`: lo que aumenta el precio (escala log) por cada grado de aumento -> por cada grado que aumenta la temperatura el precio (escala log) aumenta $0.643$ -> por cada grado que aumenta la temperatura el precio se multiplica por $exp(0.6426) = 1.9014$ -> aumenta un 90% 
+
+---
+
+
+## Case study: wine
+
+```{r}
+#| echo: false
+ajuste_AGST |> summary()
+```
+
+La tabla también nos cuantifica la variabilidad de los estimadores $\widehat{SE} \left(\widehat{\beta}_j \right)$ en la columna `Std. Error` (es la estimación - insesgada - de su desviación típica). [**SI se cumpliesen las hipótesis**]{.hl-red}, entonces $t-statistic = \frac{\widehat{\beta}_j }{\widehat{SE} \left(\widehat{\beta}_j \right)}$ sigue una t-Student.
+
+---
+
+
+## Case study: wine
+
+```{r}
+#| echo: false
+ajuste_AGST |> summary()
+```
+
+* [**Residuals**]{.hl-yellow}: distribution of estimated errors/residuals. Mean is always zero, the question to be asked is: median is 0? Reminder: we will need Gaussian assumption, so distribution should be symmetric.
+
+---
+
+## Case study: wine
+
+```{r}
+#| echo: false
+ajuste_AGST |> summary()
+```
+
+* [**Residual standard error**]{.hl-yellow}: dicha cantidad es el mejor estimador (estimador insesgado) de la desv típica residual, definida como
+
+$$\widehat{\sigma}_{\varepsilon}= \sqrt{\frac{1}{n-p-1} s_{r}^2} = \sqrt{\frac{1}{n-p-1}\sum_{i=1}^{n} \widehat{\varepsilon}_{i}^{2}}= 0.4819$$
+Dos modelos con los mismos datos -> $\widehat{\sigma}_{\varepsilon}$ lo más pequeña posible
+
+---
+
+## Case study: wine
+
+```{r}
+#| echo: false
+ajuste_AGST |> summary()
+```
+
+* [**Multiple R-squared**]{.hl-yellow}: el conocido como coeficiente de bondad de ajuste o R-squared ($R^2$), que cuantifica el % de información explicada (algo similar al tamaño del efecto en ANOVA)
+
+$$R^2 = \frac{\text{var explained}}{\text{total var}} = \frac{SSR_{reg}}{SST} = \frac{\sum_{i=1}^{n} \left(\widehat{y}_i - \bar{y} \right)^2}{\sum_{i=1}^{n} \left(y_i - \bar{y} \right)^2} \in [0,1]$$
+
+Es [**ratio de información explicada**]{.hl-yellow}: $R^2 \to 1$ sería la «perfección» (modelo sobreajustado)
+
+---
+
+## Case study: wine
+
+¿Qué tenemos guardado en el objeto que devuelve `lm()`?
+
+**Estimation of coefficients** $\widehat{\beta}_0$ and $\widehat{\beta}_1$
+
+```{r}
+ajuste_AGST$coefficients
+```
+
+. . .
+
+**Estimation of residuals** $\widehat{\varepsilon}_i$
+
+```{r}
+ajuste_AGST$residuals
+```
+
+---
+
+## Case study: wine
+
+
+```{r}
+#| echo: false
+wine <- datos
+mod <- lm(Price ~ AGST, data = datos)
+b0_ols <- coef(mod)[1]
+b1_ols <- coef(mod)[2]
+
+# Añadir residuos OLS
+wine <- wine |>
+  mutate(
+    y_hat_ols = b0_ols + b1_ols * AGST,
+    residuo   = Price - y_hat_ols
+  )
+
+# --- Rectas alternativas (peores) ---
+rectas_alt <- tibble(
+  b0    = c(b0_ols - 3, b0_ols + 2, b0_ols - 1),
+  b1    = c(b1_ols + 0.5, b1_ols - 0.3, b1_ols + 0.8),
+  label = c("Recta A", "Recta B", "Recta C")
+)
+
+# SS_res para cada recta (para el subtítulo)
+ss_ols <- round(sum(wine$residuo^2), 2)
+ss_alt <- rectas_alt |>
+  rowwise() |>
+  mutate(ss = round(sum((wine$Price - (b0 + b1 * wine$AGST))^2), 2))
+
+# --- Plot 1: rectas alternativas + SS ---
+p_alt <- ggplot(wine, aes(AGST, Price)) +
+  geom_point(color = "#4A6FA5", size = 2.5, alpha = 0.8) +
+
+  # Rectas alternativas
+  geom_abline(
+    data = rectas_alt,
+    aes(intercept = b0, slope = b1, color = label),
+    linewidth = 0.9, linetype = "dashed", alpha = 0.75
+  ) +
+
+  # Recta OLS encima
+  geom_abline(intercept = b0_ols, slope = b1_ols,
+              color = "#E07B39", linewidth = 1.4) +
+
+  annotate("text", x = 16, y = -1.8,
+           label = paste0("OLS  SS=", ss_ols),
+           color = "#E07B39", hjust = 0, size = 3.5, fontface = "bold") +
+  annotate("text", x = 16, y = -2.2,
+           label = paste0("Recta A  SS=", ss_alt$ss[1]),
+           color = "#5B8DB8", hjust = 0, size = 3.2) +
+  annotate("text", x = 16, y = -2.5,
+           label = paste0("Recta B  SS=", ss_alt$ss[2]),
+           color = "#8BBF9F", hjust = 0, size = 3.2) +
+  annotate("text", x = 16, y = -2.8,
+           label = paste0("Recta C  SS=", ss_alt$ss[3]),
+           color = "#C47FBF", hjust = 0, size = 3.2) +
+  scale_x_continuous(limits = c(10, 22)) +
+  scale_y_continuous(limits = c(5, 12)) +
+  scale_color_manual(values = c("#5B8DB8", "#8BBF9F", "#C47FBF")) +
+  labs(
+    title    = "¿Qué recta elegir?",
+    subtitle = "OLS minimiza la suma de cuadrados de los residuos (SS_res)",
+    x = "AGST (temperatura media temporada de crecimiento)",
+    y = "log(Price)",
+    color = NULL
+  ) +
+  theme_minimal(base_size = 13)
+
+# --- Plot 2: residuos de la recta OLS ---
+p_res <- ggplot(wine, aes(AGST, Price)) +
+
+  # Segmentos residuos
+  geom_segment(
+    aes(xend = AGST, yend = y_hat_ols, color = residuo > 0),
+    linewidth = 0.7, alpha = 0.7
+  ) +
+
+  # Puntos
+  geom_point(color = "#4A6FA5", size = 2.5, alpha = 0.9) +
+
+  # Recta OLS
+  geom_abline(intercept = b0_ols, slope = b1_ols,
+              color = "#E07B39", linewidth = 1.3) +
+
+  scale_color_manual(values = c("#C0392B", "#27AE60"),
+                     labels = c("y < ŷ  (residuo negativo)",
+                                "y > ŷ  (residuo positivo)")) +
+  labs(
+    title    = "Residuos de la recta OLS",
+    subtitle = expression(hat(epsilon)[i] == y[i] - hat(y)[i] ~ "  —  OLS minimiza" ~ sum(hat(epsilon)[i]^2)),
+    x = "AGST",
+    y = "log(Price)",
+    color = NULL
+  ) +
+  theme_minimal(base_size = 13) 
+
+# --- Mostrar ---
+library(patchwork)
+p_alt / p_res
+```
+
+
+---
+
+## Case study: wine
+
+
+**Estimation of response variable** $\widehat{y}_i$
+
+```{r}
+ajuste_AGST$fitted.values
+```
+
+---
+
+## Case study: wine
+
+Con dichos valores de hecho podemos visualizar el acierto o no del modelo enfrentando la realidad con la predicción (deberían estar en torno a la diagonal)
+
+```{r}
+estim_data <- tibble("y" = datos$Price, "y_est" = ajuste_AGST$fitted.values)
+ggplot(estim_data, aes(x = y, y = y_est)) +
+  geom_point(size = 2, alpha = 0.7) +
+  geom_abline(slope = 1, intercept = 0) +
+  theme_minimal(base_size = 13) +
+  labs(x = "Real values", y = "Estimated values")
+```
+
+
+--- 
+
+## Case study: wine
+
+Y tengo una mala noticia...¡no podemos interpretar más de la tabla hasta saber si se cumple las hipótesis! El resto de la tabla habla sobre la inferencia de los parámetros y sobre la inferencia del modelo
+
+$$H_0:~\beta_0 = 0, \quad H_0:~\beta_1 = 0, \quad H_0:~\beta_p= 0\quad  \text{parameters inference}$$
+
+$$H_0:~\beta_1 = \beta_2 = \ldots = \beta_p = 0\quad  \text{goodness-of-fit}$$
+
+. . . 
+
+Pero como siempre, para poder inferior de lo muestral a lo poblacional con un contraste parámetrico (de hecho será un ANOVA) necesitamos verificar hipótesis.
+
+---
+
+## Case study: wine
+
+Pero antes de ver que hipótesis necesitamos, sí podemos hacer uso de lo aprendido con permutaciones y boostrap haciendo uso del paquete `{infer}`: vamos a simular distintos datos  de forma que podamos tener una distribución de $\beta_0$ y $\beta_1$, y con dicha distribución determinar si existe o no efecto
+
+1. Generamos remuestreos con reempleazamiento de los datos y para cada uno de ellos estimamos $\beta_1$
+
+```{r}
+boot_dist <- 
+  datos |>
+  specify(Price ~ AGST) |>
+  generate(reps = 5000, type = "bootstrap") |>
+  calculate(stat = "slope")
+boot_dist
+```
+
+---
+
+## Case study: wine
+
+2. Calculamos la media y desviación de la distribución (si tuviésemos $n$ grande dicho valores serían iguales que las columnas `estimate` y `Std. Error` del `lm()`
+
+```{r}
+boot_dist |> summarise(estimate_boot = mean(stat), se_boot = sd(stat))
+ajuste_AGST |> summary()
+```
+
+---
+
+## Case study: wine
+
+3. Visualizamos REAL la distribución de $\beta_1$
+
+```{r}
+boot_dist |>
+  visualize()
+```
+
+---
+
+## Case study: wine
+
+4. ¿Qué tendría que pasar si la hipótesis nula $H_0:~\beta_1 = 0$ fuese cierta? Tendría misma dispersión pero movida al cero.
+
+Si $H_0$ fuese cierta, podemos intercambiar observaciones ya que no habría efecto
+
+```{r}
+null_dist <- 
+  datos |>
+  specify(Price ~ AGST) |>
+  hypothesize(null = "independence") |>
+  generate(reps = 5000, type = "permute") |>
+  calculate(stat = "slope")
+null_dist |> summarise(estimate_null = mean(stat), se_null = sd(stat))
+```
+
+---
+
+## Case study: wine
+
+Y con ello calcular el p-valor empírico (en este caso, si hay signifancia del parámetro, hay efecto)
+
+```{r}
+get_p_value(null_dist, obs_stat = ajuste_AGST$coefficients[2],
+            direction = "two-sided")
+visualize(null_dist) +
+  shade_p_value(obs_stat = ajuste_AGST$coefficients[2], direction = "two-sided")
+```
+
+
+---
+
+## Case study: wine
+
+¿Qué **hipótesis debe cumplir un modelo de regresión lineal**?
+
+. . .
+
+1. [**Linealidad**]{.hl-green}: el valor esperado está en torno a una recta, tal que $E \left[Y | \boldsymbol{X} = x \right] = \beta_0 + \beta_1 x$
+
+2. [**Homocedasticidad**]{.hl-green}: la [**varianza del error sea finita y constante**]{.hl-yellow} sin depender de $x$.
+
+3. [**Normalidad**]{.hl-green}: pediremos que $\varepsilon \sim N \left(0, \sigma_{r}^2 \right)$
+
+4. [**Incorrelación**]{.hl-green}: los errores $\left\lbrace \varepsilon_i \right\rbrace_{i=1}^{n}$ deben ser independientes entre sí (el error en una observación no depende de otras, es decir, el orden de recolección no afecta). 
+
+$$Y | \boldsymbol{X} = x \sim N \left(\beta_0 + \beta_1x, \sigma_{\varepsilon}^2 \right)$$
+
+
+---
+
+## Case study: wine
+
+Para chequear las 4 hipótesis podemos hacer uso del paquete `{performance}`
+
+```{r}
+library(performance)
+check_model(ajuste_AGST)
+```
+
+---
+
+## Case study: wine
+
+1. [**Linealidad**]{.hl-green}: el valor esperado de $Y$ es $E \left[Y | \boldsymbol{X} = x \right] = \beta_0 + \beta_1 x$
+
+
+```{r}
+#| code-fold: true
+check_model(ajuste_AGST)
+```
+
+Si te fijas el gráfico que se refiere a ello está [**visualizando residuales vs valores estimados**]{.hl-yellow}: está volviendo a plantear un segundo modelo de regresión donde ahora $\widehat{\varepsilon}_i = \gamma_0 + \gamma_1 \widehat{y}_i$, y donde NO QUEREMOS ver ningún patrón
+
+---
+
+## Case study: wine
+
+```{r}
+lineal <-
+  lm(data = tibble("fitted" = ajuste_AGST$fitted.values,
+                   "residuals" = ajuste_AGST$residuals),
+                 formula = residuals ~ fitted)
+lineal |> summary()
+```
+
+Si te fijas [**ambos parámetros no son significativamente distintos de 0**]{.hl-green}: no presentan una tendencia (lineal al menos)
+
+---
+
+## Case study: wine
+
+También podemos [**visualizar nosotros ese scatter plot residuales vs estimaciones**]{.hl-yellow}: necesitamos que estén en torno a una recta plana
+
+```{r}
+#| code-fold: true
+ggplot(tibble("fitted" = ajuste_AGST$fitted.values,
+              "residuals" = ajuste_AGST$residuals),
+       aes(x = fitted, y = residuals)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal()
+```
+
+---
+
+## Case study: wine
+
+2. [**Homocedasticidad**]{.hl-green}: necesitamos que la [**varianza del error sea finita y constante**]{.hl-yellow}
+
+```{r}
+check_heteroscedasticity(ajuste_AGST)
+```
+
+
+El gráfico titulado `Homogeneity of variance` nos visualiza la raíz cuadrada del valor absoluto de los residuos estandarizados frente a las predicciones (se conoce como [**gráfico de escala-localización**]{.hl-yellow})
+
+
+
+---
+
+## Case study: wine
+
+3. [**Normalidad**]{.hl-green}: pediremos que $\varepsilon \sim N \left(0, \sigma_{r}^2 \right)$
+
+Además del contraste podemos visualizar con `stat_qq()` y `stat_qq_line()`
+
+```{r}
+shapiro.test(ajuste_AGST$residuals)
+```
+
+
+---
+
+## Case study: wine
+
+4. [**Incorrelación**]{.hl-green}: los errores $\left\lbrace \varepsilon_i \right\rbrace_{i=1}^{n}$ deben ser incorrelados entre sí (el error en una observación no depende de otras)
+
+```{r}
+check_autocorrelation(ajuste_AGST)
+```
+
+`check_autocorrelation()` comprueba como efectivamente los [**residuales/errores son independientes**]{.hl-yellow}, haciendo un test de autocorrelación (nos tiene que salir lo contrario a una serie temporal, que el error i no depende del i-1).
+
+
+
+---
+
+## Case study: wine
+
+```{r}
+check_predictions(ajuste_AGST)
+```
+
+Nos faltan dos gráficas por comentar:
+
+* `Posterior Predictive Checks`: [**simula distintas variables respuesta**]{.hl-yellow} suponiendo que el modelo fuese cierto (añadiendo ruido aleatorio) y lo compara con la muestra. [**Si lo observado se distancia mucho de las simulaciones**]{.hl-red} es que el modelo planteado no ajusta bien a la muestra.
+
+---
+
+## Case study: wine
+
+```{r}
+check_outliers(ajuste_AGST)
+```
+
+* `Influential Observations`: nos permite identificar [**observaciones influyentes**]{.hl-yellow}, marcando aquellas (con su id de fila) que se salgan fuera de la banda definida por la conocida como **distancia de Cook** denotada como $D_i$ (realiza, para cada observación, la suma de todos los cambios de la regresión cuando la observación $i$ es retirada: si hay muchos cambios al cambiar una observación, es que era muy influyente)
+
+. . .
+
+Diferencia dos tipos: 
+
+* [**outliers**]{.hl-yellow}: valor atípico de la **respuesta** pudiendo perturbar la varianza residual
+* [**high-leverage points**]{.hl-yellow}: valor atípico en alguna de las **predictoras**
+
+---
+
+## Case study: wine
+
+En nuestro caso se cumple todo así que ya podemos interpretar la inferencia
+
+```{r}
+ajuste_AGST |> summary()
+```
+
+* `Pr(>|t|)`: los p-valores de las hipótesis nula $H_0:~\beta_j = 0$
+* `F-statistic` y `p-value`: está haciendo un ANOVA
+
+---
+
+## Case study: wine
+
+
+```{r}
+ajuste_AGST |> aov() |> summary()
+```
+
+* `Pr(>F)`: ¿existe algún efecto de alguna predictora?
+
+Fíjate que `Sum Sq` se puede usar para calcular el $R^2$ ya que es $4.665 / (4.665 + 5.805) = 0.4456$
+
+---
+
+## Case study: wine
+
+Cuando se cumple linealidad tenemos además que se cumple que **info total = info explicada + info residual**, es decir
+
+$$R^2 = \frac{SS_{reg}}{SST} = \frac{SST - SS_{res}}{SST} = 1 - \frac{SS_{res}}{SST} = 1 - \frac{\frac{n-p-1}{n}*\text{Res std error}}{s_{y}^2}$$
+
+[**¿De qué depende?**]{.hl-yellow}
+
+. . .
+
+* [**Más predictoras (p)**]{.hl-yellow} implica que [**$R^2$ crece**]{.hl-yellow}, ¡incluso aunque dichas [**predictoras no sean significativas ni útiles**]{.hl-red}! 
+
+* A [**igualdad de errores: menos varianza de $y$, menor $R^2$**]{.hl-yellow} 
+
+* [**Más ruido, menor $R^2$**]{.hl-yellow} (aunque el modelo sea igual de bueno)
+
+* [**Ignora si el modelo cumple las hipótesis**]{.hl-yellow}
+
+---
+
+## Case study: wine
+
+Una vez estimado el modelo (sus coeficientes) podemos usarlo, bien para  [**estimar valores que el modelo conoce**]{.hl-yellow} (de los que aprendió) o para [**predecir nuevos valores**]{.hl-yellow} de los que el modelo no ha aprendido (ya que lo queremos inferir a la población)
+
+. . .
+
+Simplemente necesitamos la función `predict(modelo, nuevos_datos)`, usando como argumentos el **modelo entrenado** y un [**nuevo dataset que contenga una/s columna/s llamadas igual que nuestras variables predictores**]{.hl-yellow} con los valores de la predictora para los que queremos predecir
+
+```{r}
+predict(ajuste_AGST, tibble("AGST" = c(10, 15.6, 17, 20)))
+```
+
+¡No siempre usaremos el $R^2$ para decidir la validez del modelo! Si las predictoras se salen del rango aprendido de los datos no deberías usarlo ya que no vamos a tener cuantificada su fiabilidad
